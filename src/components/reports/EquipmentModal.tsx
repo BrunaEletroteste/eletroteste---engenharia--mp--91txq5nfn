@@ -141,7 +141,17 @@ export function EquipmentModal({ open, onOpenChange, onSave, initialData }: Prop
                     </Label>
 
                     {(field.type === 'select' && field.options) ||
-                    ['fabricante', 'corrente_nominal'].includes(field.name) ? (
+                    [
+                      'fabricante',
+                      'corrente_nominal',
+                      'classe_isolamento',
+                      'potencia_simetrica',
+                      'capacidade_ruptura',
+                      'rele_minima_tensao',
+                      'rele_abertura',
+                      'rele_fechamento',
+                      'motorizacao',
+                    ].includes(field.name) ? (
                       <Select
                         value={dados[field.name]?.toString() || ''}
                         onValueChange={(v) => handleFieldChange(field.name, v)}
