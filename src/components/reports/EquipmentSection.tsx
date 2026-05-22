@@ -262,7 +262,7 @@ export function EquipmentSection({ equipments, setEquipments, isView }: Props) {
                     </Badge>
                     <span className="font-semibold text-foreground">
                       {eq.tipo_equipamento} — {eq.dados_tecnicos.subestacao || '-'}
-                    </span>{' '}
+                    </span>
                     {eq.parecer?.parecer && (
                       <Badge
                         variant={
@@ -319,7 +319,6 @@ export function EquipmentSection({ equipments, setEquipments, isView }: Props) {
                           setModalOpen(true)
                         }}
                       >
-                        {' '}
                         <Edit className="h-4 w-4" />
                       </Button>
                       <Button

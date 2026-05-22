@@ -100,7 +100,8 @@ export default function ReportForm() {
           const eqRes = await pb.collection('equipamentos_relatorio').getFullList({
             filter: `relatorio_id='${id}'`,
             sort: 'ordem,created',
-          })          const testesRes = await pb.collection('testes_equipamento').getFullList({
+          })
+          const testesRes = await pb.collection('testes_equipamento').getFullList({
             filter: `equipamento_id.relatorio_id='${id}'`,
           })
           const parecerRes = await pb.collection('parecer_tecnico').getFullList({
@@ -114,7 +115,8 @@ export default function ReportForm() {
               tipo_equipamento: e.tipo_equipamento,
               dados_tecnicos: e.dados_tecnicos || {},
               ordem: e.ordem,
-              testes: testesRes                .filter((t) => t.equipamento_id === e.id)
+              testes: testesRes
+                .filter((t) => t.equipamento_id === e.id)
                 .map((t) => ({
                   id: t.id,
                   tipo_teste: t.tipo_teste,
@@ -365,7 +367,7 @@ export default function ReportForm() {
             ordem: currentOrdem,
           }
           currentOrdem++
-          
+
           let savedEqId = eq.id
           if (eq.id) {
             await pb.collection('equipamentos_relatorio').update(eq.id, eqPayload)
