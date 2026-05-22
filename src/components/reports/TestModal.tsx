@@ -1,7 +1,8 @@
 import { z } from 'zod'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
-import { useEffect } from 'react'
+import { useEffect, useState } from 'react'
+import { getOpcoesPadronizadas, type OpcaoPadronizada } from '@/services/opcoes'
 import {
   Dialog,
   DialogContent,
@@ -50,6 +51,7 @@ const testSchema = z
         required_error: 'Selecione o tipo de teste',
       },
     ),
+    equipamento_utilizado: z.string().min(1, 'Equipamento é obrigatório'),
     valor_teste: z.coerce.number().optional(),
     unidade: z.string().min(1, 'Unidade é obrigatória'),
     data_teste: z.string().min(1, 'Data é obrigatória'),
@@ -85,10 +87,20 @@ const isoRows = [
   { id: 'abc_massa', label: 'A, B, C x Massa' },
 ]
 
+const CATEGORY_MAP: Record<string, string> = {
+  'Resistências dos Isolamentos': 'equipamento_isolamento',
+  'Relação de Tensões': 'equipamento_relacao',
+  'Resistências dos Enrolamentos': 'equipamento_enrolamento',
+  'Resistências dos Contatos': 'equipamento_contatos',
+}
+
 export function TestModal({ open, onOpenChange, onSave, initialData }: TestModalProps) {
+  const [equipmentOptions, setEquipmentOptions] = useState<OpcaoPadronizada[]>([])
+
   const form = useForm<TestFormValues>({
     resolver: zodResolver(testSchema),
     defaultValues: {
+      equipamento_utilizado: '',
       valor_teste: 0,
       unidade: '',
       data_teste: new Date().toISOString().split('T')[0],
@@ -104,6 +116,7 @@ export function TestModal({ open, onOpenChange, onSave, initialData }: TestModal
       if (initialData) {
         form.reset({
           tipo_teste: initialData.tipo_teste as any,
+          equipamento_utilizado: initialData.equipamento_utilizado || '',
           valor_teste: initialData.valor_teste,
           unidade: initialData.unidade,
           data_teste: initialData.data_teste,
@@ -113,6 +126,7 @@ export function TestModal({ open, onOpenChange, onSave, initialData }: TestModal
       } else {
         form.reset({
           tipo_teste: undefined as any,
+          equipamento_utilizado: '',
           valor_teste: 0,
           unidade: '',
           data_teste: new Date().toISOString().split('T')[0],
@@ -125,6 +139,26 @@ export function TestModal({ open, onOpenChange, onSave, initialData }: TestModal
 
   useEffect(() => {
     if (!open) return
+
+    if (watchTipo) {
+      const cat = CATEGORY_MAP[watchTipo]
+      if (cat) {
+        getOpcoesPadronizadas(cat)
+          .then((options) => {
+            setEquipmentOptions(options)
+            const current = form.getValues('equipamento_utilizado')
+            if (current && !options.find((o) => o.valor === current)) {
+              form.setValue('equipamento_utilizado', '')
+            }
+          })
+          .catch(console.error)
+      } else {
+        setEquipmentOptions([])
+      }
+    } else {
+      setEquipmentOptions([])
+    }
+
     if (watchTipo === 'Resistências dos Contatos') {
       form.setValue('unidade', 'Micro-Ohm')
       form.setValue('valor_teste', 0)
@@ -187,6 +221,35 @@ export function TestModal({ open, onOpenChange, onSave, initialData }: TestModal
                       <SelectItem value="Resistências dos Contatos">
                         Resistências dos Contatos
                       </SelectItem>
+                    </SelectContent>
+                  </Select>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
+            <FormField
+              control={form.control}
+              name="equipamento_utilizado"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Equipamento Utilizado</FormLabel>
+                  <Select
+                    onValueChange={field.onChange}
+                    value={field.value || ''}
+                    disabled={!watchTipo || equipmentOptions.length === 0}
+                  >
+                    <FormControl>
+                      <SelectTrigger>
+                        <SelectValue placeholder="Selecione o equipamento..." />
+                      </SelectTrigger>
+                    </FormControl>
+                    <SelectContent>
+                      {equipmentOptions.map((opt) => (
+                        <SelectItem key={opt.id} value={opt.valor}>
+                          {opt.valor}
+                        </SelectItem>
+                      ))}
                     </SelectContent>
                   </Select>
                   <FormMessage />

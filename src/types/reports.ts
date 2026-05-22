@@ -16,6 +16,7 @@ export type FormValues = z.infer<typeof reportFormSchema>
 export type TestItem = {
   id?: string
   tipo_teste: string
+  equipamento_utilizado: string
   valor_teste: number
   unidade: string
   data_teste: string

@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-05-22T19:42:37.890Z",
+  "generatedAt": "2026-05-22T19:55:25.910Z",
   "collections": [
     {
       "name": "users",
@@ -353,6 +353,12 @@
           "name": "observacoes",
           "type": "text",
           "required": false,
+          "system": false
+        },
+        {
+          "name": "equipamento_utilizado",
+          "type": "text",
+          "required": true,
           "system": false
         }
       ],
