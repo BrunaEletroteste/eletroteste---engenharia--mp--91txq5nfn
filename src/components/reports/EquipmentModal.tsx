@@ -142,6 +142,29 @@ export function EquipmentModal({ open, onOpenChange, onSave, initialData }: Prop
     }
   }, [open, initialData])
 
+  useEffect(() => {
+    if (open) {
+      const primStr = dados.tensao_primaria
+      const secStr = dados.tensao_secundaria
+
+      if (primStr !== undefined || secStr !== undefined) {
+        const prim = Number(primStr)
+        const sec = Number(secStr)
+
+        if (!isNaN(prim) && !isNaN(sec) && sec !== 0) {
+          setDados((prev) => {
+            const relacao = Number((prim / sec).toFixed(4))
+            return prev.relacao === relacao ? prev : { ...prev, relacao }
+          })
+        } else {
+          setDados((prev) => {
+            return prev.relacao === '' ? prev : { ...prev, relacao: '' }
+          })
+        }
+      }
+    }
+  }, [dados.tensao_primaria, dados.tensao_secundaria, open])
+
   const handleTipoChange = (val: string) => {
     setTipo(val)
     setFields(getEquipmentFields(val))
@@ -284,14 +307,25 @@ export function EquipmentModal({ open, onOpenChange, onSave, initialData }: Prop
                     ) : (
                       <Input
                         type={field.type === 'number' ? 'number' : 'text'}
-                        value={dados[field.name] || ''}
+                        step={field.type === 'number' ? 'any' : undefined}
+                        value={dados[field.name] ?? ''}
                         onChange={(e) =>
                           handleFieldChange(
                             field.name,
-                            field.type === 'number' ? Number(e.target.value) : e.target.value,
+                            field.type === 'number'
+                              ? e.target.value === ''
+                                ? ''
+                                : Number(e.target.value)
+                              : e.target.value,
                           )
                         }
-                        placeholder={`Insira ${field.label.toLowerCase()}`}
+                        placeholder={
+                          field.readOnly
+                            ? 'Calculado automaticamente'
+                            : `Insira ${field.label.toLowerCase()}`
+                        }
+                        readOnly={field.readOnly}
+                        className={field.readOnly ? 'bg-muted cursor-not-allowed' : ''}
                       />
                     )}
                   </div>

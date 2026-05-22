@@ -4,6 +4,7 @@ export type FieldDef = {
   type: 'text' | 'number' | 'select' | 'boolean' | 'combobox'
   options?: string[]
   dependsOn?: { field: string; value: any }
+  readOnly?: boolean
 }
 
 export const EQUIPMENT_TYPES = [
@@ -35,7 +36,8 @@ export const getEquipmentFields = (type: string): FieldDef[] => {
         {
           name: 'relacao',
           label: 'Relação (Tensão Primária dividida por Tensão Secundária)',
-          type: 'combobox',
+          type: 'number',
+          readOnly: true,
         },
       ]
     case 'Transformador de Corrente':
@@ -47,7 +49,8 @@ export const getEquipmentFields = (type: string): FieldDef[] => {
         {
           name: 'relacao',
           label: 'Relação (Tensão Primária dividida por Tensão Secundária)',
-          type: 'combobox',
+          type: 'number',
+          readOnly: true,
         },
         { name: 'corrente_primaria', label: 'Corrente Primária (A)', type: 'number' },
         { name: 'corrente_secundaria', label: 'Corrente Secundária (A)', type: 'number' },
