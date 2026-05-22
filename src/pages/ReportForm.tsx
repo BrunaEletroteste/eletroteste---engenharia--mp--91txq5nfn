@@ -6,6 +6,7 @@ import { useAuth } from '@/hooks/use-auth'
 import pb from '@/lib/pocketbase/client'
 import { useToast } from '@/hooks/use-toast'
 import { useRealtime } from '@/hooks/use-realtime'
+import { extractFieldErrors, getErrorMessage } from '@/lib/pocketbase/errors'
 import { Button } from '@/components/ui/button'
 import { Card, CardHeader, CardTitle, CardDescription, CardFooter } from '@/components/ui/card'
 import { Skeleton } from '@/components/ui/skeleton'
@@ -23,8 +24,8 @@ export default function ReportForm() {
   const { toast } = useToast()
   const { user } = useAuth()
 
-  const isView = location.pathname.includes('/visualizar')
-  const isEdit = location.pathname.includes('/editar')
+  const isViewRoute = location.pathname.includes('/visualizar')
+  const isEditRoute = location.pathname.includes('/editar')
 
   const [isLoading, setIsLoading] = useState(true)
   const [hasError, setHasError] = useState(false)
@@ -46,6 +47,29 @@ export default function ReportForm() {
 
   const { reset } = methods
 
+  const canEditRecord =
+    !reportRecord || user?.tipo_acesso === 'admin' || reportRecord.criado_por === user?.id
+  const isFinalized = reportRecord?.status === 'finalizado'
+  const isLocked = isFinalized && user?.tipo_acesso !== 'admin'
+  const isReadOnly = isViewRoute || !canEditRecord || isLocked
+
+  useEffect(() => {
+    if (isEditRoute && reportRecord && !isLoading) {
+      if (!canEditRecord) {
+        toast({
+          title: 'Acesso Negado',
+          description: 'Você não tem permissão para editar este relatório.',
+          variant: 'destructive',
+        })
+      } else if (isLocked) {
+        toast({
+          title: 'Relatório Finalizado',
+          description: 'Este relatório já foi finalizado e não pode ser alterado.',
+        })
+      }
+    }
+  }, [isEditRoute, reportRecord, canEditRecord, isLocked, isLoading, toast])
+
   const loadData = useCallback(
     async (isSilent = false) => {
       try {
@@ -54,7 +78,7 @@ export default function ReportForm() {
           setHasError(false)
         }
 
-        if (id && (isView || isEdit)) {
+        if (id && (isViewRoute || isEditRoute)) {
           const res = await pb.collection('relatorios').getOne(id)
           setReportRecord(res)
           setExistingAnexos(res.anexos || [])
@@ -132,7 +156,7 @@ export default function ReportForm() {
         if (!isSilent) setIsLoading(false)
       }
     },
-    [id, isView, isEdit, reset],
+    [id, isViewRoute, isEditRoute, reset],
   )
 
   useEffect(() => {
@@ -295,7 +319,9 @@ export default function ReportForm() {
         cliente_id: data.cliente_id,
         data_execucao: data.data_execucao ? new Date(data.data_execucao).toISOString() : '',
         status: data.status,
-        criado_por: user?.id || '',
+      }
+      if (!isEditRoute || !id) {
+        payload.criado_por = user?.id || ''
       }
       if (data.acompanhante) payload.acompanhante = data.acompanhante
       if (data.proxima_manutencao)
@@ -307,7 +333,7 @@ export default function ReportForm() {
         formData.append(key, value)
       })
 
-      if (isEdit && id) {
+      if (isEditRoute && id) {
         filesToRemove.forEach((filename) => {
           formData.append('anexos-', filename)
         })
@@ -318,7 +344,7 @@ export default function ReportForm() {
       })
 
       let relatorioId = id
-      if (isEdit && id) {
+      if (isEditRoute && id) {
         await pb.collection('relatorios').update(id, formData)
       } else {
         const created = await pb.collection('relatorios').create(formData)
@@ -397,9 +423,28 @@ export default function ReportForm() {
       navigate('/')
     } catch (error: any) {
       isSaving.current = false
+      const fieldErrors = extractFieldErrors(error)
+      const hasFieldErrors = Object.keys(fieldErrors).length > 0
+
+      let errMsg = getErrorMessage(error)
+      if (error?.status === 403) {
+        errMsg = 'Você não tem permissão para realizar esta operação.'
+      } else if (error?.status === 400 && hasFieldErrors) {
+        errMsg = 'Verifique os campos do formulário.'
+      }
+
+      if (hasFieldErrors) {
+        Object.entries(fieldErrors).forEach(([field, msg]) => {
+          methods.setError(field as any, { type: 'manual', message: msg })
+          if (field === 'anexos') {
+            errMsg += ` Erro em anexos: ${msg}`
+          }
+        })
+      }
+
       toast({
-        title: 'Erro',
-        description: error?.message || 'Falha ao salvar relatório.',
+        title: hasFieldErrors ? 'Erro de Validação' : 'Erro ao Salvar',
+        description: errMsg,
         variant: 'destructive',
       })
       setIsLoading(false)
@@ -442,7 +487,11 @@ export default function ReportForm() {
             <div className="flex justify-between items-start">
               <div>
                 <CardTitle className="text-2xl flex items-center gap-2">
-                  {isView ? 'Visualizar Relatório' : isEdit ? 'Editar Relatório' : 'Novo Relatório'}
+                  {isViewRoute
+                    ? 'Visualizar Relatório'
+                    : isEditRoute
+                      ? 'Editar Relatório'
+                      : 'Novo Relatório'}
                 </CardTitle>
                 <CardDescription className="mt-2 text-base">
                   Preencha os dados técnicos da manutenção preventiva e adicione os equipamentos
@@ -460,11 +509,11 @@ export default function ReportForm() {
           </CardHeader>
 
           <div className="space-y-8 pt-6 p-4 sm:p-8 mt-0">
-            <ReportHeaderSection isView={isView} />
+            <ReportHeaderSection isView={isReadOnly} />
             <EquipmentSection
               equipments={equipments}
               setEquipments={setEquipments}
-              isView={isView}
+              isView={isReadOnly}
             />
             <ReportAttachmentsSection
               record={reportRecord}
@@ -474,7 +523,7 @@ export default function ReportForm() {
               onAddFiles={(files) => setFilesToUpload((prev) => [...prev, ...files])}
               onRemoveExisting={(name) => setFilesToRemove((prev) => [...prev, name])}
               onRemoveNew={(idx) => setFilesToUpload((prev) => prev.filter((_, i) => i !== idx))}
-              isView={isView}
+              isView={isReadOnly}
             />
           </div>
 
@@ -484,7 +533,7 @@ export default function ReportForm() {
               Voltar
             </Button>
 
-            {!isView && (
+            {!isReadOnly && (
               <div className="flex flex-col sm:flex-row gap-3 w-full sm:w-auto">
                 <Button
                   type="button"
