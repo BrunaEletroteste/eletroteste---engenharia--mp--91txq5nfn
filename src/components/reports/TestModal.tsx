@@ -28,6 +28,18 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select'
+import {
+  Command,
+  CommandEmpty,
+  CommandGroup,
+  CommandInput,
+  CommandItem,
+  CommandList,
+} from '@/components/ui/command'
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover'
+import { Badge } from '@/components/ui/badge'
+import { Check, ChevronsUpDown } from 'lucide-react'
+import { cn } from '@/lib/utils'
 import { TestItem } from '@/types/reports'
 import {
   Table,
@@ -51,7 +63,7 @@ const testSchema = z
         required_error: 'Selecione o tipo de teste',
       },
     ),
-    equipamento_utilizado: z.string().min(1, 'Equipamento é obrigatório'),
+    equipamento_utilizado: z.array(z.string()).min(1, 'Selecione ao menos um equipamento'),
     valor_teste: z.coerce.number().optional(),
     unidade: z.string().min(1, 'Unidade é obrigatória'),
     data_teste: z.string().min(1, 'Data é obrigatória'),
@@ -100,7 +112,7 @@ export function TestModal({ open, onOpenChange, onSave, initialData }: TestModal
   const form = useForm<TestFormValues>({
     resolver: zodResolver(testSchema),
     defaultValues: {
-      equipamento_utilizado: '',
+      equipamento_utilizado: [],
       valor_teste: 0,
       unidade: '',
       data_teste: new Date().toISOString().split('T')[0],
@@ -116,7 +128,9 @@ export function TestModal({ open, onOpenChange, onSave, initialData }: TestModal
       if (initialData) {
         form.reset({
           tipo_teste: initialData.tipo_teste as any,
-          equipamento_utilizado: initialData.equipamento_utilizado || '',
+          equipamento_utilizado: initialData.equipamento_utilizado
+            ? initialData.equipamento_utilizado.split(', ')
+            : [],
           valor_teste: initialData.valor_teste,
           unidade: initialData.unidade,
           data_teste: initialData.data_teste,
@@ -126,7 +140,7 @@ export function TestModal({ open, onOpenChange, onSave, initialData }: TestModal
       } else {
         form.reset({
           tipo_teste: undefined as any,
-          equipamento_utilizado: '',
+          equipamento_utilizado: [],
           valor_teste: 0,
           unidade: '',
           data_teste: new Date().toISOString().split('T')[0],
@@ -146,9 +160,10 @@ export function TestModal({ open, onOpenChange, onSave, initialData }: TestModal
         getOpcoesPadronizadas(cat)
           .then((options) => {
             setEquipmentOptions(options)
-            const current = form.getValues('equipamento_utilizado')
-            if (current && !options.find((o) => o.valor === current)) {
-              form.setValue('equipamento_utilizado', '')
+            const current = form.getValues('equipamento_utilizado') || []
+            const valid = current.filter((c) => options.find((o) => o.valor === c))
+            if (valid.length !== current.length) {
+              form.setValue('equipamento_utilizado', valid)
             }
           })
           .catch(console.error)
@@ -194,7 +209,11 @@ export function TestModal({ open, onOpenChange, onSave, initialData }: TestModal
         <Form {...form}>
           <form
             onSubmit={form.handleSubmit((data) =>
-              onSave({ ...data, valor_teste: data.valor_teste || 0 } as TestItem),
+              onSave({
+                ...data,
+                equipamento_utilizado: data.equipamento_utilizado.join(', '),
+                valor_teste: data.valor_teste || 0,
+              } as unknown as TestItem),
             )}
             className="space-y-4"
           >
@@ -232,26 +251,73 @@ export function TestModal({ open, onOpenChange, onSave, initialData }: TestModal
               control={form.control}
               name="equipamento_utilizado"
               render={({ field }) => (
-                <FormItem>
+                <FormItem className="flex flex-col">
                   <FormLabel>Equipamento Utilizado</FormLabel>
-                  <Select
-                    onValueChange={field.onChange}
-                    value={field.value || ''}
-                    disabled={!watchTipo || equipmentOptions.length === 0}
-                  >
-                    <FormControl>
-                      <SelectTrigger>
-                        <SelectValue placeholder="Selecione o equipamento..." />
-                      </SelectTrigger>
-                    </FormControl>
-                    <SelectContent>
-                      {equipmentOptions.map((opt) => (
-                        <SelectItem key={opt.id} value={opt.valor}>
-                          {opt.valor}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
+                  <Popover>
+                    <PopoverTrigger asChild>
+                      <FormControl>
+                        <Button
+                          variant="outline"
+                          role="combobox"
+                          className={cn(
+                            'w-full justify-between h-auto min-h-[2.5rem] py-2',
+                            !field.value?.length && 'text-muted-foreground',
+                          )}
+                          disabled={!watchTipo || equipmentOptions.length === 0}
+                        >
+                          <div className="flex flex-wrap gap-1 text-left">
+                            {field.value && field.value.length > 0 ? (
+                              field.value.map((val) => (
+                                <Badge variant="secondary" key={val} className="font-normal">
+                                  {val}
+                                </Badge>
+                              ))
+                            ) : (
+                              <span>Selecione o(s) equipamento(s)...</span>
+                            )}
+                          </div>
+                          <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                        </Button>
+                      </FormControl>
+                    </PopoverTrigger>
+                    <PopoverContent
+                      className="w-[var(--radix-popover-trigger-width)] p-0"
+                      align="start"
+                    >
+                      <Command>
+                        <CommandInput placeholder="Buscar equipamento..." />
+                        <CommandList>
+                          <CommandEmpty>Nenhum equipamento encontrado.</CommandEmpty>
+                          <CommandGroup>
+                            {equipmentOptions.map((opt) => {
+                              const isSelected = field.value?.includes(opt.valor)
+                              return (
+                                <CommandItem
+                                  key={opt.id}
+                                  value={opt.valor}
+                                  onSelect={() => {
+                                    const current = field.value || []
+                                    const updated = isSelected
+                                      ? current.filter((val) => val !== opt.valor)
+                                      : [...current, opt.valor]
+                                    field.onChange(updated)
+                                  }}
+                                >
+                                  <Check
+                                    className={cn(
+                                      'mr-2 h-4 w-4',
+                                      isSelected ? 'opacity-100' : 'opacity-0',
+                                    )}
+                                  />
+                                  {opt.valor}
+                                </CommandItem>
+                              )
+                            })}
+                          </CommandGroup>
+                        </CommandList>
+                      </Command>
+                    </PopoverContent>
+                  </Popover>
                   <FormMessage />
                 </FormItem>
               )}

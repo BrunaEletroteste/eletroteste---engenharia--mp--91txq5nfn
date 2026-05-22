@@ -155,6 +155,7 @@ export function EquipmentTestsManager({
                 <TableHeader>
                   <TableRow>
                     <TableHead>Tipo de Teste</TableHead>
+                    <TableHead>Equipamento(s)</TableHead>
                     <TableHead>Valor</TableHead>
                     <TableHead>Unidade</TableHead>
                     <TableHead>Data</TableHead>
@@ -165,6 +166,12 @@ export function EquipmentTestsManager({
                   {currentTests.map((t, idx) => (
                     <TableRow key={idx}>
                       <TableCell>{t.tipo_teste}</TableCell>
+                      <TableCell
+                        className="max-w-[200px] text-xs text-muted-foreground truncate"
+                        title={t.equipamento_utilizado}
+                      >
+                        {t.equipamento_utilizado}
+                      </TableCell>
                       <TableCell>
                         {t.tipo_teste === 'Resistência dos Contatos'
                           ? `A: ${t.dados_detalhados?.fase_a ?? '-'} | B: ${t.dados_detalhados?.fase_b ?? '-'} | C: ${t.dados_detalhados?.fase_c ?? '-'}`
@@ -235,6 +242,7 @@ export function EquipmentTestsManager({
                   <TableHeader>
                     <TableRow>
                       <TableHead>Tipo</TableHead>
+                      <TableHead>Equipamento(s)</TableHead>
                       <TableHead>Valor</TableHead>
                       <TableHead>Unidade</TableHead>
                       <TableHead>Ano</TableHead>
@@ -244,6 +252,12 @@ export function EquipmentTestsManager({
                     {historicalTests.map((ht) => (
                       <TableRow key={ht.id}>
                         <TableCell className="py-2 text-sm">{ht.tipo_teste}</TableCell>
+                        <TableCell
+                          className="py-2 text-xs text-muted-foreground max-w-[150px] truncate"
+                          title={ht.equipamento_utilizado}
+                        >
+                          {ht.equipamento_utilizado}
+                        </TableCell>
                         <TableCell className="py-2 text-sm">{ht.valor_teste}</TableCell>
                         <TableCell className="py-2 text-sm">{ht.unidade}</TableCell>
                         <TableCell className="py-2 text-sm">
