@@ -91,6 +91,7 @@ export default function ReportForm() {
                   unidade: t.unidade,
                   data_teste: t.data_teste.split('T')[0],
                   dados_detalhados: t.dados_detalhados || null,
+                  observacoes: t.observacoes || '',
                 })),
               parecer: eqParecer
                 ? {
@@ -325,6 +326,7 @@ export default function ReportForm() {
                   unidade: t.unidade,
                   data_teste: new Date(t.data_teste).toISOString(),
                   dados_detalhados: t.dados_detalhados || null,
+                  observacoes: t.observacoes || '',
                 }
                 if (t.id) {
                   await pb.collection('testes_equipamento').update(t.id, tPayload)

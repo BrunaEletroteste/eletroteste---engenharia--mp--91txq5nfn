@@ -18,6 +18,7 @@ import {
   FormMessage,
 } from '@/components/ui/form'
 import { Input } from '@/components/ui/input'
+import { Textarea } from '@/components/ui/textarea'
 import { Button } from '@/components/ui/button'
 import {
   Select,
@@ -47,6 +48,7 @@ const testSchema = z.object({
   unidade: z.string().min(1, 'Unidade é obrigatória'),
   data_teste: z.string().min(1, 'Data é obrigatória'),
   dados_detalhados: z.any().optional(),
+  observacoes: z.string().optional(),
 })
 
 type TestFormValues = z.infer<typeof testSchema>
@@ -73,6 +75,7 @@ export function TestModal({ open, onOpenChange, onSave, initialData }: TestModal
       unidade: '',
       data_teste: new Date().toISOString().split('T')[0],
       dados_detalhados: {},
+      observacoes: '',
     },
   })
 
@@ -87,6 +90,7 @@ export function TestModal({ open, onOpenChange, onSave, initialData }: TestModal
           unidade: initialData.unidade,
           data_teste: initialData.data_teste,
           dados_detalhados: initialData.dados_detalhados || {},
+          observacoes: initialData.observacoes || '',
         })
       } else {
         form.reset({
@@ -95,6 +99,7 @@ export function TestModal({ open, onOpenChange, onSave, initialData }: TestModal
           unidade: '',
           data_teste: new Date().toISOString().split('T')[0],
           dados_detalhados: {},
+          observacoes: '',
         })
       }
     }
@@ -335,6 +340,24 @@ export function TestModal({ open, onOpenChange, onSave, initialData }: TestModal
                   <FormLabel>Data do Teste</FormLabel>
                   <FormControl>
                     <Input type="date" {...field} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            <FormField
+              control={form.control}
+              name="observacoes"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Observações (Opcional)</FormLabel>
+                  <FormControl>
+                    <Textarea
+                      placeholder="Adicione observações adicionais sobre o teste..."
+                      className="resize-none"
+                      {...field}
+                      value={field.value || ''}
+                    />
                   </FormControl>
                   <FormMessage />
                 </FormItem>

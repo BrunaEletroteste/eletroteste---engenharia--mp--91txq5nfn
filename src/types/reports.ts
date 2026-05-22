@@ -19,6 +19,7 @@ export type TestItem = {
   unidade: string
   data_teste: string
   dados_detalhados?: Record<string, any> | null
+  observacoes?: string
   _delete?: boolean
 }
 
