@@ -18,6 +18,7 @@ import {
 } from '@/components/ui/select'
 import { useToast } from '@/hooks/use-toast'
 import { Trash2, Plus } from 'lucide-react'
+import { useRealtime } from '@/hooks/use-realtime'
 
 export default function ConfigOptions() {
   const { user } = useAuth()
@@ -37,6 +38,7 @@ export default function ConfigOptions() {
     { value: 'rele_abertura', label: 'Relé de Abertura' },
     { value: 'rele_fechamento', label: 'Relé de Fechamento' },
     { value: 'motorizacao', label: 'Motorização' },
+    { value: 'relacao', label: 'Relação' },
   ]
 
   const dbCategorias = Array.from(new Set(opcoes.map((o) => o.categoria)))
@@ -63,6 +65,10 @@ export default function ConfigOptions() {
   useEffect(() => {
     loadOpcoes()
   }, [])
+
+  useRealtime('opcoes_padronizadas', () => {
+    loadOpcoes()
+  })
 
   const handleAdd = async () => {
     if (!novoValor.trim()) return

@@ -21,6 +21,77 @@ import {
 } from '@/components/ui/select'
 import { Switch } from '@/components/ui/switch'
 import { useToast } from '@/hooks/use-toast'
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover'
+import {
+  Command,
+  CommandEmpty,
+  CommandGroup,
+  CommandInput,
+  CommandItem,
+  CommandList,
+} from '@/components/ui/command'
+import { Check, ChevronsUpDown } from 'lucide-react'
+import { cn } from '@/lib/utils'
+import { useRealtime } from '@/hooks/use-realtime'
+
+function ComboboxField({
+  field,
+  value,
+  onChange,
+  opcoes,
+}: {
+  field: FieldDef
+  value: any
+  onChange: (v: string) => void
+  opcoes: OpcaoPadronizada[]
+}) {
+  const [open, setOpen] = useState(false)
+  const options = opcoes.filter((o) => o.categoria === field.name)
+
+  return (
+    <Popover open={open} onOpenChange={setOpen}>
+      <PopoverTrigger asChild>
+        <Button
+          variant="outline"
+          role="combobox"
+          aria-expanded={open}
+          className={cn('w-full justify-between font-normal', !value && 'text-muted-foreground')}
+        >
+          {value ? value : `Selecione...`}
+          <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+        </Button>
+      </PopoverTrigger>
+      <PopoverContent className="w-[var(--radix-popover-trigger-width)] p-0" align="start">
+        <Command>
+          <CommandInput placeholder={`Buscar...`} />
+          <CommandList>
+            <CommandEmpty>Nenhuma opção encontrada.</CommandEmpty>
+            <CommandGroup>
+              {options.map((o) => (
+                <CommandItem
+                  key={o.id}
+                  value={o.valor}
+                  onSelect={(currentValue) => {
+                    const selected = options.find(
+                      (opt) => opt.valor.toLowerCase() === currentValue.toLowerCase(),
+                    )
+                    onChange(selected ? selected.valor : currentValue)
+                    setOpen(false)
+                  }}
+                >
+                  <Check
+                    className={cn('mr-2 h-4 w-4', value === o.valor ? 'opacity-100' : 'opacity-0')}
+                  />
+                  {o.valor}
+                </CommandItem>
+              ))}
+            </CommandGroup>
+          </CommandList>
+        </Command>
+      </PopoverContent>
+    </Popover>
+  )
+}
 
 interface Props {
   open: boolean
@@ -37,20 +108,25 @@ export function EquipmentModal({ open, onOpenChange, onSave, initialData }: Prop
   const [opcoes, setOpcoes] = useState<OpcaoPadronizada[]>([])
   const [loadingOpcoes, setLoadingOpcoes] = useState(false)
 
-  useEffect(() => {
-    const fetchOpcoes = async () => {
-      try {
-        setLoadingOpcoes(true)
-        const data = await getOpcoesPadronizadas()
-        setOpcoes(data)
-      } catch (error) {
-        console.error(error)
-      } finally {
-        setLoadingOpcoes(false)
-      }
+  const fetchOpcoes = async () => {
+    try {
+      setLoadingOpcoes(true)
+      const data = await getOpcoesPadronizadas()
+      setOpcoes(data)
+    } catch (error) {
+      console.error(error)
+    } finally {
+      setLoadingOpcoes(false)
     }
+  }
+
+  useEffect(() => {
     fetchOpcoes()
   }, [])
+
+  useRealtime('opcoes_padronizadas', () => {
+    fetchOpcoes()
+  })
 
   useEffect(() => {
     if (open) {
@@ -140,18 +216,25 @@ export function EquipmentModal({ open, onOpenChange, onSave, initialData }: Prop
                       )}
                     </Label>
 
-                    {(field.type === 'select' && field.options) ||
-                    [
-                      'fabricante',
-                      'corrente_nominal',
-                      'classe_isolamento',
-                      'potencia_simetrica',
-                      'capacidade_ruptura',
-                      'rele_minima_tensao',
-                      'rele_abertura',
-                      'rele_fechamento',
-                      'motorizacao',
-                    ].includes(field.name) ? (
+                    {field.type === 'combobox' ? (
+                      <ComboboxField
+                        field={field}
+                        value={dados[field.name]?.toString() || ''}
+                        onChange={(v) => handleFieldChange(field.name, v)}
+                        opcoes={opcoes}
+                      />
+                    ) : (field.type === 'select' && field.options) ||
+                      [
+                        'fabricante',
+                        'corrente_nominal',
+                        'classe_isolamento',
+                        'potencia_simetrica',
+                        'capacidade_ruptura',
+                        'rele_minima_tensao',
+                        'rele_abertura',
+                        'rele_fechamento',
+                        'motorizacao',
+                      ].includes(field.name) ? (
                       <Select
                         value={dados[field.name]?.toString() || ''}
                         onValueChange={(v) => handleFieldChange(field.name, v)}

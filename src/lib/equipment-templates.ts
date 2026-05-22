@@ -1,7 +1,7 @@
 export type FieldDef = {
   name: string
   label: string
-  type: 'text' | 'number' | 'select' | 'boolean'
+  type: 'text' | 'number' | 'select' | 'boolean' | 'combobox'
   options?: string[]
   dependsOn?: { field: string; value: any }
 }
@@ -32,7 +32,11 @@ export const getEquipmentFields = (type: string): FieldDef[] => {
         { name: 'tensao_primaria', label: 'Tensão Primária (V)', type: 'number' },
         { name: 'tensao_secundaria', label: 'Tensão Secundária (V)', type: 'number' },
         { name: 'potencia', label: 'Potência (VA)', type: 'number' },
-        { name: 'relacao', label: 'Relação', type: 'text' },
+        {
+          name: 'relacao',
+          label: 'Relação (Tensão Primária dividida por Tensão Secundária)',
+          type: 'combobox',
+        },
       ]
     case 'Transformador de Corrente':
       return [
@@ -40,7 +44,11 @@ export const getEquipmentFields = (type: string): FieldDef[] => {
         { name: 'marca', label: 'Marca', type: 'text' },
         { name: 'tensao_primaria', label: 'Tensão Primária (V)', type: 'number' },
         { name: 'classe_precisao', label: 'Classe de Precisão', type: 'text' },
-        { name: 'relacao', label: 'Relação', type: 'text' },
+        {
+          name: 'relacao',
+          label: 'Relação (Tensão Primária dividida por Tensão Secundária)',
+          type: 'combobox',
+        },
         { name: 'corrente_primaria', label: 'Corrente Primária (A)', type: 'number' },
         { name: 'corrente_secundaria', label: 'Corrente Secundária (A)', type: 'number' },
       ]
