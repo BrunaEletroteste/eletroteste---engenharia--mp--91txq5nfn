@@ -1,35 +1,25 @@
 import { useState, useEffect } from 'react'
 import { useParams, useNavigate, useLocation } from 'react-router-dom'
-import { ArrowLeft, Save, CheckCircle2 } from 'lucide-react'
+import { useForm, FormProvider } from 'react-hook-form'
+import { zodResolver } from '@hookform/resolvers/zod'
 import { useAuth } from '@/hooks/use-auth'
 import pb from '@/lib/pocketbase/client'
 import { useToast } from '@/hooks/use-toast'
 import { Button } from '@/components/ui/button'
-import { Input } from '@/components/ui/input'
-import { Label } from '@/components/ui/label'
-import { Textarea } from '@/components/ui/textarea'
-import { Combobox } from '@/components/ui/combobox'
-import { Badge } from '@/components/ui/badge'
-import { Skeleton } from '@/components/ui/skeleton'
 import {
   Card,
-  CardContent,
   CardHeader,
   CardTitle,
   CardDescription,
+  CardContent,
   CardFooter,
 } from '@/components/ui/card'
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-  AlertDialogTrigger,
-} from '@/components/ui/alert-dialog'
+import { Skeleton } from '@/components/ui/skeleton'
+import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert'
+import { ArrowLeft, Save, CheckCircle2 } from 'lucide-react'
+import { ReportHeaderSection } from '@/components/reports/ReportHeaderSection'
+import { EquipmentSection } from '@/components/reports/EquipmentSection'
+import { reportFormSchema, FormValues, EquipmentItem } from '@/types/reports'
 
 export default function ReportForm() {
   const { id } = useParams()
@@ -42,90 +32,101 @@ export default function ReportForm() {
   const isEdit = location.pathname.includes('/editar')
 
   const [isLoading, setIsLoading] = useState(true)
-  const [clientes, setClientes] = useState<any[]>([])
+  const [hasError, setHasError] = useState(false)
+  const [equipments, setEquipments] = useState<EquipmentItem[]>([])
 
-  const [formData, setFormData] = useState({
-    numero: '',
-    clienteId: '',
-    dataExecucao: '',
-    observacoes: '',
-    status: 'rascunho',
+  const methods = useForm<FormValues>({
+    resolver: zodResolver(reportFormSchema),
+    defaultValues: { status: 'rascunho' },
   })
 
-  useEffect(() => {
-    const fetchData = async () => {
-      try {
-        if (user?.tipo_acesso === 'admin') {
-          const cliRes = await pb.collection('clientes').getFullList()
-          setClientes(cliRes)
-        }
-
-        if (id && (isView || isEdit)) {
-          const res = await pb.collection('relatorios').getOne(id, { expand: 'cliente_id' })
-          setFormData({
-            numero: res.numero_relatorio,
-            clienteId: res.cliente_id,
-            dataExecucao: res.data_execucao ? res.data_execucao.split('T')[0] : '',
-            observacoes: res.observacoes || '',
-            status: res.status,
-          })
-
-          if (user?.tipo_acesso !== 'admin' && res.expand?.cliente_id) {
-            setClientes([res.expand.cliente_id])
-          }
-        } else if (!id && !isView && !isEdit) {
-          setFormData((prev) => ({
-            ...prev,
-            numero: `00${Math.floor(Math.random() * 1000)}/${new Date().getFullYear()}`,
-          }))
-        }
-      } catch (err) {
-        toast({
-          title: 'Erro',
-          description: 'Erro ao carregar dados do relatório.',
-          variant: 'destructive',
-        })
-        navigate('/')
-      } finally {
-        setIsLoading(false)
-      }
-    }
-
-    fetchData()
-  }, [id, isView, isEdit, user, navigate, toast])
-
-  const comboOptions = clientes.map((c) => ({
-    label: `${c.nome_empresa} (${c.cnpj})`,
-    value: c.id,
-  }))
-
-  const handleSave = async (newStatus: string) => {
-    if (!formData.numero || !formData.clienteId || !formData.dataExecucao) {
-      toast({
-        title: 'Atenção',
-        description: 'Preencha todos os campos obrigatórios (Número, Cliente, Data).',
-        variant: 'destructive',
-      })
-      return
-    }
-
+  const loadData = async () => {
     try {
+      setIsLoading(true)
+      setHasError(false)
+
+      if (id && (isView || isEdit)) {
+        const res = await pb.collection('relatorios').getOne(id)
+        methods.reset({
+          numero_relatorio: res.numero_relatorio,
+          cliente_id: res.cliente_id,
+          data_execucao: res.data_execucao ? res.data_execucao.split('T')[0] : '',
+          acompanhante: res.acompanhante || '',
+          proxima_manutencao: res.proxima_manutencao ? res.proxima_manutencao.split('T')[0] : '',
+          status: res.status as 'rascunho' | 'finalizado',
+          observacoes: res.observacoes || '',
+        })
+
+        const eqRes = await pb.collection('equipamentos_relatorio').getFullList({
+          filter: `relatorio_id='${id}'`,
+        })
+        setEquipments(
+          eqRes.map((e) => ({
+            id: e.id,
+            tipo_equipamento: e.tipo_equipamento,
+            dados_tecnicos: e.dados_tecnicos || {},
+          })),
+        )
+      } else {
+        methods.reset({
+          numero_relatorio: `00${Math.floor(Math.random() * 1000)}/${new Date().getFullYear()}`,
+          status: 'rascunho',
+          cliente_id: '',
+          data_execucao: '',
+          acompanhante: '',
+          proxima_manutencao: '',
+          observacoes: '',
+        })
+      }
+    } catch (err) {
+      setHasError(true)
+    } finally {
+      setIsLoading(false)
+    }
+  }
+
+  useEffect(() => {
+    loadData()
+  }, [id, isView, isEdit, user])
+
+  const onSubmit = async (data: FormValues) => {
+    try {
+      setIsLoading(true)
       const payload = {
-        numero_relatorio: formData.numero,
-        cliente_id: formData.clienteId,
-        data_execucao: new Date(formData.dataExecucao).toISOString(),
-        observacoes: formData.observacoes,
-        status: newStatus,
+        ...data,
+        data_execucao: data.data_execucao ? new Date(data.data_execucao).toISOString() : '',
+        proxima_manutencao: data.proxima_manutencao
+          ? new Date(data.proxima_manutencao).toISOString()
+          : '',
         criado_por: user?.id,
       }
 
+      let relatorioId = id
       if (isEdit && id) {
         await pb.collection('relatorios').update(id, payload)
-        toast({ title: 'Sucesso', description: 'Relatório atualizado com sucesso.' })
       } else {
-        await pb.collection('relatorios').create(payload)
-        toast({ title: 'Sucesso', description: 'Novo relatório criado.' })
+        const created = await pb.collection('relatorios').create(payload)
+        relatorioId = created.id
       }
+
+      for (const eq of equipments) {
+        if (eq._delete && eq.id) {
+          await pb.collection('equipamentos_relatorio').delete(eq.id)
+        } else if (!eq._delete) {
+          const eqPayload = {
+            relatorio_id: relatorioId,
+            tipo_equipamento: eq.tipo_equipamento,
+            dados_tecnicos: eq.dados_tecnicos,
+          }
+          if (eq.id) {
+            await pb.collection('equipamentos_relatorio').update(eq.id, eqPayload)
+          } else {
+            await pb.collection('equipamentos_relatorio').create(eqPayload)
+          }
+        }
+      }
+
+      toast({ title: 'Sucesso', description: 'Relatório salvo com sucesso.' })
       navigate('/')
     } catch (error: any) {
       toast({
@@ -133,169 +134,90 @@ export default function ReportForm() {
         description: error?.message || 'Falha ao salvar relatório.',
         variant: 'destructive',
       })
+      setIsLoading(false)
     }
   }
 
-  const selectedClienteInfo = clientes.find((c) => c.id === formData.clienteId)
+  const handleStatusSubmit = (status: 'rascunho' | 'finalizado') => {
+    methods.setValue('status', status)
+    methods.handleSubmit(onSubmit)()
+  }
 
-  if (isLoading) {
+  if (isLoading && !hasError) {
     return (
       <div className="max-w-4xl mx-auto space-y-4">
-        <Skeleton className="h-[200px] w-full rounded-xl" />
-        <Skeleton className="h-[400px] w-full rounded-xl" />
+        <Skeleton className="h-[150px] w-full rounded-xl" />
+        <Skeleton className="h-[300px] w-full rounded-xl" />
       </div>
     )
   }
 
-  return (
-    <div className="max-w-4xl mx-auto animate-fade-in-up">
-      <Card className="shadow-lg border-t-4 border-t-primary">
-        <CardHeader className="border-b bg-muted/20 pb-6">
-          <div className="flex justify-between items-start">
-            <div>
-              <CardTitle className="text-2xl flex items-center gap-2">
-                {isView ? 'Visualizar Relatório' : isEdit ? 'Editar Relatório' : 'Novo Relatório'}
-              </CardTitle>
-              <CardDescription className="mt-2 text-base">
-                Preencha os dados técnicos da manutenção preventiva.
-              </CardDescription>
-            </div>
-            {isView && formData.status && (
-              <Badge
-                variant="outline"
-                className={
-                  formData.status === 'finalizado'
-                    ? 'bg-emerald-100 text-emerald-800 capitalize'
-                    : 'bg-amber-100 text-amber-800 capitalize'
-                }
-              >
-                {formData.status}
-              </Badge>
-            )}
-          </div>
-        </CardHeader>
-
-        <CardContent className="space-y-8 pt-8">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <div className="space-y-3">
-              <Label htmlFor="numero" className="text-sm font-medium">
-                Número do Relatório <span className="text-destructive">*</span>
-              </Label>
-              <Input
-                id="numero"
-                value={formData.numero}
-                onChange={(e) => setFormData({ ...formData, numero: e.target.value })}
-                disabled={isView || isEdit}
-                placeholder="Ex: 001/2026"
-                className="bg-background"
-              />
-            </div>
-
-            <div className="space-y-3">
-              <Label htmlFor="cliente" className="text-sm font-medium">
-                Cliente <span className="text-destructive">*</span>
-              </Label>
-              {isView || user?.tipo_acesso !== 'admin' ? (
-                <Input
-                  disabled
-                  value={
-                    selectedClienteInfo
-                      ? `${selectedClienteInfo.nome_empresa} (${selectedClienteInfo.cnpj})`
-                      : 'Cliente Restrito'
-                  }
-                  className="bg-muted"
-                />
-              ) : (
-                <Combobox
-                  options={comboOptions}
-                  value={formData.clienteId}
-                  onChange={(val) => setFormData({ ...formData, clienteId: val })}
-                  placeholder="Selecione um cliente"
-                />
-              )}
-            </div>
-
-            <div className="space-y-3">
-              <Label htmlFor="data" className="text-sm font-medium">
-                Data de Execução <span className="text-destructive">*</span>
-              </Label>
-              <Input
-                id="data"
-                type="date"
-                value={formData.dataExecucao}
-                onChange={(e) => setFormData({ ...formData, dataExecucao: e.target.value })}
-                disabled={isView}
-                className="bg-background"
-              />
-            </div>
-          </div>
-
-          <div className="space-y-3">
-            <Label htmlFor="obs" className="text-sm font-medium">
-              Observações Técnicas
-            </Label>
-            <Textarea
-              id="obs"
-              value={formData.observacoes}
-              onChange={(e) => setFormData({ ...formData, observacoes: e.target.value })}
-              disabled={isView}
-              placeholder="Descreva as atividades realizadas, peças trocadas e pendências..."
-              className="min-h-[160px] resize-y bg-background leading-relaxed"
-            />
-          </div>
-        </CardContent>
-
-        <CardFooter className="flex flex-col-reverse sm:flex-row justify-between items-center gap-4 bg-muted/30 p-6 border-t rounded-b-xl">
-          <Button variant="outline" className="w-full sm:w-auto" onClick={() => navigate(-1)}>
-            <ArrowLeft className="mr-2 h-4 w-4" />
-            Voltar
+  if (hasError) {
+    return (
+      <Alert variant="destructive" className="max-w-4xl mx-auto">
+        <AlertTitle>Erro ao carregar dados</AlertTitle>
+        <AlertDescription className="flex justify-between items-center mt-2">
+          <span>Ocorreu um erro ao carregar os dados do relatório.</span>
+          <Button variant="outline" size="sm" onClick={loadData}>
+            Tentar novamente
           </Button>
+        </AlertDescription>
+      </Alert>
+    )
+  }
 
-          {!isView && (
-            <div className="flex flex-col sm:flex-row gap-3 w-full sm:w-auto">
-              <Button
-                variant="secondary"
-                className="w-full sm:w-auto"
-                onClick={() => handleSave('rascunho')}
-              >
-                <Save className="mr-2 h-4 w-4" />
-                Salvar Rascunho
-              </Button>
+  return (
+    <div className="max-w-5xl mx-auto animate-fade-in-up">
+      <FormProvider {...methods}>
+        <Card className="shadow-lg border-t-4 border-t-primary">
+          <CardHeader className="border-b bg-muted/20 pb-6">
+            <CardTitle className="text-2xl flex items-center gap-2">
+              {isView ? 'Visualizar Relatório' : isEdit ? 'Editar Relatório' : 'Novo Relatório'}
+            </CardTitle>
+            <CardDescription className="mt-2 text-base">
+              Preencha os dados técnicos da manutenção preventiva e adicione os equipamentos
+              inspecionados.
+            </CardDescription>
+          </CardHeader>
 
-              <AlertDialog>
-                <AlertDialogTrigger asChild>
-                  <Button
-                    variant="default"
-                    className="w-full sm:w-auto bg-emerald-600 hover:bg-emerald-700 text-white shadow-sm"
-                  >
-                    <CheckCircle2 className="mr-2 h-4 w-4" />
-                    Finalizar Relatório
-                  </Button>
-                </AlertDialogTrigger>
-                <AlertDialogContent>
-                  <AlertDialogHeader>
-                    <AlertDialogTitle>Finalizar Relatório?</AlertDialogTitle>
-                    <AlertDialogDescription>
-                      Esta ação marcará o relatório como{' '}
-                      <strong className="text-emerald-600">Finalizado</strong>. Após finalizado, o
-                      relatório não poderá mais ser editado. Deseja continuar?
-                    </AlertDialogDescription>
-                  </AlertDialogHeader>
-                  <AlertDialogFooter>
-                    <AlertDialogCancel>Cancelar</AlertDialogCancel>
-                    <AlertDialogAction
-                      onClick={() => handleSave('finalizado')}
-                      className="bg-emerald-600 hover:bg-emerald-700"
-                    >
-                      Sim, Finalizar
-                    </AlertDialogAction>
-                  </AlertDialogFooter>
-                </AlertDialogContent>
-              </AlertDialog>
-            </div>
-          )}
-        </CardFooter>
-      </Card>
+          <CardContent className="space-y-8 pt-6 p-4 sm:p-8">
+            <ReportHeaderSection isView={isView} />
+            <EquipmentSection
+              equipments={equipments}
+              setEquipments={setEquipments}
+              isView={isView}
+            />
+          </CardContent>
+
+          <CardFooter className="flex flex-col-reverse sm:flex-row justify-between items-center gap-4 bg-muted/30 p-6 border-t rounded-b-xl">
+            <Button variant="outline" className="w-full sm:w-auto" onClick={() => navigate(-1)}>
+              <ArrowLeft className="mr-2 h-4 w-4" />
+              Cancelar
+            </Button>
+
+            {!isView && (
+              <div className="flex flex-col sm:flex-row gap-3 w-full sm:w-auto">
+                <Button
+                  variant="secondary"
+                  className="w-full sm:w-auto"
+                  onClick={() => handleStatusSubmit('rascunho')}
+                >
+                  <Save className="mr-2 h-4 w-4" />
+                  Salvar Rascunho
+                </Button>
+                <Button
+                  variant="default"
+                  className="w-full sm:w-auto bg-emerald-600 hover:bg-emerald-700 text-white shadow-sm"
+                  onClick={() => handleStatusSubmit('finalizado')}
+                >
+                  <CheckCircle2 className="mr-2 h-4 w-4" />
+                  Finalizar Relatório
+                </Button>
+              </div>
+            )}
+          </CardFooter>
+        </Card>
+      </FormProvider>
     </div>
   )
 }
