@@ -37,24 +37,37 @@ import {
   TableRow,
 } from '@/components/ui/table'
 
-const testSchema = z.object({
-  tipo_teste: z.enum(
-    [
-      'Resistências dos Isolamentos',
-      'Relação de Tensões',
-      'Resistências dos Enrolamentos',
-      'Resistências dos Contatos',
-    ],
-    {
-      required_error: 'Selecione o tipo de teste',
-    },
-  ),
-  valor_teste: z.coerce.number().optional(),
-  unidade: z.string().min(1, 'Unidade é obrigatória'),
-  data_teste: z.string().min(1, 'Data é obrigatória'),
-  dados_detalhados: z.any().optional(),
-  observacoes: z.string().optional(),
-})
+const testSchema = z
+  .object({
+    tipo_teste: z.enum(
+      [
+        'Resistências dos Isolamentos',
+        'Relação de Tensões',
+        'Resistências dos Enrolamentos',
+        'Resistências dos Contatos',
+      ],
+      {
+        required_error: 'Selecione o tipo de teste',
+      },
+    ),
+    valor_teste: z.coerce.number().optional(),
+    unidade: z.string().min(1, 'Unidade é obrigatória'),
+    data_teste: z.string().min(1, 'Data é obrigatória'),
+    dados_detalhados: z.any().optional(),
+    observacoes: z.string().optional(),
+  })
+  .superRefine((data, ctx) => {
+    if (data.tipo_teste === 'Relação de Tensões') {
+      const ts = data.dados_detalhados?.tensao_secundaria
+      if (ts === 0) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          path: ['dados_detalhados.tensao_secundaria'],
+          message: 'A tensão secundária não pode ser zero.',
+        })
+      }
+    }
+  })
 
 type TestFormValues = z.infer<typeof testSchema>
 
@@ -118,8 +131,25 @@ export function TestModal({ open, onOpenChange, onSave, initialData }: TestModal
     } else if (watchTipo === 'Resistências dos Isolamentos') {
       form.setValue('unidade', 'Mega-Ohms')
       form.setValue('valor_teste', 0)
+    } else if (watchTipo === 'Relação de Tensões') {
+      form.setValue('unidade', 'V/V')
     }
   }, [watchTipo, form, open])
+
+  const tp = form.watch('dados_detalhados.tensao_primaria')
+  const ts = form.watch('dados_detalhados.tensao_secundaria')
+
+  useEffect(() => {
+    if (watchTipo === 'Relação de Tensões' && open) {
+      const prim = Number(tp)
+      const sec = Number(ts)
+      if (!isNaN(prim) && !isNaN(sec) && sec !== 0) {
+        form.setValue('valor_teste', Number((prim / sec).toFixed(4)))
+      } else {
+        form.setValue('valor_teste', 0)
+      }
+    }
+  }, [tp, ts, watchTipo, form, open])
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -229,6 +259,59 @@ export function TestModal({ open, onOpenChange, onSave, initialData }: TestModal
               </div>
             )}
 
+            {watchTipo === 'Relação de Tensões' && (
+              <div className="space-y-4 border rounded-md p-4 bg-muted/20">
+                <h4 className="text-sm font-medium">Cálculo de Relação de Tensões</h4>
+                <div className="grid grid-cols-2 gap-4">
+                  <FormField
+                    control={form.control}
+                    name="dados_detalhados.tensao_primaria"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel className="text-xs">Tensão Primária</FormLabel>
+                        <FormControl>
+                          <Input
+                            type="number"
+                            step="any"
+                            value={field.value ?? ''}
+                            onChange={(e) =>
+                              field.onChange(e.target.value === '' ? '' : Number(e.target.value))
+                            }
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                  <FormField
+                    control={form.control}
+                    name="dados_detalhados.tensao_secundaria"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel className="text-xs">Tensão Secundária</FormLabel>
+                        <FormControl>
+                          <Input
+                            type="number"
+                            step="any"
+                            value={field.value ?? ''}
+                            onChange={(e) =>
+                              field.onChange(e.target.value === '' ? '' : Number(e.target.value))
+                            }
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                </div>
+                {form.watch('dados_detalhados.tensao_secundaria') === 0 && (
+                  <p className="text-sm text-destructive mt-2">
+                    Atenção: A tensão secundária não pode ser zero.
+                  </p>
+                )}
+              </div>
+            )}
+
             {watchTipo === 'Resistências dos Isolamentos' && (
               <div className="space-y-4 border rounded-md p-4 bg-muted/20">
                 <Table>
@@ -300,7 +383,17 @@ export function TestModal({ open, onOpenChange, onSave, initialData }: TestModal
                       <FormItem>
                         <FormLabel>Valor</FormLabel>
                         <FormControl>
-                          <Input type="number" step="any" {...field} />
+                          <Input
+                            type="number"
+                            step="any"
+                            {...field}
+                            readOnly={watchTipo === 'Relação de Tensões'}
+                            className={
+                              watchTipo === 'Relação de Tensões'
+                                ? 'bg-muted cursor-not-allowed'
+                                : ''
+                            }
+                          />
                         </FormControl>
                         <FormMessage />
                       </FormItem>
@@ -326,11 +419,13 @@ export function TestModal({ open, onOpenChange, onSave, initialData }: TestModal
                         {...field}
                         readOnly={
                           watchTipo === 'Resistências dos Contatos' ||
-                          watchTipo === 'Resistências dos Isolamentos'
+                          watchTipo === 'Resistências dos Isolamentos' ||
+                          watchTipo === 'Relação de Tensões'
                         }
                         className={
                           watchTipo === 'Resistências dos Contatos' ||
-                          watchTipo === 'Resistências dos Isolamentos'
+                          watchTipo === 'Resistências dos Isolamentos' ||
+                          watchTipo === 'Relação de Tensões'
                             ? 'bg-muted cursor-not-allowed'
                             : ''
                         }
