@@ -12,9 +12,19 @@ export const reportFormSchema = z.object({
 
 export type FormValues = z.infer<typeof reportFormSchema>
 
+export type TestItem = {
+  id?: string
+  tipo_teste: string
+  valor_teste: number
+  unidade: string
+  data_teste: string
+  _delete?: boolean
+}
+
 export type EquipmentItem = {
   id?: string
   tipo_equipamento: string
   dados_tecnicos: Record<string, any>
+  testes?: TestItem[]
   _delete?: boolean
 }

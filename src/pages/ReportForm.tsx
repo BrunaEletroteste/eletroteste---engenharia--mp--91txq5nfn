@@ -19,6 +19,8 @@ import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert'
 import { ArrowLeft, Save, CheckCircle2 } from 'lucide-react'
 import { ReportHeaderSection } from '@/components/reports/ReportHeaderSection'
 import { EquipmentSection } from '@/components/reports/EquipmentSection'
+import { ElectricalTestsSection } from '@/components/reports/ElectricalTestsSection'
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { reportFormSchema, FormValues, EquipmentItem } from '@/types/reports'
 
 export default function ReportForm() {
@@ -60,11 +62,23 @@ export default function ReportForm() {
         const eqRes = await pb.collection('equipamentos_relatorio').getFullList({
           filter: `relatorio_id='${id}'`,
         })
+        const testesRes = await pb.collection('testes_equipamento').getFullList({
+          filter: `equipamento_id.relatorio_id='${id}'`,
+        })
         setEquipments(
           eqRes.map((e) => ({
             id: e.id,
             tipo_equipamento: e.tipo_equipamento,
             dados_tecnicos: e.dados_tecnicos || {},
+            testes: testesRes
+              .filter((t) => t.equipamento_id === e.id)
+              .map((t) => ({
+                id: t.id,
+                tipo_teste: t.tipo_teste,
+                valor_teste: t.valor_teste,
+                unidade: t.unidade,
+                data_teste: t.data_teste.split('T')[0],
+              })),
           })),
         )
       } else {
@@ -118,10 +132,33 @@ export default function ReportForm() {
             tipo_equipamento: eq.tipo_equipamento,
             dados_tecnicos: eq.dados_tecnicos,
           }
+          let savedEqId = eq.id
           if (eq.id) {
             await pb.collection('equipamentos_relatorio').update(eq.id, eqPayload)
           } else {
-            await pb.collection('equipamentos_relatorio').create(eqPayload)
+            const createdEq = await pb.collection('equipamentos_relatorio').create(eqPayload)
+            savedEqId = createdEq.id
+          }
+
+          if (eq.testes) {
+            for (const t of eq.testes) {
+              if (t._delete && t.id) {
+                await pb.collection('testes_equipamento').delete(t.id)
+              } else if (!t._delete) {
+                const tPayload = {
+                  equipamento_id: savedEqId,
+                  tipo_teste: t.tipo_teste,
+                  valor_teste: t.valor_teste,
+                  unidade: t.unidade,
+                  data_teste: new Date(t.data_teste).toISOString(),
+                }
+                if (t.id) {
+                  await pb.collection('testes_equipamento').update(t.id, tPayload)
+                } else {
+                  await pb.collection('testes_equipamento').create(tPayload)
+                }
+              }
+            }
           }
         }
       }
@@ -180,14 +217,45 @@ export default function ReportForm() {
             </CardDescription>
           </CardHeader>
 
-          <CardContent className="space-y-8 pt-6 p-4 sm:p-8">
-            <ReportHeaderSection isView={isView} />
-            <EquipmentSection
-              equipments={equipments}
-              setEquipments={setEquipments}
-              isView={isView}
-            />
-          </CardContent>
+          <Tabs defaultValue="geral" className="w-full">
+            <TabsList className="w-full justify-start border-b rounded-none px-4 sm:px-8 pt-4 h-auto space-x-6 bg-transparent">
+              <TabsTrigger
+                value="geral"
+                className="rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent px-0 py-2"
+              >
+                Geral
+              </TabsTrigger>
+              <TabsTrigger
+                value="testes"
+                className="rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent px-0 py-2"
+              >
+                Testes Elétricos
+              </TabsTrigger>
+            </TabsList>
+
+            <TabsContent
+              value="geral"
+              className="space-y-8 pt-6 p-4 sm:p-8 mt-0 focus-visible:outline-none focus-visible:ring-0"
+            >
+              <ReportHeaderSection isView={isView} />
+              <EquipmentSection
+                equipments={equipments}
+                setEquipments={setEquipments}
+                isView={isView}
+              />
+            </TabsContent>
+
+            <TabsContent
+              value="testes"
+              className="space-y-8 pt-6 p-4 sm:p-8 mt-0 focus-visible:outline-none focus-visible:ring-0"
+            >
+              <ElectricalTestsSection
+                equipments={equipments}
+                setEquipments={setEquipments}
+                isView={isView}
+              />
+            </TabsContent>
+          </Tabs>
 
           <CardFooter className="flex flex-col-reverse sm:flex-row justify-between items-center gap-4 bg-muted/30 p-6 border-t rounded-b-xl">
             <Button variant="outline" className="w-full sm:w-auto" onClick={() => navigate(-1)}>
