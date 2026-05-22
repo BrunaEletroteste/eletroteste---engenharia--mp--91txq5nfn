@@ -39,14 +39,28 @@ function ComboboxField({
   value,
   onChange,
   opcoes,
+  overrideCategory,
 }: {
   field: FieldDef
   value: any
   onChange: (v: string) => void
   opcoes: OpcaoPadronizada[]
+  overrideCategory?: string
 }) {
   const [open, setOpen] = useState(false)
-  const options = opcoes.filter((o) => o.categoria.toLowerCase() === field.name.toLowerCase())
+  const [searchValue, setSearchValue] = useState('')
+
+  const categoryToMatch = overrideCategory
+    ? overrideCategory.toLowerCase()
+    : field.name.toLowerCase()
+  const options = opcoes.filter((o) => {
+    const cat = o.categoria.toLowerCase()
+    return (
+      cat === categoryToMatch ||
+      (categoryToMatch === 'tensão' && cat === 'tensao_primaria') ||
+      (categoryToMatch === 'corrente nominal' && cat === 'corrente_nominal')
+    )
+  })
 
   return (
     <Popover open={open} onOpenChange={setOpen}>
@@ -63,9 +77,28 @@ function ComboboxField({
       </PopoverTrigger>
       <PopoverContent className="w-[var(--radix-popover-trigger-width)] p-0" align="start">
         <Command>
-          <CommandInput placeholder={`Buscar...`} />
+          <CommandInput
+            placeholder={`Buscar...`}
+            value={searchValue}
+            onValueChange={setSearchValue}
+          />
           <CommandList>
-            <CommandEmpty>Nenhuma opção encontrada.</CommandEmpty>
+            <CommandEmpty>
+              {searchValue ? (
+                <div
+                  className="px-2 py-1.5 text-sm cursor-pointer hover:bg-accent hover:text-accent-foreground rounded-sm"
+                  onClick={() => {
+                    onChange(searchValue)
+                    setOpen(false)
+                    setSearchValue('')
+                  }}
+                >
+                  Usar "{searchValue}"
+                </div>
+              ) : (
+                'Nenhuma opção encontrada.'
+              )}
+            </CommandEmpty>
             <CommandGroup>
               {options.map((o) => (
                 <CommandItem
@@ -77,6 +110,7 @@ function ComboboxField({
                     )
                     onChange(selected ? selected.valor : currentValue)
                     setOpen(false)
+                    setSearchValue('')
                   }}
                 >
                   <Check
@@ -85,6 +119,19 @@ function ComboboxField({
                   {o.valor}
                 </CommandItem>
               ))}
+              {searchValue &&
+                !options.some((o) => o.valor.toLowerCase() === searchValue.toLowerCase()) && (
+                  <CommandItem
+                    value={searchValue}
+                    onSelect={(currentValue) => {
+                      onChange(currentValue)
+                      setOpen(false)
+                      setSearchValue('')
+                    }}
+                  >
+                    Usar "{searchValue}"
+                  </CommandItem>
+                )}
             </CommandGroup>
           </CommandList>
         </Command>
@@ -275,12 +322,36 @@ export function EquipmentModal({ open, onOpenChange, onSave, initialData }: Prop
                       )}
                     </Label>
 
-                    {field.type === 'combobox' && !opcoesError ? (
+                    {(field.type === 'combobox' ||
+                      (tipo === 'Transformador de Potencial' &&
+                        field.name === 'tensao_secundaria') ||
+                      (tipo === 'Transformador de Corrente' &&
+                        (field.name === 'corrente_primaria' ||
+                          field.name === 'corrente_secundaria'))) &&
+                    !opcoesError ? (
                       <ComboboxField
                         field={field}
                         value={dados[field.name]?.toString() || ''}
-                        onChange={(v) => handleFieldChange(field.name, v)}
+                        onChange={(v) => {
+                          let finalVal: any = v
+                          if (field.type === 'number' && v !== '') {
+                            const clean = v.includes(',')
+                              ? v.replace(/\./g, '').replace(',', '.')
+                              : v.replace(/\./g, '')
+                            const num = Number(clean)
+                            if (!isNaN(num)) finalVal = num
+                          }
+                          handleFieldChange(field.name, finalVal)
+                        }}
                         opcoes={opcoes}
+                        overrideCategory={
+                          field.name === 'tensao_secundaria'
+                            ? 'Tensão'
+                            : field.name === 'corrente_primaria' ||
+                                field.name === 'corrente_secundaria'
+                              ? 'Corrente Nominal'
+                              : undefined
+                        }
                       />
                     ) : (field.type === 'select' && field.options) ||
                       (!opcoesError &&
@@ -326,9 +397,19 @@ export function EquipmentModal({ open, onOpenChange, onSave, initialData }: Prop
                                   </SelectItem>
                                 )}
                               {opcoes
-                                .filter(
-                                  (o) => o.categoria.toLowerCase() === field.name.toLowerCase(),
-                                )
+                                .filter((o) => {
+                                  const cat = o.categoria.toLowerCase()
+                                  let targetCat = field.name.toLowerCase()
+                                  if (targetCat === 'tensao_primaria') targetCat = 'tensão'
+                                  if (targetCat === 'corrente_nominal')
+                                    targetCat = 'corrente nominal'
+
+                                  return (
+                                    cat === targetCat ||
+                                    (targetCat === 'tensão' && cat === 'tensao_primaria') ||
+                                    (targetCat === 'corrente nominal' && cat === 'corrente_nominal')
+                                  )
+                                })
                                 .map((o) => (
                                   <SelectItem key={o.id} value={o.valor}>
                                     {o.valor}
