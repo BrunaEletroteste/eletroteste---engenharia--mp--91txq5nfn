@@ -18,6 +18,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select'
+import { Switch } from '@/components/ui/switch'
 import { useToast } from '@/hooks/use-toast'
 
 interface Props {
@@ -108,46 +109,58 @@ export function EquipmentModal({ open, onOpenChange, onSave, initialData }: Prop
 
           {fields.length > 0 && (
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-5 border-t pt-5 mt-2">
-              {fields.map((field) => (
-                <div key={field.name} className="space-y-2">
-                  <Label>
-                    {field.label}
-                    {['subestacao', 'numero'].includes(field.name) && (
-                      <span className="text-destructive"> *</span>
-                    )}
-                  </Label>
+              {fields.map((field) => {
+                if (field.dependsOn && dados[field.dependsOn.field] !== field.dependsOn.value) {
+                  return null
+                }
+                return (
+                  <div key={field.name} className="space-y-2">
+                    <Label>
+                      {field.label}
+                      {['subestacao', 'numero'].includes(field.name) && (
+                        <span className="text-destructive"> *</span>
+                      )}
+                    </Label>
 
-                  {field.type === 'select' && field.options ? (
-                    <Select
-                      value={dados[field.name]?.toString() || ''}
-                      onValueChange={(v) => handleFieldChange(field.name, v)}
-                    >
-                      <SelectTrigger>
-                        <SelectValue placeholder="Selecione..." />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {field.options.map((o) => (
-                          <SelectItem key={o} value={o}>
-                            {o}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                  ) : (
-                    <Input
-                      type={field.type === 'number' ? 'number' : 'text'}
-                      value={dados[field.name] || ''}
-                      onChange={(e) =>
-                        handleFieldChange(
-                          field.name,
-                          field.type === 'number' ? Number(e.target.value) : e.target.value,
-                        )
-                      }
-                      placeholder={`Insira ${field.label.toLowerCase()}`}
-                    />
-                  )}
-                </div>
-              ))}
+                    {field.type === 'select' && field.options ? (
+                      <Select
+                        value={dados[field.name]?.toString() || ''}
+                        onValueChange={(v) => handleFieldChange(field.name, v)}
+                      >
+                        <SelectTrigger>
+                          <SelectValue placeholder="Selecione..." />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {field.options.map((o) => (
+                            <SelectItem key={o} value={o}>
+                              {o}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    ) : field.type === 'boolean' ? (
+                      <div className="flex items-center h-10">
+                        <Switch
+                          checked={!!dados[field.name]}
+                          onCheckedChange={(checked) => handleFieldChange(field.name, checked)}
+                        />
+                      </div>
+                    ) : (
+                      <Input
+                        type={field.type === 'number' ? 'number' : 'text'}
+                        value={dados[field.name] || ''}
+                        onChange={(e) =>
+                          handleFieldChange(
+                            field.name,
+                            field.type === 'number' ? Number(e.target.value) : e.target.value,
+                          )
+                        }
+                        placeholder={`Insira ${field.label.toLowerCase()}`}
+                      />
+                    )}
+                  </div>
+                )
+              })}
             </div>
           )}
         </div>

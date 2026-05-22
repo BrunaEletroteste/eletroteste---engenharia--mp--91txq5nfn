@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react'
 import { useFormContext } from 'react-hook-form'
+import { addYears, format } from 'date-fns'
 import pb from '@/lib/pocketbase/client'
 import { FormValues } from '@/types/reports'
 import { useAuth } from '@/hooks/use-auth'
@@ -9,7 +10,7 @@ import { Textarea } from '@/components/ui/textarea'
 import { Combobox } from '@/components/ui/combobox'
 
 export function ReportHeaderSection({ isView }: { isView: boolean }) {
-  const { control } = useFormContext<FormValues>()
+  const { control, setValue } = useFormContext<FormValues>()
   const { user } = useAuth()
   const [clientes, setClientes] = useState<any[]>([])
 
@@ -53,7 +54,12 @@ export function ReportHeaderSection({ isView }: { isView: boolean }) {
                 Número do Relatório <span className="text-destructive">*</span>
               </FormLabel>
               <FormControl>
-                <Input {...field} disabled={true} className="bg-muted font-medium" />
+                <Input
+                  {...field}
+                  disabled={isView}
+                  placeholder="Ex: 001/2026"
+                  className="font-medium"
+                />
               </FormControl>
               <FormMessage />
             </FormItem>
@@ -98,7 +104,20 @@ export function ReportHeaderSection({ isView }: { isView: boolean }) {
                 Data de Execução <span className="text-destructive">*</span>
               </FormLabel>
               <FormControl>
-                <Input type="date" {...field} disabled={isView} />
+                <Input
+                  type="date"
+                  disabled={isView}
+                  {...field}
+                  onChange={(e) => {
+                    field.onChange(e)
+                    if (e.target.value && !isView) {
+                      const nextYear = addYears(new Date(e.target.value), 1)
+                      setValue('proxima_manutencao', format(nextYear, 'yyyy-MM-dd'), {
+                        shouldValidate: true,
+                      })
+                    }
+                  }}
+                />
               </FormControl>
               <FormMessage />
             </FormItem>

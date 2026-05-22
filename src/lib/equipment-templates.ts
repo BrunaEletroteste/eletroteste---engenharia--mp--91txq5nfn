@@ -1,8 +1,9 @@
 export type FieldDef = {
   name: string
   label: string
-  type: 'text' | 'number' | 'select'
+  type: 'text' | 'number' | 'select' | 'boolean'
   options?: string[]
+  dependsOn?: { field: string; value: any }
 }
 
 export const EQUIPMENT_TYPES = [
@@ -51,13 +52,25 @@ export const getEquipmentFields = (type: string): FieldDef[] => {
         { name: 'corrente_nominal', label: 'Corrente Nominal (A)', type: 'number' },
         { name: 'classe_isolamento', label: 'Classe de Isolamento (kV)', type: 'number' },
         { name: 'fabricante', label: 'Fabricante', type: 'text' },
-        { name: 'fusivel_tipo', label: 'Fusível - Tipo', type: 'text' },
+        { name: 'possui_fusivel', label: 'Possui fusível?', type: 'boolean' },
+        {
+          name: 'fusivel_tipo',
+          label: 'Fusível - Tipo',
+          type: 'text',
+          dependsOn: { field: 'possui_fusivel', value: true },
+        },
         {
           name: 'fusivel_corrente_nominal',
           label: 'Fusível - Corrente Nominal (A)',
           type: 'number',
+          dependsOn: { field: 'possui_fusivel', value: true },
         },
-        { name: 'fusivel_fabricante', label: 'Fusível - Fabricante', type: 'text' },
+        {
+          name: 'fusivel_fabricante',
+          label: 'Fusível - Fabricante',
+          type: 'text',
+          dependsOn: { field: 'possui_fusivel', value: true },
+        },
       ]
     case 'Transformador':
       return [

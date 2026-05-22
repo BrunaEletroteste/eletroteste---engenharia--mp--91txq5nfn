@@ -1,10 +1,15 @@
 import { useState } from 'react'
-import { Plus, Edit, Trash2, Cpu } from 'lucide-react'
+import { Plus, Edit, Trash2, Cpu, ChevronDown, ChevronUp } from 'lucide-react'
 import { EquipmentItem } from '@/types/reports'
 import { Button } from '@/components/ui/button'
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { EquipmentModal } from './EquipmentModal'
+import {
+  Accordion,
+  AccordionContent,
+  AccordionItem,
+  AccordionTrigger,
+} from '@/components/ui/accordion'
 import {
   AlertDialog,
   AlertDialogAction,
@@ -26,6 +31,7 @@ export function EquipmentSection({ equipments, setEquipments, isView }: Props) {
   const [modalOpen, setModalOpen] = useState(false)
   const [editingIndex, setEditingIndex] = useState<number | null>(null)
 
+  const [expandedItems, setExpandedItems] = useState<string[]>([])
   const [deleteDialog, setDeleteDialog] = useState<{ open: boolean; index: number | null }>({
     open: false,
     index: null,
@@ -59,21 +65,45 @@ export function EquipmentSection({ equipments, setEquipments, isView }: Props) {
     .map((eq, i) => ({ eq, index: i }))
     .filter((x) => !x.eq._delete)
 
+  const toggleAll = () => {
+    if (expandedItems.length === visibleEquipments.length && visibleEquipments.length > 0) {
+      setExpandedItems([])
+    } else {
+      setExpandedItems(visibleEquipments.map((_, i) => i.toString()))
+    }
+  }
+
   return (
     <div className="space-y-4">
       <div className="flex justify-between items-center pb-2 border-b mt-8">
         <h3 className="text-lg font-semibold text-primary">2. Equipamentos Inspecionados</h3>
-        {!isView && (
-          <Button
-            onClick={() => {
-              setEditingIndex(null)
-              setModalOpen(true)
-            }}
-            size="sm"
-          >
-            <Plus className="mr-2 h-4 w-4" /> Adicionar Equipamento
-          </Button>
-        )}
+        <div className="flex gap-2 items-center">
+          {visibleEquipments.length > 0 && (
+            <Button variant="outline" size="sm" onClick={toggleAll} className="hidden sm:flex">
+              {expandedItems.length === visibleEquipments.length ? (
+                <>
+                  <ChevronUp className="mr-2 h-4 w-4" /> Recolher Todos
+                </>
+              ) : (
+                <>
+                  <ChevronDown className="mr-2 h-4 w-4" /> Expandir Todos
+                </>
+              )}
+            </Button>
+          )}
+          {!isView && (
+            <Button
+              onClick={() => {
+                setEditingIndex(null)
+                setModalOpen(true)
+              }}
+              size="sm"
+            >
+              <Plus className="mr-2 h-4 w-4" />{' '}
+              <span className="hidden sm:inline">Adicionar Equipamento</span>
+            </Button>
+          )}
+        </div>
       </div>
 
       {visibleEquipments.length === 0 ? (
@@ -82,59 +112,79 @@ export function EquipmentSection({ equipments, setEquipments, isView }: Props) {
           <p>Nenhum equipamento adicionado ainda.</p>
         </div>
       ) : (
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 pt-2">
-          {visibleEquipments.map(({ eq, index }) => (
-            <Card key={index} className="shadow-sm border-l-4 border-l-primary/60">
-              <CardHeader className="py-3 px-4 bg-muted/20 border-b flex flex-row items-center justify-between space-y-0">
-                <CardTitle className="text-[15px] font-semibold flex items-center gap-2">
-                  <Badge variant="outline" className="bg-background">
-                    {eq.tipo_equipamento}
-                  </Badge>
-                  {eq.dados_tecnicos.numero && (
-                    <span className="text-muted-foreground">#{eq.dados_tecnicos.numero}</span>
-                  )}
-                </CardTitle>
-                {!isView && (
-                  <div className="flex gap-1">
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      className="h-8 w-8 text-muted-foreground hover:text-primary"
-                      onClick={() => {
-                        setEditingIndex(index)
-                        setModalOpen(true)
-                      }}
-                    >
-                      <Edit className="h-4 w-4" />
-                    </Button>
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      className="h-8 w-8 text-muted-foreground hover:text-destructive"
-                      onClick={() => setDeleteDialog({ open: true, index })}
-                    >
-                      <Trash2 className="h-4 w-4" />
-                    </Button>
-                  </div>
-                )}
-              </CardHeader>
-              <CardContent className="p-4 grid grid-cols-1 sm:grid-cols-2 gap-y-2 gap-x-4 text-[13px]">
-                {Object.entries(eq.dados_tecnicos).map(([key, val]) => {
-                  if (!val && val !== 0) return null
-                  return (
-                    <div key={key} className="flex flex-col">
-                      <span className="font-semibold text-muted-foreground capitalize">
-                        {key.replace(/_/g, ' ')}
+        <div className="pt-2">
+          <Accordion
+            type="multiple"
+            value={expandedItems}
+            onValueChange={setExpandedItems}
+            className="space-y-3"
+          >
+            {visibleEquipments.map(({ eq, index }, i) => (
+              <AccordionItem
+                key={index}
+                value={i.toString()}
+                className="border-l-4 border-l-primary/60 border rounded-md shadow-sm overflow-hidden bg-card"
+              >
+                <div className="flex items-center justify-between pr-4 bg-muted/20">
+                  <AccordionTrigger className="hover:no-underline px-4 py-3 flex-1 justify-start gap-3">
+                    <Badge variant="outline" className="bg-background">
+                      {eq.tipo_equipamento}
+                    </Badge>
+                    {eq.dados_tecnicos.numero && (
+                      <span className="text-muted-foreground font-semibold">
+                        #{eq.dados_tecnicos.numero}
                       </span>
-                      <span className="truncate" title={String(val)}>
-                        {val}
-                      </span>
+                    )}
+                  </AccordionTrigger>
+                  {!isView && (
+                    <div className="flex gap-1 items-center ml-2 border-l pl-2 border-border/50">
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        className="h-8 w-8 text-muted-foreground hover:text-primary z-10 relative"
+                        onClick={(e) => {
+                          e.stopPropagation()
+                          setEditingIndex(index)
+                          setModalOpen(true)
+                        }}
+                      >
+                        <Edit className="h-4 w-4" />
+                      </Button>
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        className="h-8 w-8 text-muted-foreground hover:text-destructive z-10 relative"
+                        onClick={(e) => {
+                          e.stopPropagation()
+                          setDeleteDialog({ open: true, index })
+                        }}
+                      >
+                        <Trash2 className="h-4 w-4" />
+                      </Button>
                     </div>
-                  )
-                })}
-              </CardContent>
-            </Card>
-          ))}
+                  )}
+                </div>
+                <AccordionContent className="p-4 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-y-3 gap-x-4 text-[13px] border-t bg-background">
+                  {Object.entries(eq.dados_tecnicos).map(([key, val]) => {
+                    if (val === undefined || val === null || val === '') return null
+                    // format boolean fields
+                    let displayVal = val
+                    if (typeof val === 'boolean') displayVal = val ? 'Sim' : 'Não'
+                    return (
+                      <div key={key} className="flex flex-col">
+                        <span className="font-semibold text-muted-foreground capitalize">
+                          {key.replace(/_/g, ' ')}
+                        </span>
+                        <span className="truncate" title={String(displayVal)}>
+                          {String(displayVal)}
+                        </span>
+                      </div>
+                    )
+                  })}
+                </AccordionContent>
+              </AccordionItem>
+            ))}
+          </Accordion>
         </div>
       )}
 

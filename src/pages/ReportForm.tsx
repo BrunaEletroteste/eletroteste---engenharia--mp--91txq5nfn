@@ -1,10 +1,11 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef, useCallback } from 'react'
 import { useParams, useNavigate, useLocation } from 'react-router-dom'
 import { useForm, FormProvider } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { useAuth } from '@/hooks/use-auth'
 import pb from '@/lib/pocketbase/client'
 import { useToast } from '@/hooks/use-toast'
+import { useRealtime } from '@/hooks/use-realtime'
 import { Button } from '@/components/ui/button'
 import {
   Card,
@@ -38,40 +39,47 @@ export default function ReportForm() {
   const [hasError, setHasError] = useState(false)
   const [equipments, setEquipments] = useState<EquipmentItem[]>([])
 
+  const isSaving = useRef(false)
+  const isReloading = useRef(false)
+
   const methods = useForm<FormValues>({
     resolver: zodResolver(reportFormSchema),
     defaultValues: { status: 'rascunho' },
   })
 
-  const loadData = async () => {
-    try {
-      setIsLoading(true)
-      setHasError(false)
+  const { reset } = methods
 
-      if (id && (isView || isEdit)) {
-        const res = await pb.collection('relatorios').getOne(id)
-        methods.reset({
-          numero_relatorio: res.numero_relatorio,
-          cliente_id: res.cliente_id,
-          data_execucao: res.data_execucao ? res.data_execucao.split('T')[0] : '',
-          acompanhante: res.acompanhante || '',
-          proxima_manutencao: res.proxima_manutencao ? res.proxima_manutencao.split('T')[0] : '',
-          status: res.status as 'rascunho' | 'finalizado',
-          observacoes: res.observacoes || '',
-        })
+  const loadData = useCallback(
+    async (isSilent = false) => {
+      try {
+        if (!isSilent) {
+          setIsLoading(true)
+          setHasError(false)
+        }
 
-        const eqRes = await pb.collection('equipamentos_relatorio').getFullList({
-          filter: `relatorio_id='${id}'`,
-        })
-        const testesRes = await pb.collection('testes_equipamento').getFullList({
-          filter: `equipamento_id.relatorio_id='${id}'`,
-        })
-        const parecerRes = await pb.collection('parecer_tecnico').getFullList({
-          filter: `equipamento_id.relatorio_id='${id}'`,
-        })
+        if (id && (isView || isEdit)) {
+          const res = await pb.collection('relatorios').getOne(id)
+          reset({
+            numero_relatorio: res.numero_relatorio,
+            cliente_id: res.cliente_id,
+            data_execucao: res.data_execucao ? res.data_execucao.split('T')[0] : '',
+            acompanhante: res.acompanhante || '',
+            proxima_manutencao: res.proxima_manutencao ? res.proxima_manutencao.split('T')[0] : '',
+            status: res.status as 'rascunho' | 'finalizado',
+            observacoes: res.observacoes || '',
+          })
 
-        setEquipments(
-          eqRes.map((e) => {
+          const eqRes = await pb.collection('equipamentos_relatorio').getFullList({
+            filter: `relatorio_id='${id}'`,
+          })
+          const testesRes = await pb.collection('testes_equipamento').getFullList({
+            filter: `equipamento_id.relatorio_id='${id}'`,
+          })
+          const parecerRes = await pb.collection('parecer_tecnico').getFullList({
+            filter: `equipamento_id.relatorio_id='${id}'`,
+          })
+
+          const loadedEquipments = eqRes.map((e) => {
             const eqParecer = parecerRes.find((p) => p.equipamento_id === e.id)
             return {
               id: e.id,
@@ -96,29 +104,81 @@ export default function ReportForm() {
                   }
                 : undefined,
             }
-          }),
-        )
-      } else {
-        methods.reset({
-          numero_relatorio: `00${Math.floor(Math.random() * 1000)}/${new Date().getFullYear()}`,
-          status: 'rascunho',
-          cliente_id: '',
-          data_execucao: '',
-          acompanhante: '',
-          proxima_manutencao: '',
-          observacoes: '',
-        })
+          })
+
+          setEquipments(loadedEquipments)
+        } else {
+          reset({
+            numero_relatorio: `00${Math.floor(Math.random() * 1000)}/${new Date().getFullYear()}`,
+            status: 'rascunho',
+            cliente_id: '',
+            data_execucao: '',
+            acompanhante: '',
+            proxima_manutencao: '',
+            observacoes: '',
+          })
+        }
+      } catch (err) {
+        if (!isSilent) setHasError(true)
+      } finally {
+        if (!isSilent) setIsLoading(false)
       }
-    } catch (err) {
-      setHasError(true)
-    } finally {
-      setIsLoading(false)
-    }
-  }
+    },
+    [id, isView, isEdit, reset],
+  )
 
   useEffect(() => {
-    loadData()
-  }, [id, isView, isEdit, user])
+    if (user) {
+      loadData()
+    }
+  }, [loadData, user])
+
+  const handleRemoteUpdate = useCallback(() => {
+    if (isReloading.current || isSaving.current) return
+    isReloading.current = true
+    toast({
+      title: 'Atenção',
+      description: 'Este registro foi atualizado por outro usuário. Recarregando dados...',
+      variant: 'destructive',
+    })
+    loadData(true).finally(() => {
+      setTimeout(() => {
+        isReloading.current = false
+      }, 1500)
+    })
+  }, [toast, loadData])
+
+  useRealtime(
+    'relatorios',
+    (e) => {
+      if (e.record.id === id) handleRemoteUpdate()
+    },
+    !!id,
+  )
+
+  useRealtime(
+    'equipamentos_relatorio',
+    (e) => {
+      if (e.record.relatorio_id === id) handleRemoteUpdate()
+    },
+    !!id,
+  )
+
+  useRealtime(
+    'testes_equipamento',
+    (e) => {
+      if (equipments.some((eq) => eq.id === e.record.equipamento_id)) handleRemoteUpdate()
+    },
+    !!id && equipments.length > 0,
+  )
+
+  useRealtime(
+    'parecer_tecnico',
+    (e) => {
+      if (equipments.some((eq) => eq.id === e.record.equipamento_id)) handleRemoteUpdate()
+    },
+    !!id && equipments.length > 0,
+  )
 
   const validateEquipments = () => {
     for (const eq of equipments) {
@@ -150,6 +210,7 @@ export default function ReportForm() {
 
   const onSubmit = async (data: FormValues) => {
     if (!validateEquipments()) return
+    isSaving.current = true
     try {
       setIsLoading(true)
       const payload = {
@@ -232,6 +293,7 @@ export default function ReportForm() {
       toast({ title: 'Sucesso', description: 'Relatório salvo com sucesso. Parecer registrado.' })
       navigate('/')
     } catch (error: any) {
+      isSaving.current = false
       toast({
         title: 'Erro',
         description: error?.message || 'Falha ao salvar relatório.',
