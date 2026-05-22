@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-05-22T19:11:04.296Z",
+  "generatedAt": "2026-05-22T19:24:33.565Z",
   "collections": [
     {
       "name": "users",
@@ -259,9 +259,15 @@
           "required": false,
           "system": false,
           "autodateTriggers": ["onCreate", "onUpdate"]
+        },
+        {
+          "name": "ordem",
+          "type": "number",
+          "required": false,
+          "system": false
         }
       ],
-      "indexes": []
+      "indexes": ["CREATE INDEX `idx_equip_rel_ordem` ON `equipamentos_relatorio` (ordem)"]
     },
     {
       "name": "testes_equipamento",

@@ -1,5 +1,16 @@
 import { useState } from 'react'
-import { Plus, Edit, Trash2, Cpu, ChevronDown, ChevronUp, Search, X } from 'lucide-react'
+import {
+  Plus,
+  Edit,
+  Trash2,
+  Cpu,
+  ChevronDown,
+  ChevronUp,
+  Search,
+  X,
+  ArrowUp,
+  ArrowDown,
+} from 'lucide-react'
 import { useToast } from '@/hooks/use-toast'
 import { cn } from '@/lib/utils'
 import { EquipmentItem, ParecerItem } from '@/types/reports'
@@ -56,8 +67,47 @@ export function EquipmentSection({ equipments, setEquipments, isView }: Props) {
       newList[editingIndex] = { ...newList[editingIndex], ...eq }
       setEquipments(newList)
     } else {
-      setEquipments([...equipments, eq])
+      const maxOrdem = equipments.reduce((max, item) => Math.max(max, item.ordem || 0), 0)
+      setEquipments([...equipments, { ...eq, ordem: maxOrdem + 1 }])
     }
+  }
+
+  const handleMoveUp = (e: React.MouseEvent, index: number) => {
+    e.stopPropagation()
+    setEquipments((prev) => {
+      const next = [...prev]
+      let prevIdx = index - 1
+      while (prevIdx >= 0 && next[prevIdx]._delete) prevIdx--
+      if (prevIdx >= 0) {
+        const temp = next[index]
+        next[index] = next[prevIdx]
+        next[prevIdx] = temp
+
+        const tempOrdem = next[index].ordem || index + 1
+        next[index].ordem = next[prevIdx].ordem || prevIdx + 1
+        next[prevIdx].ordem = tempOrdem
+      }
+      return next
+    })
+  }
+
+  const handleMoveDown = (e: React.MouseEvent, index: number) => {
+    e.stopPropagation()
+    setEquipments((prev) => {
+      const next = [...prev]
+      let nextIdx = index + 1
+      while (nextIdx < next.length && next[nextIdx]._delete) nextIdx++
+      if (nextIdx < next.length) {
+        const temp = next[index]
+        next[index] = next[nextIdx]
+        next[nextIdx] = temp
+
+        const tempOrdem = next[index].ordem || index + 1
+        next[index].ordem = next[nextIdx].ordem || nextIdx + 1
+        next[nextIdx].ordem = tempOrdem
+      }
+      return next
+    })
   }
 
   const handleDelete = () => {
@@ -75,8 +125,12 @@ export function EquipmentSection({ equipments, setEquipments, isView }: Props) {
   }
 
   const activeEquipmentsCount = equipments.filter((eq) => !eq._delete).length
+  let seqCounter = 1
   const visibleEquipments = equipments
-    .map((eq, i) => ({ eq, index: i }))
+    .map((eq, i) => {
+      const seq = !eq._delete ? seqCounter++ : 0
+      return { eq, index: i, seq }
+    })
     .filter((x) => {
       if (x.eq._delete) return false
       if (!searchQuery) return true
@@ -191,7 +245,7 @@ export function EquipmentSection({ equipments, setEquipments, isView }: Props) {
             onValueChange={setExpandedItems}
             className="space-y-3"
           >
-            {visibleEquipments.map(({ eq, index }, i) => (
+            {visibleEquipments.map(({ eq, index, seq }, i) => (
               <AccordionItem
                 id={`equipamento-${index}`}
                 key={index}
@@ -200,9 +254,15 @@ export function EquipmentSection({ equipments, setEquipments, isView }: Props) {
               >
                 <div className="flex items-center justify-between pr-4 bg-muted/20">
                   <AccordionTrigger className="hover:no-underline px-4 py-3 flex-1 justify-start gap-3">
+                    <Badge
+                      variant="outline"
+                      className="bg-primary/5 border-primary/20 text-primary px-2 py-0.5 text-xs font-mono"
+                    >
+                      #{seq}
+                    </Badge>
                     <span className="font-semibold text-foreground">
                       {eq.tipo_equipamento} — {eq.dados_tecnicos.subestacao || '-'}
-                    </span>
+                    </span>{' '}
                     {eq.parecer?.parecer && (
                       <Badge
                         variant={
@@ -227,6 +287,28 @@ export function EquipmentSection({ equipments, setEquipments, isView }: Props) {
                   </AccordionTrigger>
                   {!isView && (
                     <div className="flex gap-1 items-center ml-2 border-l pl-2 border-border/50">
+                      <div className="flex gap-0.5 mr-1 pr-1 border-r border-border/50">
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          className="h-8 w-8 text-muted-foreground hover:text-primary z-10 relative disabled:opacity-30"
+                          disabled={!!searchQuery || seq === 1}
+                          onClick={(e) => handleMoveUp(e, index)}
+                          title="Mover para cima"
+                        >
+                          <ArrowUp className="h-4 w-4" />
+                        </Button>
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          className="h-8 w-8 text-muted-foreground hover:text-primary z-10 relative disabled:opacity-30"
+                          disabled={!!searchQuery || seq === activeEquipmentsCount}
+                          onClick={(e) => handleMoveDown(e, index)}
+                          title="Mover para baixo"
+                        >
+                          <ArrowDown className="h-4 w-4" />
+                        </Button>
+                      </div>
                       <Button
                         variant="ghost"
                         size="icon"
@@ -237,6 +319,7 @@ export function EquipmentSection({ equipments, setEquipments, isView }: Props) {
                           setModalOpen(true)
                         }}
                       >
+                        {' '}
                         <Edit className="h-4 w-4" />
                       </Button>
                       <Button

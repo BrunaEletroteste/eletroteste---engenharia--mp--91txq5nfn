@@ -99,8 +99,8 @@ export default function ReportForm() {
 
           const eqRes = await pb.collection('equipamentos_relatorio').getFullList({
             filter: `relatorio_id='${id}'`,
-          })
-          const testesRes = await pb.collection('testes_equipamento').getFullList({
+            sort: 'ordem,created',
+          })          const testesRes = await pb.collection('testes_equipamento').getFullList({
             filter: `equipamento_id.relatorio_id='${id}'`,
           })
           const parecerRes = await pb.collection('parecer_tecnico').getFullList({
@@ -113,8 +113,8 @@ export default function ReportForm() {
               id: e.id,
               tipo_equipamento: e.tipo_equipamento,
               dados_tecnicos: e.dados_tecnicos || {},
-              testes: testesRes
-                .filter((t) => t.equipamento_id === e.id)
+              ordem: e.ordem,
+              testes: testesRes                .filter((t) => t.equipamento_id === e.id)
                 .map((t) => ({
                   id: t.id,
                   tipo_teste: t.tipo_teste,
@@ -353,6 +353,7 @@ export default function ReportForm() {
         relatorioId = created.id
       }
 
+      let currentOrdem = 1
       for (const eq of equipments) {
         if (eq._delete && eq.id) {
           await pb.collection('equipamentos_relatorio').delete(eq.id)
@@ -361,7 +362,10 @@ export default function ReportForm() {
             relatorio_id: relatorioId,
             tipo_equipamento: eq.tipo_equipamento,
             dados_tecnicos: eq.dados_tecnicos,
+            ordem: currentOrdem,
           }
+          currentOrdem++
+          
           let savedEqId = eq.id
           if (eq.id) {
             await pb.collection('equipamentos_relatorio').update(eq.id, eqPayload)

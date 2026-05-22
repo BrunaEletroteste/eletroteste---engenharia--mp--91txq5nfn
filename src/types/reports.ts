@@ -35,6 +35,7 @@ export type EquipmentItem = {
   id?: string
   tipo_equipamento: string
   dados_tecnicos: Record<string, any>
+  ordem?: number
   testes?: TestItem[]
   parecer?: ParecerItem
   _delete?: boolean
