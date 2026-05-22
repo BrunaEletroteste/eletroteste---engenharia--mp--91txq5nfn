@@ -64,8 +64,8 @@ export default function Layout() {
                 {user?.tipo_acesso === 'admin' && (
                   <>
                     <SidebarMenuItem>
-                      <SidebarMenuButton asChild>
-                        <Link to="/">
+                      <SidebarMenuButton isActive={location.pathname.includes('/clientes')} asChild>
+                        <Link to="/clientes">
                           <Users />
                           <span>Clientes</span>
                         </Link>
