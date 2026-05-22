@@ -134,16 +134,17 @@ export function EquipmentSection({ equipments, setEquipments, isView }: Props) {
     .filter((x) => {
       if (x.eq._delete) return false
       if (!searchQuery) return true
-      const numero = x.eq.dados_tecnicos?.numero
-      const subestacao = x.eq.dados_tecnicos?.subestacao
-      if (!numero && !subestacao) return false
+      const q = searchQuery.toLowerCase()
+      const tipo = x.eq.tipo_equipamento || ''
+      const numero = x.eq.dados_tecnicos?.numero || x.eq.dados_tecnicos?.identificacao || ''
+      const subestacao = x.eq.dados_tecnicos?.subestacao || ''
+      const circuito = x.eq.dados_tecnicos?.circuito || ''
+
       return (
-        String(numero || '')
-          .toLowerCase()
-          .includes(searchQuery.toLowerCase()) ||
-        String(subestacao || '')
-          .toLowerCase()
-          .includes(searchQuery.toLowerCase())
+        tipo.toLowerCase().includes(q) ||
+        String(numero).toLowerCase().includes(q) ||
+        String(subestacao).toLowerCase().includes(q) ||
+        String(circuito).toLowerCase().includes(q)
       )
     })
 
@@ -253,16 +254,17 @@ export function EquipmentSection({ equipments, setEquipments, isView }: Props) {
                 className="border-l-4 border-l-primary/60 border rounded-md shadow-sm overflow-hidden bg-card transition-all duration-300"
               >
                 <div className="flex items-center justify-between pr-4 bg-muted/20">
-                  <AccordionTrigger className="hover:no-underline px-4 py-3 flex-1 justify-start gap-3">
+                  <AccordionTrigger className="hover:no-underline px-4 py-3 flex-1 justify-start gap-3 text-left">
                     <Badge
                       variant="outline"
-                      className="bg-primary/5 border-primary/20 text-primary px-2 py-0.5 text-xs font-mono"
+                      className="bg-primary/5 border-primary/20 text-primary px-2 py-0.5 text-xs font-mono shrink-0"
                     >
                       #{seq}
                     </Badge>
-                    <span className="font-semibold text-foreground">
+                    <span className="font-semibold text-foreground flex-1 break-words">
                       {[
                         eq.tipo_equipamento,
+                        eq.dados_tecnicos?.numero || eq.dados_tecnicos?.identificacao,
                         eq.dados_tecnicos?.subestacao,
                         eq.dados_tecnicos?.circuito,
                       ]

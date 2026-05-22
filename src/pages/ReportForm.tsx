@@ -270,7 +270,7 @@ export default function ReportForm() {
         if (!p || !p.parecer) {
           toast({
             title: 'Erro de Validação',
-            description: `O parecer é obrigatório para o equipamento: ${eq.tipo_equipamento} - ${eq.dados_tecnicos?.numero || ''}`,
+            description: `O parecer é obrigatório para o equipamento: ${eq.tipo_equipamento} - ${eq.dados_tecnicos?.numero || eq.dados_tecnicos?.identificacao || ''}`,
             variant: 'destructive',
           })
           const el = document.getElementById(`equipamento-${i}`)
@@ -293,7 +293,7 @@ export default function ReportForm() {
         ) {
           toast({
             title: 'Erro de Validação',
-            description: `Justificativa é obrigatória quando há mudança de status no equipamento: ${eq.tipo_equipamento} - ${eq.dados_tecnicos?.numero || ''}`,
+            description: `Justificativa é obrigatória quando há mudança de status no equipamento: ${eq.tipo_equipamento} - ${eq.dados_tecnicos?.numero || eq.dados_tecnicos?.identificacao || ''}`,
             variant: 'destructive',
           })
           const el = document.getElementById(`equipamento-${i}`)
