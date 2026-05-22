@@ -1,101 +1,15 @@
 import { useState, useEffect, useId } from 'react'
-import { EquipmentItem, ParecerTecnico } from '@/types/reports'
-import {
-  Accordion,
-  AccordionContent,
-  AccordionItem,
-  AccordionTrigger,
-} from '@/components/ui/accordion'
+import { EquipmentItem, ParecerItem } from '@/types/reports'
 import { Label } from '@/components/ui/label'
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group'
 import { Textarea } from '@/components/ui/textarea'
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert'
 import { Skeleton } from '@/components/ui/skeleton'
-import { AlertTriangle, XCircle, FileText } from 'lucide-react'
+import { AlertTriangle, XCircle } from 'lucide-react'
 import pb from '@/lib/pocketbase/client'
-import { useFormContext } from 'react-hook-form'
 import { cn } from '@/lib/utils'
 
-interface Props {
-  equipments: EquipmentItem[]
-  setEquipments: (updater: (prev: EquipmentItem[]) => EquipmentItem[]) => void
-  isView: boolean
-}
-
-export function ParecerTecnicoSection({ equipments, setEquipments, isView }: Props) {
-  const { watch } = useFormContext()
-  const clienteId = watch('cliente_id')
-
-  if (!equipments || equipments.length === 0) {
-    return (
-      <div className="text-center p-8 text-muted-foreground border rounded-lg bg-muted/20">
-        Nenhum equipamento adicionado ao relatório.
-      </div>
-    )
-  }
-
-  const handleUpdate = (eqId: string | undefined, index: number, p: ParecerTecnico) => {
-    setEquipments((prev) => {
-      const next = [...prev]
-      if (eqId) {
-        const i = next.findIndex((e) => e.id === eqId)
-        if (i >= 0) next[i] = { ...next[i], parecer: p }
-      } else {
-        next[index] = { ...next[index], parecer: p }
-      }
-      return next
-    })
-  }
-
-  return (
-    <div className="space-y-4">
-      <h3 className="text-lg font-semibold flex items-center gap-2">
-        <FileText className="w-5 h-5 text-primary" /> Pareceres Técnicos
-      </h3>
-      <Accordion type="multiple" className="w-full space-y-4">
-        {equipments
-          .filter((e) => !e._delete)
-          .map((eq, index) => (
-            <AccordionItem
-              key={eq.id || index}
-              value={eq.id || `eq-${index}`}
-              className="border rounded-lg bg-card px-4"
-            >
-              <AccordionTrigger className="hover:no-underline py-4">
-                <div className="flex items-center gap-4">
-                  <span className="font-medium text-base">
-                    {eq.tipo_equipamento} — {eq.dados_tecnicos?.numero || 'Sem número'}
-                  </span>
-                  {eq.parecer?.parecer && (
-                    <span
-                      className={cn(
-                        'text-xs px-2 py-1 rounded-full font-medium',
-                        eq.parecer.parecer === 'Conforme' && 'bg-emerald-100 text-emerald-800',
-                        eq.parecer.parecer === 'Possui Ressalvas' && 'bg-[#FEF3C7] text-yellow-800',
-                        eq.parecer.parecer === 'Não Conforme' && 'bg-[#FEE2E2] text-red-800',
-                      )}
-                    >
-                      {eq.parecer.parecer}
-                    </span>
-                  )}
-                </div>
-              </AccordionTrigger>
-              <AccordionContent className="pb-6 pt-2">
-                <ParecerForm
-                  equipment={eq}
-                  isView={isView}
-                  clienteId={clienteId}
-                  onUpdate={(p) => handleUpdate(eq.id, index, p)}
-                />
-              </AccordionContent>
-            </AccordionItem>
-          ))}
-      </Accordion>
-    </div>
-  )
-}
-
-function ParecerForm({
+export function ParecerForm({
   equipment,
   isView,
   clienteId,
@@ -103,8 +17,8 @@ function ParecerForm({
 }: {
   equipment: EquipmentItem
   isView: boolean
-  clienteId: string
-  onUpdate: (p: ParecerTecnico) => void
+  clienteId?: string
+  onUpdate: (p: ParecerItem) => void
 }) {
   const [loadingHistory, setLoadingHistory] = useState(false)
   const [historyFetched, setHistoryFetched] = useState(false)
@@ -112,57 +26,64 @@ function ParecerForm({
   const [errorHistory, setErrorHistory] = useState(false)
 
   const baseId = useId()
-  const p = equipment.parecer || ({ parecer: '' } as ParecerTecnico)
-
-  const fetchHistory = async () => {
-    if (!clienteId || !equipment.tipo_equipamento || !equipment.dados_tecnicos?.numero) {
-      setHistoryFetched(true)
-      return
-    }
-    setLoadingHistory(true)
-    setErrorHistory(false)
-    try {
-      let filter = `equipamento_id.relatorio_id.cliente_id = '${clienteId}' && equipamento_id.tipo_equipamento = '${equipment.tipo_equipamento}'`
-      if (p.id) {
-        filter += ` && id != '${p.id}'`
-      }
-
-      const res = await pb.collection('parecer_tecnico').getList(1, 50, {
-        filter,
-        sort: '-created',
-        expand: 'equipamento_id,equipamento_id.relatorio_id',
-      })
-
-      const match = res.items.find((item) => {
-        const eq = item.expand?.equipamento_id
-        return (
-          eq &&
-          eq.dados_tecnicos?.numero === equipment.dados_tecnicos?.numero &&
-          eq.dados_tecnicos?.subestacao === equipment.dados_tecnicos?.subestacao
-        )
-      })
-
-      if (match) {
-        setHistoryParecer(match)
-        if (!p.id && !p.parecer_anterior) {
-          onUpdate({ ...p, parecer_anterior: match.parecer as any })
-        }
-      }
-    } catch (error) {
-      console.error('Failed to fetch history', error)
-      setErrorHistory(true)
-    } finally {
-      setLoadingHistory(false)
-      setHistoryFetched(true)
-    }
-  }
+  const p = equipment.parecer || ({ parecer: '' } as ParecerItem)
 
   useEffect(() => {
+    let active = true
+
+    const fetchHistory = async () => {
+      if (!clienteId || !equipment.tipo_equipamento || !equipment.dados_tecnicos?.numero) {
+        if (active) setHistoryFetched(true)
+        return
+      }
+      setLoadingHistory(true)
+      setErrorHistory(false)
+      try {
+        let filter = `equipamento_id.relatorio_id.cliente_id = '${clienteId}' && equipamento_id.tipo_equipamento = '${equipment.tipo_equipamento}'`
+        if (p.id) {
+          filter += ` && id != '${p.id}'`
+        }
+
+        const res = await pb.collection('parecer_tecnico').getList(1, 50, {
+          filter,
+          sort: '-created',
+          expand: 'equipamento_id,equipamento_id.relatorio_id',
+        })
+
+        const match = res.items.find((item) => {
+          const eq = item.expand?.equipamento_id
+          return (
+            eq &&
+            eq.dados_tecnicos?.numero === equipment.dados_tecnicos?.numero &&
+            eq.dados_tecnicos?.subestacao === equipment.dados_tecnicos?.subestacao
+          )
+        })
+
+        if (active && match) {
+          setHistoryParecer(match)
+          if (!p.id && !p.parecer_anterior) {
+            onUpdate({ ...p, parecer_anterior: match.parecer as any })
+          }
+        }
+      } catch (error) {
+        console.error('Failed to fetch history', error)
+        if (active) setErrorHistory(true)
+      } finally {
+        if (active) {
+          setLoadingHistory(false)
+          setHistoryFetched(true)
+        }
+      }
+    }
+
     if (!historyFetched) {
       fetchHistory()
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [clienteId, equipment, historyFetched, p.id])
+
+    return () => {
+      active = false
+    }
+  }, [clienteId, equipment, historyFetched, p.id, p, onUpdate])
 
   if (loadingHistory) {
     return (
@@ -179,7 +100,11 @@ function ParecerForm({
         <AlertTitle>Erro</AlertTitle>
         <AlertDescription className="flex justify-between items-center">
           Não foi possível buscar o histórico deste equipamento.
-          <button type="button" onClick={fetchHistory} className="underline font-medium">
+          <button
+            type="button"
+            onClick={() => setHistoryFetched(false)}
+            className="underline font-medium"
+          >
             Tentar novamente
           </button>
         </AlertDescription>
@@ -187,7 +112,7 @@ function ParecerForm({
     )
   }
 
-  const handleChange = (field: keyof ParecerTecnico, value: any) => {
+  const handleChange = (field: keyof ParecerItem, value: any) => {
     if (isView) return
     onUpdate({ ...p, [field]: value })
   }
@@ -199,7 +124,7 @@ function ParecerForm({
     : 'Anterior'
 
   return (
-    <div className="space-y-6 animate-fade-in">
+    <div className="space-y-6 animate-fade-in p-4 bg-background rounded-md border border-muted">
       {historyParecer &&
         (historyParecer.parecer === 'Possui Ressalvas' ||
           historyParecer.parecer === 'Não Conforme') && (

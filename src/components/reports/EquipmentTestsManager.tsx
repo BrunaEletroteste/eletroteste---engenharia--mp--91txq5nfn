@@ -121,29 +121,26 @@ export function EquipmentTestsManager({
   }
 
   return (
-    <Card className="shadow-sm border-muted animate-fade-in">
-      <CardHeader className="bg-muted/30 pb-4">
-        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-          <div>
-            <CardTitle className="text-xl text-primary">
-              {equipment.tipo_equipamento} — {displayIndex}
-            </CardTitle>
-            <CardDescription>Gerencie os testes elétricos para este equipamento</CardDescription>
-          </div>
-          {!isView && (
-            <Button
-              size="sm"
-              onClick={() => {
-                setEditingTest(null)
-                setModalOpen(true)
-              }}
-            >
-              <Plus className="h-4 w-4 mr-2" /> Adicionar Teste
-            </Button>
-          )}
+    <div className="space-y-8 animate-fade-in">
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+        <div>
+          <h3 className="text-lg font-semibold text-primary">Gerenciamento de Testes Elétricos</h3>
+          <p className="text-sm text-muted-foreground">Registre e compare os testes realizados.</p>
         </div>
-      </CardHeader>
-      <CardContent className="pt-6 space-y-8">
+        {!isView && (
+          <Button
+            size="sm"
+            onClick={() => {
+              setEditingTest(null)
+              setModalOpen(true)
+            }}
+          >
+            <Plus className="h-4 w-4 mr-2" /> Adicionar Teste
+          </Button>
+        )}
+      </div>
+
+      <div className="space-y-8">
         <div className="space-y-4">
           <h4 className="font-medium text-sm text-muted-foreground uppercase tracking-wider">
             Testes Atuais
@@ -337,13 +334,13 @@ export function EquipmentTestsManager({
             )}
           </div>
         </div>
-      </CardContent>
+      </div>
       <TestModal
         open={modalOpen}
         onOpenChange={setModalOpen}
         onSave={handleSaveTest}
         initialData={editingTest?.test}
       />
-    </Card>
+    </div>
   )
 }

@@ -1,9 +1,14 @@
 import { useState } from 'react'
 import { Plus, Edit, Trash2, Cpu, ChevronDown, ChevronUp } from 'lucide-react'
-import { EquipmentItem } from '@/types/reports'
+import { useToast } from '@/hooks/use-toast'
+import { EquipmentItem, ParecerItem } from '@/types/reports'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { EquipmentModal } from './EquipmentModal'
+import { EquipmentTestsManager } from './EquipmentTestsManager'
+import { ParecerForm } from './ParecerForm'
+import { useFormContext, useWatch } from 'react-hook-form'
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import {
   Accordion,
   AccordionContent,
@@ -30,6 +35,11 @@ interface Props {
 export function EquipmentSection({ equipments, setEquipments, isView }: Props) {
   const [modalOpen, setModalOpen] = useState(false)
   const [editingIndex, setEditingIndex] = useState<number | null>(null)
+  const { control } = useFormContext()
+  const { toast } = useToast()
+
+  const clienteId = useWatch({ control, name: 'cliente_id' })
+  const reportDate = useWatch({ control, name: 'data_execucao' })
 
   const [expandedItems, setExpandedItems] = useState<string[]>([])
   const [deleteDialog, setDeleteDialog] = useState<{ open: boolean; index: number | null }>({
@@ -71,6 +81,21 @@ export function EquipmentSection({ equipments, setEquipments, isView }: Props) {
     } else {
       setExpandedItems(visibleEquipments.map((_, i) => i.toString()))
     }
+  }
+
+  const handleUpdateParecer = (index: number, p: ParecerItem) => {
+    setEquipments((prev) => {
+      const next = [...prev]
+      const oldP = next[index].parecer
+      if (oldP?.parecer !== p.parecer && p.parecer) {
+        toast({
+          title: 'Parecer registrado',
+          description: 'O status do parecer foi atualizado temporariamente.',
+        })
+      }
+      next[index] = { ...next[index], parecer: p }
+      return next
+    })
   }
 
   return (
@@ -127,13 +152,29 @@ export function EquipmentSection({ equipments, setEquipments, isView }: Props) {
               >
                 <div className="flex items-center justify-between pr-4 bg-muted/20">
                   <AccordionTrigger className="hover:no-underline px-4 py-3 flex-1 justify-start gap-3">
-                    <Badge variant="outline" className="bg-background">
-                      {eq.tipo_equipamento}
-                    </Badge>
-                    {eq.dados_tecnicos.numero && (
-                      <span className="text-muted-foreground font-semibold">
-                        #{eq.dados_tecnicos.numero}
-                      </span>
+                    <span className="font-semibold text-foreground">
+                      {eq.tipo_equipamento} — {eq.dados_tecnicos.numero || 'Sem identificação'}
+                    </span>
+                    {eq.parecer?.parecer && (
+                      <Badge
+                        variant={
+                          eq.parecer.parecer === 'Conforme'
+                            ? 'default'
+                            : eq.parecer.parecer === 'Possui Ressalvas'
+                              ? 'secondary'
+                              : 'destructive'
+                        }
+                        className={cn('ml-auto mr-4', {
+                          'bg-emerald-100 text-emerald-800 hover:bg-emerald-100':
+                            eq.parecer.parecer === 'Conforme',
+                          'bg-[#FEF3C7] text-yellow-800 hover:bg-[#FEF3C7]':
+                            eq.parecer.parecer === 'Possui Ressalvas',
+                          'bg-[#FEE2E2] text-red-800 hover:bg-[#FEE2E2]':
+                            eq.parecer.parecer === 'Não Conforme',
+                        })}
+                      >
+                        {eq.parecer.parecer}
+                      </Badge>
                     )}
                   </AccordionTrigger>
                   {!isView && (
@@ -164,23 +205,73 @@ export function EquipmentSection({ equipments, setEquipments, isView }: Props) {
                     </div>
                   )}
                 </div>
-                <AccordionContent className="p-4 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-y-3 gap-x-4 text-[13px] border-t bg-background">
-                  {Object.entries(eq.dados_tecnicos).map(([key, val]) => {
-                    if (val === undefined || val === null || val === '') return null
-                    // format boolean fields
-                    let displayVal = val
-                    if (typeof val === 'boolean') displayVal = val ? 'Sim' : 'Não'
-                    return (
-                      <div key={key} className="flex flex-col">
-                        <span className="font-semibold text-muted-foreground capitalize">
-                          {key.replace(/_/g, ' ')}
-                        </span>
-                        <span className="truncate" title={String(displayVal)}>
-                          {String(displayVal)}
-                        </span>
+                <AccordionContent className="bg-background">
+                  <Tabs defaultValue="dados" className="w-full">
+                    <TabsList className="w-full justify-start border-b rounded-none px-4 h-auto space-x-6 bg-muted/5 overflow-x-auto">
+                      <TabsTrigger
+                        value="dados"
+                        className="rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent px-0 py-2"
+                      >
+                        Dados Técnicos
+                      </TabsTrigger>
+                      <TabsTrigger
+                        value="testes"
+                        className="rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent px-0 py-2"
+                      >
+                        Testes Elétricos
+                      </TabsTrigger>
+                      <TabsTrigger
+                        value="parecer"
+                        className="rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent px-0 py-2"
+                      >
+                        Parecer Técnico
+                      </TabsTrigger>
+                    </TabsList>
+
+                    <TabsContent value="dados" className="p-4 focus-visible:outline-none">
+                      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-y-3 gap-x-4 text-[13px] p-2 bg-muted/10 rounded-md border border-dashed">
+                        {Object.entries(eq.dados_tecnicos).map(([key, val]) => {
+                          if (val === undefined || val === null || val === '') return null
+                          let displayVal = val
+                          if (typeof val === 'boolean') displayVal = val ? 'Sim' : 'Não'
+                          return (
+                            <div key={key} className="flex flex-col">
+                              <span className="font-semibold text-muted-foreground capitalize">
+                                {key.replace(/_/g, ' ')}
+                              </span>
+                              <span
+                                className="truncate font-medium text-foreground"
+                                title={String(displayVal)}
+                              >
+                                {String(displayVal)}
+                              </span>
+                            </div>
+                          )
+                        })}
                       </div>
-                    )
-                  })}
+                    </TabsContent>
+
+                    <TabsContent value="testes" className="p-4 focus-visible:outline-none">
+                      <EquipmentTestsManager
+                        equipment={eq}
+                        equipmentIndex={index}
+                        displayIndex={i + 1}
+                        setEquipments={setEquipments}
+                        isView={isView}
+                        clienteId={clienteId}
+                        reportDate={reportDate}
+                      />
+                    </TabsContent>
+
+                    <TabsContent value="parecer" className="p-4 focus-visible:outline-none">
+                      <ParecerForm
+                        equipment={eq}
+                        isView={isView}
+                        clienteId={clienteId}
+                        onUpdate={(p) => handleUpdateParecer(index, p)}
+                      />
+                    </TabsContent>
+                  </Tabs>
                 </AccordionContent>
               </AccordionItem>
             ))}

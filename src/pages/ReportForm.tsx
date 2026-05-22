@@ -20,9 +20,6 @@ import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert'
 import { ArrowLeft, Save, CheckCircle2 } from 'lucide-react'
 import { ReportHeaderSection } from '@/components/reports/ReportHeaderSection'
 import { EquipmentSection } from '@/components/reports/EquipmentSection'
-import { ElectricalTestsSection } from '@/components/reports/ElectricalTestsSection'
-import { ParecerTecnicoSection } from '@/components/reports/ParecerTecnicoSection'
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { reportFormSchema, FormValues, EquipmentItem } from '@/types/reports'
 
 export default function ReportForm() {
@@ -345,62 +342,14 @@ export default function ReportForm() {
             </CardDescription>
           </CardHeader>
 
-          <Tabs defaultValue="geral" className="w-full">
-            <TabsList className="w-full justify-start border-b rounded-none px-4 sm:px-8 pt-4 h-auto space-x-6 bg-transparent">
-              <TabsTrigger
-                value="geral"
-                className="rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent px-0 py-2"
-              >
-                Geral
-              </TabsTrigger>
-              <TabsTrigger
-                value="testes"
-                className="rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent px-0 py-2"
-              >
-                Testes Elétricos
-              </TabsTrigger>
-              <TabsTrigger
-                value="parecer"
-                className="rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent px-0 py-2"
-              >
-                Parecer Técnico
-              </TabsTrigger>
-            </TabsList>
-
-            <TabsContent
-              value="geral"
-              className="space-y-8 pt-6 p-4 sm:p-8 mt-0 focus-visible:outline-none focus-visible:ring-0"
-            >
-              <ReportHeaderSection isView={isView} />
-              <EquipmentSection
-                equipments={equipments}
-                setEquipments={setEquipments}
-                isView={isView}
-              />
-            </TabsContent>
-
-            <TabsContent
-              value="testes"
-              className="space-y-8 pt-6 p-4 sm:p-8 mt-0 focus-visible:outline-none focus-visible:ring-0"
-            >
-              <ElectricalTestsSection
-                equipments={equipments}
-                setEquipments={setEquipments}
-                isView={isView}
-              />
-            </TabsContent>
-
-            <TabsContent
-              value="parecer"
-              className="space-y-8 pt-6 p-4 sm:p-8 mt-0 focus-visible:outline-none focus-visible:ring-0"
-            >
-              <ParecerTecnicoSection
-                equipments={equipments}
-                setEquipments={setEquipments}
-                isView={isView}
-              />
-            </TabsContent>
-          </Tabs>
+          <div className="space-y-8 pt-6 p-4 sm:p-8 mt-0">
+            <ReportHeaderSection isView={isView} />
+            <EquipmentSection
+              equipments={equipments}
+              setEquipments={setEquipments}
+              isView={isView}
+            />
+          </div>
 
           <CardFooter className="flex flex-col-reverse sm:flex-row justify-between items-center gap-4 bg-muted/30 p-6 border-t rounded-b-xl">
             <Button variant="outline" className="w-full sm:w-auto" onClick={() => navigate(-1)}>
