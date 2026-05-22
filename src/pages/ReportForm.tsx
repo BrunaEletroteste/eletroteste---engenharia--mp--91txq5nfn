@@ -177,27 +177,51 @@ export default function ReportForm() {
     !!id && equipments.length > 0,
   )
 
-  const validateEquipments = () => {
-    for (const eq of equipments) {
+  const validateEquipments = (status: 'rascunho' | 'finalizado') => {
+    for (let i = 0; i < equipments.length; i++) {
+      const eq = equipments[i]
       if (eq._delete) continue
 
       const p = eq.parecer
-      if (!p || !p.parecer) {
-        toast({
-          title: 'Erro de Validação',
-          description: `O parecer é obrigatório para o equipamento: ${eq.tipo_equipamento} - ${eq.dados_tecnicos?.numero || ''}`,
-          variant: 'destructive',
-        })
-        return false
+      if (status === 'finalizado') {
+        if (!p || !p.parecer) {
+          toast({
+            title: 'Erro de Validação',
+            description: `O parecer é obrigatório para o equipamento: ${eq.tipo_equipamento} - ${eq.dados_tecnicos?.numero || ''}`,
+            variant: 'destructive',
+          })
+          const el = document.getElementById(`equipamento-${i}`)
+          if (el) {
+            el.scrollIntoView({ behavior: 'smooth', block: 'center' })
+            el.classList.add('ring-2', 'ring-destructive', 'border-destructive')
+            setTimeout(
+              () => el.classList.remove('ring-2', 'ring-destructive', 'border-destructive'),
+              3000,
+            )
+          }
+          return false
+        }
       }
 
-      if (p.parecer_anterior && p.parecer !== p.parecer_anterior) {
-        if (!p.justificativa_mudanca || p.justificativa_mudanca.trim() === '') {
+      if (p?.parecer && p.parecer_anterior && p.parecer !== p.parecer_anterior) {
+        if (
+          status === 'finalizado' &&
+          (!p.justificativa_mudanca || p.justificativa_mudanca.trim() === '')
+        ) {
           toast({
             title: 'Erro de Validação',
             description: `Justificativa é obrigatória quando há mudança de status no equipamento: ${eq.tipo_equipamento} - ${eq.dados_tecnicos?.numero || ''}`,
             variant: 'destructive',
           })
+          const el = document.getElementById(`equipamento-${i}`)
+          if (el) {
+            el.scrollIntoView({ behavior: 'smooth', block: 'center' })
+            el.classList.add('ring-2', 'ring-destructive', 'border-destructive')
+            setTimeout(
+              () => el.classList.remove('ring-2', 'ring-destructive', 'border-destructive'),
+              3000,
+            )
+          }
           return false
         }
       }
@@ -206,7 +230,7 @@ export default function ReportForm() {
   }
 
   const onSubmit = async (data: FormValues) => {
-    if (!validateEquipments()) return
+    if (!validateEquipments(data.status)) return
     isSaving.current = true
     try {
       setIsLoading(true)
@@ -269,7 +293,7 @@ export default function ReportForm() {
             const p = eq.parecer
             if (p._delete && p.id) {
               await pb.collection('parecer_tecnico').delete(p.id)
-            } else if (!p._delete) {
+            } else if (!p._delete && p.parecer) {
               const pPayload = {
                 equipamento_id: savedEqId,
                 parecer: p.parecer,
@@ -287,7 +311,13 @@ export default function ReportForm() {
         }
       }
 
-      toast({ title: 'Sucesso', description: 'Relatório salvo com sucesso. Parecer registrado.' })
+      toast({
+        title: 'Sucesso',
+        description:
+          data.status === 'rascunho'
+            ? 'Rascunho salvo com sucesso.'
+            : 'Relatório finalizado com sucesso.',
+      })
       navigate('/')
     } catch (error: any) {
       isSaving.current = false

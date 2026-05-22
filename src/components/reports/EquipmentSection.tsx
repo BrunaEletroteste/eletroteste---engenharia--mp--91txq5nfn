@@ -185,9 +185,10 @@ export function EquipmentSection({ equipments, setEquipments, isView }: Props) {
           >
             {visibleEquipments.map(({ eq, index }, i) => (
               <AccordionItem
+                id={`equipamento-${index}`}
                 key={index}
                 value={i.toString()}
-                className="border-l-4 border-l-primary/60 border rounded-md shadow-sm overflow-hidden bg-card"
+                className="border-l-4 border-l-primary/60 border rounded-md shadow-sm overflow-hidden bg-card transition-all duration-300"
               >
                 <div className="flex items-center justify-between pr-4 bg-muted/20">
                   <AccordionTrigger className="hover:no-underline px-4 py-3 flex-1 justify-start gap-3">
