@@ -287,6 +287,184 @@ export function EquipmentModal({ open, onOpenChange, onSave, initialData }: Prop
     onOpenChange(false)
   }
 
+  const isFuseField = (f: FieldDef) => {
+    const name = f.name.toLowerCase()
+    const label = f.label.toLowerCase()
+    return (
+      name.includes('fusivel') ||
+      name.includes('fusiveis') ||
+      label.includes('fusível') ||
+      label.includes('fusíveis')
+    )
+  }
+
+  const renderField = (field: FieldDef) => {
+    if (field.dependsOn && dados[field.dependsOn.field] !== field.dependsOn.value) {
+      return null
+    }
+
+    const isCombobox =
+      field.type === 'combobox' ||
+      (tipo === 'Transformador de Potencial' && field.name === 'tensao_secundaria') ||
+      (tipo === 'Transformador de Corrente' &&
+        (field.name === 'corrente_primaria' || field.name === 'corrente_secundaria'))
+
+    let isSelect = false
+    let targetCategory = field.name.toLowerCase()
+
+    if (targetCategory === 'tensao_primaria') targetCategory = 'tensão'
+    if (
+      targetCategory === 'corrente_nominal' ||
+      targetCategory === 'corrente_nominal_fusiveis' ||
+      field.label.toLowerCase().includes('corrente nominal dos fusíveis')
+    )
+      targetCategory = 'corrente nominal'
+    if (
+      targetCategory === 'fabricante_fusiveis' ||
+      field.label.toLowerCase().includes('fabricante dos fusíveis')
+    )
+      targetCategory = 'fabricante'
+
+    if (field.type === 'select' && field.options) {
+      isSelect = true
+    } else if (
+      !opcoesError &&
+      ([
+        'corrente_nominal',
+        'classe_isolamento',
+        'potencia_simetrica',
+        'capacidade_ruptura',
+        'rele_minima_tensao',
+        'rele_abertura',
+        'rele_fechamento',
+        'motorizacao',
+        'tensao_primaria',
+        'classe_precisao',
+        'corrente_nominal_fusiveis',
+        'fabricante_fusiveis',
+      ].includes(field.name) ||
+        field.label.toLowerCase().includes('corrente nominal dos fusíveis') ||
+        field.label.toLowerCase().includes('fabricante dos fusíveis'))
+    ) {
+      isSelect = true
+    }
+
+    return (
+      <div key={field.name} className="space-y-2">
+        <Label>
+          {field.label}
+          {['subestacao', 'numero'].includes(field.name) && (
+            <span className="text-destructive"> *</span>
+          )}
+        </Label>
+
+        {isCombobox && !opcoesError ? (
+          <ComboboxField
+            field={field}
+            value={dados[field.name]?.toString() || ''}
+            onChange={(v) => {
+              let finalVal: any = v
+              if (field.type === 'number' && v !== '') {
+                const clean = v.includes(',')
+                  ? v.replace(/\./g, '').replace(',', '.')
+                  : v.replace(/\./g, '')
+                const num = Number(clean)
+                if (!isNaN(num)) finalVal = num
+              }
+              handleFieldChange(field.name, finalVal)
+            }}
+            opcoes={opcoes}
+            overrideCategory={
+              field.name === 'tensao_secundaria'
+                ? 'Tensão'
+                : field.name === 'corrente_primaria' || field.name === 'corrente_secundaria'
+                  ? 'Corrente Nominal'
+                  : undefined
+            }
+          />
+        ) : isSelect ? (
+          <Select
+            value={dados[field.name]?.toString() || ''}
+            onValueChange={(v) => handleFieldChange(field.name, v)}
+            disabled={loadingOpcoes}
+          >
+            <SelectTrigger>
+              <SelectValue placeholder={loadingOpcoes ? 'Carregando...' : 'Selecione...'} />
+            </SelectTrigger>
+            <SelectContent>
+              {field.options ? (
+                field.options.map((o) => (
+                  <SelectItem key={o} value={o}>
+                    {o}
+                  </SelectItem>
+                ))
+              ) : (
+                <>
+                  {dados[field.name] &&
+                    !opcoes.find(
+                      (op) =>
+                        op.categoria.toLowerCase() === targetCategory &&
+                        op.valor === dados[field.name],
+                    ) && (
+                      <SelectItem value={dados[field.name]?.toString()}>
+                        {dados[field.name]}
+                      </SelectItem>
+                    )}
+                  {opcoes
+                    .filter((o) => {
+                      const cat = o.categoria.toLowerCase()
+                      return (
+                        cat === targetCategory ||
+                        (targetCategory === 'tensão' && cat === 'tensao_primaria') ||
+                        (targetCategory === 'corrente nominal' && cat === 'corrente_nominal')
+                      )
+                    })
+                    .map((o) => (
+                      <SelectItem key={o.id} value={o.valor}>
+                        {o.valor}
+                      </SelectItem>
+                    ))}
+                </>
+              )}
+            </SelectContent>
+          </Select>
+        ) : field.type === 'boolean' ? (
+          <div className="flex items-center h-10">
+            <Switch
+              checked={!!dados[field.name]}
+              onCheckedChange={(checked) => handleFieldChange(field.name, checked)}
+            />
+          </div>
+        ) : (
+          <Input
+            type={field.type === 'number' ? 'number' : 'text'}
+            step={field.type === 'number' ? 'any' : undefined}
+            value={dados[field.name] ?? ''}
+            onChange={(e) =>
+              handleFieldChange(
+                field.name,
+                field.type === 'number'
+                  ? e.target.value === ''
+                    ? ''
+                    : Number(e.target.value)
+                  : e.target.value,
+              )
+            }
+            placeholder={
+              field.readOnly
+                ? 'Calculado automaticamente'
+                : field.name === 'fabricante'
+                  ? 'Insira o fabricante'
+                  : `Insira ${field.label.toLowerCase()}`
+            }
+            readOnly={field.readOnly}
+            className={field.readOnly ? 'bg-muted cursor-not-allowed' : ''}
+          />
+        )}
+      </div>
+    )
+  }
+
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
@@ -314,153 +492,21 @@ export function EquipmentModal({ open, onOpenChange, onSave, initialData }: Prop
           </div>
 
           {fields.length > 0 && (
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-5 border-t pt-5 mt-2">
-              {fields.map((field) => {
-                if (field.dependsOn && dados[field.dependsOn.field] !== field.dependsOn.value) {
-                  return null
-                }
-                return (
-                  <div key={field.name} className="space-y-2">
-                    <Label>
-                      {field.label}
-                      {['subestacao', 'numero'].includes(field.name) && (
-                        <span className="text-destructive"> *</span>
-                      )}
-                    </Label>
+            <div className="space-y-6 border-t pt-5 mt-2">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
+                {fields.filter((f) => !isFuseField(f)).map(renderField)}
+              </div>
 
-                    {(field.type === 'combobox' ||
-                      (tipo === 'Transformador de Potencial' &&
-                        field.name === 'tensao_secundaria') ||
-                      (tipo === 'Transformador de Corrente' &&
-                        (field.name === 'corrente_primaria' ||
-                          field.name === 'corrente_secundaria'))) &&
-                    !opcoesError ? (
-                      <ComboboxField
-                        field={field}
-                        value={dados[field.name]?.toString() || ''}
-                        onChange={(v) => {
-                          let finalVal: any = v
-                          if (field.type === 'number' && v !== '') {
-                            const clean = v.includes(',')
-                              ? v.replace(/\./g, '').replace(',', '.')
-                              : v.replace(/\./g, '')
-                            const num = Number(clean)
-                            if (!isNaN(num)) finalVal = num
-                          }
-                          handleFieldChange(field.name, finalVal)
-                        }}
-                        opcoes={opcoes}
-                        overrideCategory={
-                          field.name === 'tensao_secundaria'
-                            ? 'Tensão'
-                            : field.name === 'corrente_primaria' ||
-                                field.name === 'corrente_secundaria'
-                              ? 'Corrente Nominal'
-                              : undefined
-                        }
-                      />
-                    ) : (field.type === 'select' && field.options) ||
-                      (!opcoesError &&
-                        [
-                          'corrente_nominal',
-                          'classe_isolamento',
-                          'potencia_simetrica',
-                          'capacidade_ruptura',
-                          'rele_minima_tensao',
-                          'rele_abertura',
-                          'rele_fechamento',
-                          'motorizacao',
-                          'tensao_primaria',
-                          'classe_precisao',
-                        ].includes(field.name)) ? (
-                      <Select
-                        value={dados[field.name]?.toString() || ''}
-                        onValueChange={(v) => handleFieldChange(field.name, v)}
-                        disabled={loadingOpcoes}
-                      >
-                        <SelectTrigger>
-                          <SelectValue
-                            placeholder={loadingOpcoes ? 'Carregando...' : 'Selecione...'}
-                          />
-                        </SelectTrigger>
-                        <SelectContent>
-                          {field.options ? (
-                            field.options.map((o) => (
-                              <SelectItem key={o} value={o}>
-                                {o}
-                              </SelectItem>
-                            ))
-                          ) : (
-                            <>
-                              {dados[field.name] &&
-                                !opcoes.find(
-                                  (op) =>
-                                    op.categoria.toLowerCase() === field.name.toLowerCase() &&
-                                    op.valor === dados[field.name],
-                                ) && (
-                                  <SelectItem value={dados[field.name]?.toString()}>
-                                    {dados[field.name]}
-                                  </SelectItem>
-                                )}
-                              {opcoes
-                                .filter((o) => {
-                                  const cat = o.categoria.toLowerCase()
-                                  let targetCat = field.name.toLowerCase()
-                                  if (targetCat === 'tensao_primaria') targetCat = 'tensão'
-                                  if (targetCat === 'corrente_nominal')
-                                    targetCat = 'corrente nominal'
-
-                                  return (
-                                    cat === targetCat ||
-                                    (targetCat === 'tensão' && cat === 'tensao_primaria') ||
-                                    (targetCat === 'corrente nominal' && cat === 'corrente_nominal')
-                                  )
-                                })
-                                .map((o) => (
-                                  <SelectItem key={o.id} value={o.valor}>
-                                    {o.valor}
-                                  </SelectItem>
-                                ))}
-                            </>
-                          )}
-                        </SelectContent>
-                      </Select>
-                    ) : field.type === 'boolean' ? (
-                      <div className="flex items-center h-10">
-                        <Switch
-                          checked={!!dados[field.name]}
-                          onCheckedChange={(checked) => handleFieldChange(field.name, checked)}
-                        />
-                      </div>
-                    ) : (
-                      <Input
-                        type={field.type === 'number' ? 'number' : 'text'}
-                        step={field.type === 'number' ? 'any' : undefined}
-                        value={dados[field.name] ?? ''}
-                        onChange={(e) =>
-                          handleFieldChange(
-                            field.name,
-                            field.type === 'number'
-                              ? e.target.value === ''
-                                ? ''
-                                : Number(e.target.value)
-                              : e.target.value,
-                          )
-                        }
-                        placeholder={
-                          field.readOnly
-                            ? 'Calculado automaticamente'
-                            : field.name === 'fabricante'
-                              ? 'Insira o fabricante'
-                              : `Insira ${field.label.toLowerCase()}`
-                        }
-                        readOnly={field.readOnly}
-                        className={field.readOnly ? 'bg-muted cursor-not-allowed' : ''}
-                      />
-                    )}
+              {fields.some((f) => isFuseField(f)) && (
+                <div className="rounded-lg border border-border bg-card p-5 shadow-sm">
+                  <h3 className="mb-4 text-sm font-medium text-muted-foreground uppercase tracking-wider flex items-center gap-2">
+                    Informações dos Fusíveis
+                  </h3>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
+                    {fields.filter((f) => isFuseField(f)).map(renderField)}
                   </div>
-                )
-              })}
+                </div>
+              )}
             </div>
           )}
         </div>
