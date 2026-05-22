@@ -1,8 +1,9 @@
 import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { Plus, Eye, Pencil, FileSearch, AlertCircle } from 'lucide-react'
+import { Plus, Eye, Pencil, FileSearch, AlertCircle, Copy, Loader2 } from 'lucide-react'
 import { useAuth } from '@/hooks/use-auth'
 import { useRealtime } from '@/hooks/use-realtime'
+import { useToast } from '@/hooks/use-toast'
 import pb from '@/lib/pocketbase/client'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
@@ -35,6 +36,8 @@ export default function Index() {
   const [filterCliente, setFilterCliente] = useState('')
   const [isLoading, setIsLoading] = useState(true)
   const [hasError, setHasError] = useState(false)
+  const [isDuplicating, setIsDuplicating] = useState<string | null>(null)
+  const { toast } = useToast()
 
   const loadData = async () => {
     try {
@@ -101,6 +104,29 @@ export default function Index() {
   }
 
   const canCreate = user?.tipo_acesso === 'admin' || user?.tipo_acesso === 'tecnico_campo'
+
+  const handleDuplicate = async (id: string) => {
+    try {
+      setIsDuplicating(id)
+      const res = await pb.send(`/backend/v1/relatorios/${id}/duplicate`, {
+        method: 'POST',
+      })
+      toast({
+        title: 'Relatório duplicado',
+        description: 'A cópia foi criada como rascunho.',
+      })
+      navigate(`/relatorio/editar/${res.id}`)
+    } catch (e: any) {
+      console.error(e)
+      toast({
+        title: 'Erro ao duplicar',
+        description: e?.message || 'Não foi possível duplicar o relatório.',
+        variant: 'destructive',
+      })
+    } finally {
+      setIsDuplicating(null)
+    }
+  }
 
   return (
     <div className="space-y-6">
@@ -208,6 +234,21 @@ export default function Index() {
                           >
                             <Pencil className="h-4 w-4" />
                           </Button>
+                          {canCreate && (
+                            <Button
+                              variant="ghost"
+                              size="icon"
+                              onClick={() => handleDuplicate(report.id)}
+                              disabled={isDuplicating === report.id}
+                              title="Duplicar"
+                            >
+                              {isDuplicating === report.id ? (
+                                <Loader2 className="h-4 w-4 animate-spin" />
+                              ) : (
+                                <Copy className="h-4 w-4" />
+                              )}
+                            </Button>
+                          )}
                         </div>
                       </TableCell>
                     </TableRow>
@@ -238,7 +279,7 @@ export default function Index() {
                     {clienteInfo && <p>CNPJ: {clienteInfo.cnpj}</p>}
                     <p>Data: {formatDate(report.data_execucao)}</p>
                   </CardContent>
-                  <CardFooter className="flex justify-end gap-2 pt-3 border-t bg-muted/20">
+                  <CardFooter className="flex flex-wrap justify-end gap-2 pt-3 border-t bg-muted/20">
                     <Button
                       variant="outline"
                       size="sm"
@@ -254,6 +295,21 @@ export default function Index() {
                     >
                       <Pencil className="mr-2 h-4 w-4" /> Editar
                     </Button>
+                    {canCreate && (
+                      <Button
+                        variant="secondary"
+                        size="sm"
+                        onClick={() => handleDuplicate(report.id)}
+                        disabled={isDuplicating === report.id}
+                      >
+                        {isDuplicating === report.id ? (
+                          <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                        ) : (
+                          <Copy className="mr-2 h-4 w-4" />
+                        )}
+                        Duplicar
+                      </Button>
+                    )}
                   </CardFooter>
                 </Card>
               )
