@@ -24,16 +24,32 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
+    const checkActive = (record: any) => record && record.ativo === true
+
     const unsubscribe = pb.authStore.onChange((_token, record) => {
-      setUser(pb.authStore.isValid ? record : null)
-      setIsAuthenticated(pb.authStore.isValid)
+      const isValidAndActive = pb.authStore.isValid && checkActive(record)
+      if (pb.authStore.isValid && !checkActive(record)) {
+        pb.authStore.clear()
+      }
+      setUser(isValidAndActive ? record : null)
+      setIsAuthenticated(isValidAndActive)
     })
 
     if (pb.authStore.isValid) {
-      pb.collection('users')
-        .authRefresh()
-        .catch(() => pb.authStore.clear())
-        .finally(() => setLoading(false))
+      if (!checkActive(pb.authStore.record)) {
+        pb.authStore.clear()
+        setLoading(false)
+      } else {
+        pb.collection('users')
+          .authRefresh()
+          .then((authData) => {
+            if (!checkActive(authData.record)) {
+              pb.authStore.clear()
+            }
+          })
+          .catch(() => pb.authStore.clear())
+          .finally(() => setLoading(false))
+      }
     } else {
       if (pb.authStore.record) pb.authStore.clear()
       setLoading(false)
@@ -55,7 +71,13 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
   const signIn = async (email: string, password: string) => {
     try {
-      await pb.collection('users').authWithPassword(email, password)
+      const authData = await pb.collection('users').authWithPassword(email, password)
+
+      if (!authData.record || authData.record.ativo !== true) {
+        pb.authStore.clear()
+        return { error: new Error('Conta inativa') }
+      }
+
       return { error: null }
     } catch (error) {
       return { error }
