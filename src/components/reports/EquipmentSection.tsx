@@ -1,10 +1,11 @@
 import { useState } from 'react'
-import { Plus, Edit, Trash2, Cpu, ChevronDown, ChevronUp } from 'lucide-react'
+import { Plus, Edit, Trash2, Cpu, ChevronDown, ChevronUp, Search, X } from 'lucide-react'
 import { useToast } from '@/hooks/use-toast'
 import { cn } from '@/lib/utils'
 import { EquipmentItem, ParecerItem } from '@/types/reports'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
+import { Input } from '@/components/ui/input'
 import { EquipmentModal } from './EquipmentModal'
 import { EquipmentTestsManager } from './EquipmentTestsManager'
 import { ParecerForm } from './ParecerForm'
@@ -42,6 +43,7 @@ export function EquipmentSection({ equipments, setEquipments, isView }: Props) {
   const clienteId = useWatch({ control, name: 'cliente_id' })
   const reportDate = useWatch({ control, name: 'data_execucao' })
 
+  const [searchQuery, setSearchQuery] = useState('')
   const [expandedItems, setExpandedItems] = useState<string[]>([])
   const [deleteDialog, setDeleteDialog] = useState<{ open: boolean; index: number | null }>({
     open: false,
@@ -72,9 +74,16 @@ export function EquipmentSection({ equipments, setEquipments, isView }: Props) {
     setDeleteDialog({ open: false, index: null })
   }
 
+  const activeEquipmentsCount = equipments.filter((eq) => !eq._delete).length
   const visibleEquipments = equipments
     .map((eq, i) => ({ eq, index: i }))
-    .filter((x) => !x.eq._delete)
+    .filter((x) => {
+      if (x.eq._delete) return false
+      if (!searchQuery) return true
+      const numero = x.eq.dados_tecnicos?.numero
+      if (!numero) return false
+      return String(numero).toLowerCase().includes(searchQuery.toLowerCase())
+    })
 
   const toggleAll = () => {
     if (expandedItems.length === visibleEquipments.length && visibleEquipments.length > 0) {
@@ -101,9 +110,33 @@ export function EquipmentSection({ equipments, setEquipments, isView }: Props) {
 
   return (
     <div className="space-y-4">
-      <div className="flex justify-between items-center pb-2 border-b mt-8">
-        <h3 className="text-lg font-semibold text-primary">2. Equipamentos Inspecionados</h3>
-        <div className="flex gap-2 items-center">
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center pb-2 border-b mt-8 gap-4">
+        <h3 className="text-lg font-semibold text-primary whitespace-nowrap">
+          2. Equipamentos Inspecionados
+        </h3>
+
+        {activeEquipmentsCount > 0 && (
+          <div className="flex-1 w-full max-w-md relative">
+            <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
+            <Input
+              placeholder="Buscar equipamento pelo número..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="pl-9 pr-8"
+            />
+            {searchQuery && (
+              <button
+                className="absolute right-2 top-2.5 text-muted-foreground hover:text-foreground p-0.5 rounded-full hover:bg-muted"
+                onClick={() => setSearchQuery('')}
+                type="button"
+              >
+                <X className="h-4 w-4" />
+              </button>
+            )}
+          </div>
+        )}
+
+        <div className="flex gap-2 items-center w-full sm:w-auto justify-end">
           {visibleEquipments.length > 0 && (
             <Button variant="outline" size="sm" onClick={toggleAll} className="hidden sm:flex">
               {expandedItems.length === visibleEquipments.length ? (
@@ -132,10 +165,15 @@ export function EquipmentSection({ equipments, setEquipments, isView }: Props) {
         </div>
       </div>
 
-      {visibleEquipments.length === 0 ? (
+      {activeEquipmentsCount === 0 ? (
         <div className="flex flex-col items-center justify-center py-10 text-muted-foreground bg-muted/20 rounded-lg border border-dashed">
           <Cpu className="h-10 w-10 mb-3 opacity-20" />
           <p>Nenhum equipamento adicionado ainda.</p>
+        </div>
+      ) : visibleEquipments.length === 0 ? (
+        <div className="flex flex-col items-center justify-center py-10 text-muted-foreground bg-muted/20 rounded-lg border border-dashed">
+          <Search className="h-10 w-10 mb-3 opacity-20" />
+          <p>Nenhum equipamento encontrado com este número</p>
         </div>
       ) : (
         <div className="pt-2">
