@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { Plus, Edit, Trash2, Cpu, ChevronDown, ChevronUp } from 'lucide-react'
 import { useToast } from '@/hooks/use-toast'
+import { cn } from '@/lib/utils'
 import { EquipmentItem, ParecerItem } from '@/types/reports'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
