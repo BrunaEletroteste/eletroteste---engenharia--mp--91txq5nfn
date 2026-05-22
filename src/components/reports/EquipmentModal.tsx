@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react'
 import { EquipmentItem } from '@/types/reports'
+import { getOpcoesPadronizadas, OpcaoPadronizada } from '@/services/opcoes'
 import { getEquipmentFields, FieldDef, EQUIPMENT_TYPES } from '@/lib/equipment-templates'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -33,6 +34,23 @@ export function EquipmentModal({ open, onOpenChange, onSave, initialData }: Prop
   const [tipo, setTipo] = useState<string>('')
   const [dados, setDados] = useState<Record<string, any>>({})
   const [fields, setFields] = useState<FieldDef[]>([])
+  const [opcoes, setOpcoes] = useState<OpcaoPadronizada[]>([])
+  const [loadingOpcoes, setLoadingOpcoes] = useState(false)
+
+  useEffect(() => {
+    const fetchOpcoes = async () => {
+      try {
+        setLoadingOpcoes(true)
+        const data = await getOpcoesPadronizadas()
+        setOpcoes(data)
+      } catch (error) {
+        console.error(error)
+      } finally {
+        setLoadingOpcoes(false)
+      }
+    }
+    fetchOpcoes()
+  }, [])
 
   useEffect(() => {
     if (open) {
@@ -122,20 +140,45 @@ export function EquipmentModal({ open, onOpenChange, onSave, initialData }: Prop
                       )}
                     </Label>
 
-                    {field.type === 'select' && field.options ? (
+                    {(field.type === 'select' && field.options) ||
+                    ['fabricante', 'corrente_nominal'].includes(field.name) ? (
                       <Select
                         value={dados[field.name]?.toString() || ''}
                         onValueChange={(v) => handleFieldChange(field.name, v)}
+                        disabled={loadingOpcoes}
                       >
                         <SelectTrigger>
-                          <SelectValue placeholder="Selecione..." />
+                          <SelectValue
+                            placeholder={loadingOpcoes ? 'Carregando...' : 'Selecione...'}
+                          />
                         </SelectTrigger>
                         <SelectContent>
-                          {field.options.map((o) => (
-                            <SelectItem key={o} value={o}>
-                              {o}
-                            </SelectItem>
-                          ))}
+                          {field.options ? (
+                            field.options.map((o) => (
+                              <SelectItem key={o} value={o}>
+                                {o}
+                              </SelectItem>
+                            ))
+                          ) : (
+                            <>
+                              {dados[field.name] &&
+                                !opcoes.find(
+                                  (op) =>
+                                    op.categoria === field.name && op.valor === dados[field.name],
+                                ) && (
+                                  <SelectItem value={dados[field.name]?.toString()}>
+                                    {dados[field.name]}
+                                  </SelectItem>
+                                )}
+                              {opcoes
+                                .filter((o) => o.categoria === field.name)
+                                .map((o) => (
+                                  <SelectItem key={o.id} value={o.valor}>
+                                    {o.valor}
+                                  </SelectItem>
+                                ))}
+                            </>
+                          )}
                         </SelectContent>
                       </Select>
                     ) : field.type === 'boolean' ? (

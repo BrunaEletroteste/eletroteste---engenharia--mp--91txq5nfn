@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-05-22T14:17:33.764Z",
+  "generatedAt": "2026-05-22T14:28:36.991Z",
   "collections": [
     {
       "name": "users",
@@ -394,6 +394,48 @@
         }
       ],
       "indexes": []
+    },
+    {
+      "name": "opcoes_padronizadas",
+      "type": "base",
+      "apiRules": {
+        "list": "@request.auth.id != ''",
+        "view": "@request.auth.id != ''",
+        "create": "@request.auth.tipo_acesso = 'admin'",
+        "update": "@request.auth.tipo_acesso = 'admin'",
+        "delete": "@request.auth.tipo_acesso = 'admin'"
+      },
+      "fields": [
+        {
+          "name": "categoria",
+          "type": "text",
+          "required": true,
+          "system": false
+        },
+        {
+          "name": "valor",
+          "type": "text",
+          "required": true,
+          "system": false
+        },
+        {
+          "name": "created",
+          "type": "autodate",
+          "required": false,
+          "system": false,
+          "autodateTriggers": ["onCreate"]
+        },
+        {
+          "name": "updated",
+          "type": "autodate",
+          "required": false,
+          "system": false,
+          "autodateTriggers": ["onCreate", "onUpdate"]
+        }
+      ],
+      "indexes": [
+        "CREATE UNIQUE INDEX idx_opcoes_padronizadas_cat_val ON opcoes_padronizadas (categoria, valor)"
+      ]
     }
   ]
 }

@@ -7,6 +7,7 @@ import { AuthProvider, useAuth } from '@/hooks/use-auth'
 import Layout from './components/Layout'
 import Index from './pages/Index'
 import ReportForm from './pages/ReportForm'
+import ConfigOptions from './pages/ConfigOptions'
 import NotFound from './pages/NotFound'
 import Login from './pages/Login'
 
@@ -36,6 +37,7 @@ const App = () => (
             <Route path="/relatorio/novo" element={<ReportForm />} />
             <Route path="/relatorio/editar/:id" element={<ReportForm />} />
             <Route path="/relatorio/visualizar/:id" element={<ReportForm />} />
+            <Route path="/configuracoes/opcoes" element={<ConfigOptions />} />
           </Route>
           <Route path="*" element={<NotFound />} />
         </Routes>

@@ -74,8 +74,11 @@ export default function Layout() {
                       </SidebarMenuButton>
                     </SidebarMenuItem>
                     <SidebarMenuItem>
-                      <SidebarMenuButton asChild>
-                        <Link to="/">
+                      <SidebarMenuButton
+                        isActive={location.pathname.includes('/configuracoes')}
+                        asChild
+                      >
+                        <Link to="/configuracoes/opcoes">
                           <Settings />
                           <span>Configurações</span>
                         </Link>
