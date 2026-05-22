@@ -1,5 +1,5 @@
-import { Outlet, useLocation, Link } from 'react-router-dom'
-import { LayoutDashboard, FileText, Users, Settings, Bell, Zap } from 'lucide-react'
+import { Outlet, useLocation, Link, useNavigate } from 'react-router-dom'
+import { LayoutDashboard, FileText, Users, Settings, Bell, Zap, LogOut } from 'lucide-react'
 import {
   SidebarProvider,
   Sidebar,
@@ -16,9 +16,17 @@ import {
 } from '@/components/ui/sidebar'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { Button } from '@/components/ui/button'
+import { useAuth } from '@/hooks/use-auth'
 
 export default function Layout() {
   const location = useLocation()
+  const navigate = useNavigate()
+  const { user, signOut } = useAuth()
+
+  const handleLogout = () => {
+    signOut()
+    navigate('/login')
+  }
 
   return (
     <SidebarProvider>
@@ -55,22 +63,26 @@ export default function Layout() {
                     </Link>
                   </SidebarMenuButton>
                 </SidebarMenuItem>
-                <SidebarMenuItem>
-                  <SidebarMenuButton asChild>
-                    <Link to="/">
-                      <Users />
-                      <span>Clientes</span>
-                    </Link>
-                  </SidebarMenuButton>
-                </SidebarMenuItem>
-                <SidebarMenuItem>
-                  <SidebarMenuButton asChild>
-                    <Link to="/">
-                      <Settings />
-                      <span>Configurações</span>
-                    </Link>
-                  </SidebarMenuButton>
-                </SidebarMenuItem>
+                {user?.tipo_acesso === 'admin' && (
+                  <>
+                    <SidebarMenuItem>
+                      <SidebarMenuButton asChild>
+                        <Link to="/">
+                          <Users />
+                          <span>Clientes</span>
+                        </Link>
+                      </SidebarMenuButton>
+                    </SidebarMenuItem>
+                    <SidebarMenuItem>
+                      <SidebarMenuButton asChild>
+                        <Link to="/">
+                          <Settings />
+                          <span>Configurações</span>
+                        </Link>
+                      </SidebarMenuButton>
+                    </SidebarMenuItem>
+                  </>
+                )}
               </SidebarMenu>
             </SidebarGroupContent>
           </SidebarGroup>
@@ -86,14 +98,23 @@ export default function Layout() {
             </h1>
           </div>
           <div className="flex items-center gap-3">
+            <div className="hidden md:flex flex-col items-end text-sm mr-2">
+              <span className="font-medium">{user?.name || user?.email}</span>
+              <span className="text-xs text-muted-foreground capitalize">
+                {user?.tipo_acesso?.replace('_', ' ')}
+              </span>
+            </div>
             <Button variant="ghost" size="icon" className="relative">
               <Bell className="h-5 w-5 text-muted-foreground" />
               <span className="absolute top-2 right-2 h-2 w-2 rounded-full bg-destructive border-2 border-background"></span>
             </Button>
-            <Avatar className="h-9 w-9 border cursor-pointer hover:opacity-80 transition-opacity">
-              <AvatarImage src="https://img.usecurling.com/ppl/thumbnail?gender=male&seed=1" />
-              <AvatarFallback>US</AvatarFallback>
+            <Avatar className="h-9 w-9 border">
+              <AvatarImage src={`https://api.dicebear.com/7.x/initials/svg?seed=${user?.email}`} />
+              <AvatarFallback>U</AvatarFallback>
             </Avatar>
+            <Button variant="ghost" size="icon" onClick={handleLogout} title="Sair do Sistema">
+              <LogOut className="h-5 w-5 text-muted-foreground" />
+            </Button>
           </div>
         </header>
 

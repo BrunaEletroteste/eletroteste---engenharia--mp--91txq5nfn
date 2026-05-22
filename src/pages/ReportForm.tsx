@@ -1,7 +1,8 @@
 import { useState, useEffect } from 'react'
 import { useParams, useNavigate, useLocation } from 'react-router-dom'
 import { ArrowLeft, Save, CheckCircle2 } from 'lucide-react'
-import { useReports, ReportStatus } from '@/context/report-context'
+import { useAuth } from '@/hooks/use-auth'
+import pb from '@/lib/pocketbase/client'
 import { useToast } from '@/hooks/use-toast'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -9,6 +10,7 @@ import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
 import { Combobox } from '@/components/ui/combobox'
 import { Badge } from '@/components/ui/badge'
+import { Skeleton } from '@/components/ui/skeleton'
 import {
   Card,
   CardContent,
@@ -34,43 +36,70 @@ export default function ReportForm() {
   const navigate = useNavigate()
   const location = useLocation()
   const { toast } = useToast()
-  const { reports, clientes, addReport, updateReport } = useReports()
+  const { user } = useAuth()
 
   const isView = location.pathname.includes('/visualizar')
   const isEdit = location.pathname.includes('/editar')
+
+  const [isLoading, setIsLoading] = useState(true)
+  const [clientes, setClientes] = useState<any[]>([])
 
   const [formData, setFormData] = useState({
     numero: '',
     clienteId: '',
     dataExecucao: '',
     observacoes: '',
-    status: 'Rascunho' as ReportStatus,
+    status: 'rascunho',
   })
 
   useEffect(() => {
-    if (id && (isView || isEdit)) {
-      const existing = reports.find((r) => r.id === id)
-      if (existing) {
-        setFormData({ ...existing })
-      } else {
-        toast({ title: 'Erro', description: 'Relatório não encontrado.', variant: 'destructive' })
+    const fetchData = async () => {
+      try {
+        if (user?.tipo_acesso === 'admin') {
+          const cliRes = await pb.collection('clientes').getFullList()
+          setClientes(cliRes)
+        }
+
+        if (id && (isView || isEdit)) {
+          const res = await pb.collection('relatorios').getOne(id, { expand: 'cliente_id' })
+          setFormData({
+            numero: res.numero_relatorio,
+            clienteId: res.cliente_id,
+            dataExecucao: res.data_execucao ? res.data_execucao.split('T')[0] : '',
+            observacoes: res.observacoes || '',
+            status: res.status,
+          })
+
+          if (user?.tipo_acesso !== 'admin' && res.expand?.cliente_id) {
+            setClientes([res.expand.cliente_id])
+          }
+        } else if (!id && !isView && !isEdit) {
+          setFormData((prev) => ({
+            ...prev,
+            numero: `00${Math.floor(Math.random() * 1000)}/${new Date().getFullYear()}`,
+          }))
+        }
+      } catch (err) {
+        toast({
+          title: 'Erro',
+          description: 'Erro ao carregar dados do relatório.',
+          variant: 'destructive',
+        })
         navigate('/')
+      } finally {
+        setIsLoading(false)
       }
-    } else if (!id && !isView && !isEdit) {
-      // Auto-generate a dummy number for new reports
-      setFormData((prev) => ({
-        ...prev,
-        numero: `00${reports.length + 1}/${new Date().getFullYear()}`,
-      }))
     }
-  }, [id, isView, isEdit, reports, navigate, toast])
+
+    fetchData()
+  }, [id, isView, isEdit, user, navigate, toast])
 
   const comboOptions = clientes.map((c) => ({
-    label: `${c.nome} (${c.cnpj})`,
+    label: `${c.nome_empresa} (${c.cnpj})`,
     value: c.id,
   }))
 
-  const handleSave = (newStatus: ReportStatus) => {
+  const handleSave = async (newStatus: string) => {
     if (!formData.numero || !formData.clienteId || !formData.dataExecucao) {
       toast({
         title: 'Atenção',
@@ -80,19 +109,43 @@ export default function ReportForm() {
       return
     }
 
-    const payload = { ...formData, status: newStatus }
+    try {
+      const payload = {
+        numero_relatorio: formData.numero,
+        cliente_id: formData.clienteId,
+        data_execucao: new Date(formData.dataExecucao).toISOString(),
+        observacoes: formData.observacoes,
+        status: newStatus,
+        criado_por: user?.id,
+      }
 
-    if (isEdit && id) {
-      updateReport(id, payload)
-      toast({ title: 'Sucesso', description: 'Relatório atualizado com sucesso.' })
-    } else {
-      addReport({ ...payload, id: crypto.randomUUID() })
-      toast({ title: 'Sucesso', description: 'Novo relatório criado.' })
+      if (isEdit && id) {
+        await pb.collection('relatorios').update(id, payload)
+        toast({ title: 'Sucesso', description: 'Relatório atualizado com sucesso.' })
+      } else {
+        await pb.collection('relatorios').create(payload)
+        toast({ title: 'Sucesso', description: 'Novo relatório criado.' })
+      }
+      navigate('/')
+    } catch (error: any) {
+      toast({
+        title: 'Erro',
+        description: error?.message || 'Falha ao salvar relatório.',
+        variant: 'destructive',
+      })
     }
-    navigate('/')
   }
 
   const selectedClienteInfo = clientes.find((c) => c.id === formData.clienteId)
+
+  if (isLoading) {
+    return (
+      <div className="max-w-4xl mx-auto space-y-4">
+        <Skeleton className="h-[200px] w-full rounded-xl" />
+        <Skeleton className="h-[400px] w-full rounded-xl" />
+      </div>
+    )
+  }
 
   return (
     <div className="max-w-4xl mx-auto animate-fade-in-up">
@@ -111,9 +164,9 @@ export default function ReportForm() {
               <Badge
                 variant="outline"
                 className={
-                  formData.status === 'Finalizado'
-                    ? 'bg-emerald-100 text-emerald-800'
-                    : 'bg-amber-100 text-amber-800'
+                  formData.status === 'finalizado'
+                    ? 'bg-emerald-100 text-emerald-800 capitalize'
+                    : 'bg-amber-100 text-amber-800 capitalize'
                 }
               >
                 {formData.status}
@@ -132,8 +185,8 @@ export default function ReportForm() {
                 id="numero"
                 value={formData.numero}
                 onChange={(e) => setFormData({ ...formData, numero: e.target.value })}
-                disabled={isView}
-                placeholder="Ex: 001/2025"
+                disabled={isView || isEdit}
+                placeholder="Ex: 001/2026"
                 className="bg-background"
               />
             </div>
@@ -142,13 +195,13 @@ export default function ReportForm() {
               <Label htmlFor="cliente" className="text-sm font-medium">
                 Cliente <span className="text-destructive">*</span>
               </Label>
-              {isView ? (
+              {isView || user?.tipo_acesso !== 'admin' ? (
                 <Input
                   disabled
                   value={
                     selectedClienteInfo
-                      ? `${selectedClienteInfo.nome} (${selectedClienteInfo.cnpj})`
-                      : ''
+                      ? `${selectedClienteInfo.nome_empresa} (${selectedClienteInfo.cnpj})`
+                      : 'Cliente Restrito'
                   }
                   className="bg-muted"
                 />
@@ -203,7 +256,7 @@ export default function ReportForm() {
               <Button
                 variant="secondary"
                 className="w-full sm:w-auto"
-                onClick={() => handleSave('Rascunho')}
+                onClick={() => handleSave('rascunho')}
               >
                 <Save className="mr-2 h-4 w-4" />
                 Salvar Rascunho
@@ -231,7 +284,7 @@ export default function ReportForm() {
                   <AlertDialogFooter>
                     <AlertDialogCancel>Cancelar</AlertDialogCancel>
                     <AlertDialogAction
-                      onClick={() => handleSave('Finalizado')}
+                      onClick={() => handleSave('finalizado')}
                       className="bg-emerald-600 hover:bg-emerald-700"
                     >
                       Sim, Finalizar
