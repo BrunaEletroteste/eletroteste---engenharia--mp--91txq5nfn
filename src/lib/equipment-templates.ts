@@ -87,14 +87,14 @@ export const getEquipmentFields = (type: string): FieldDef[] => {
       return [
         ...common,
         { name: 'tipo', label: 'Tipo', type: 'text' },
-        { name: 'potencia', label: 'Potência (kVA)', type: 'number' },
+        { name: 'potencia', label: 'Potência (kVA)', type: 'text' },
         { name: 'classe_isolamento', label: 'Classe de Isolamento (kV)', type: 'text' },
-        { name: 'tap_at', label: 'Tap de AT (V)', type: 'number' },
-        { name: 'tensao_secundaria', label: 'Tensão Secundária (V)', type: 'number' },
-        { name: 'corrente_primaria', label: 'Corrente Primária (A)', type: 'number' },
-        { name: 'corrente_secundaria', label: 'Corrente Secundária (A)', type: 'number' },
+        { name: 'tap_at', label: 'Tap de AT (V)', type: 'text' },
+        { name: 'tensao_secundaria', label: 'Tensão Secundária (V)', type: 'text' },
+        { name: 'corrente_primaria', label: 'Corrente Primária (A)', type: 'text' },
+        { name: 'corrente_secundaria', label: 'Corrente Secundária (A)', type: 'text' },
         { name: 'impedancia', label: 'Impedância (%)', type: 'number' },
-        { name: 'condut_vs', label: 'Condut. de Vs (mm²)', type: 'number' },
+        { name: 'condut_vs', label: 'Condut. de Vs (mm²)', type: 'text' },
         {
           name: 'meio_isolante',
           label: 'Meio Isolante',
@@ -106,7 +106,7 @@ export const getEquipmentFields = (type: string): FieldDef[] => {
         { name: 'fabricante', label: 'Fabricante', type: 'combobox' },
         { name: 'buchas', label: 'Buchas de AT e BT', type: 'select', options: ['Sim', 'Não'] },
         { name: 'desl_angular', label: 'Desl. Angular', type: 'text' },
-        { name: 'ligado_em', label: 'Ligado em (V)', type: 'number' },
+        { name: 'ligado_em', label: 'Ligado em (V)', type: 'text' },
         { name: 'diagrama', label: 'Diagrama', type: 'text' },
       ]
     case 'Disjuntor':

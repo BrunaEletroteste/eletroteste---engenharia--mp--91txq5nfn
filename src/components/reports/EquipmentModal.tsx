@@ -312,10 +312,13 @@ export function EquipmentModal({ open, onOpenChange, onSave, initialData }: Prop
     let isSelect = false
     let targetCategory = field.name.toLowerCase()
 
-    if (targetCategory === 'tensao_primaria') targetCategory = 'tensão'
+    if (targetCategory === 'tensao_primaria' || targetCategory === 'tensao_secundaria')
+      targetCategory = 'tensão'
     if (
       targetCategory === 'corrente_nominal' ||
       targetCategory === 'corrente_nominal_fusiveis' ||
+      targetCategory === 'corrente_primaria' ||
+      targetCategory === 'corrente_secundaria' ||
       field.label.toLowerCase().includes('corrente nominal dos fusíveis')
     )
       targetCategory = 'corrente nominal'
@@ -324,6 +327,8 @@ export function EquipmentModal({ open, onOpenChange, onSave, initialData }: Prop
       field.label.toLowerCase().includes('fabricante dos fusíveis')
     )
       targetCategory = 'fabricante'
+    if (targetCategory === 'potencia') targetCategory = 'potência'
+    if (targetCategory === 'ligado_em') targetCategory = 'ligado em'
 
     if (field.type === 'select' && field.options) {
       isSelect = true
@@ -339,6 +344,11 @@ export function EquipmentModal({ open, onOpenChange, onSave, initialData }: Prop
         'rele_fechamento',
         'motorizacao',
         'tensao_primaria',
+        'tensao_secundaria',
+        'corrente_primaria',
+        'corrente_secundaria',
+        'ligado_em',
+        'potencia',
         'classe_precisao',
         'corrente_nominal_fusiveis',
         'fabricante_fusiveis',
