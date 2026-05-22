@@ -8,7 +8,7 @@ import {
   AlertCircle,
   Copy,
   Loader2,
-  ChevronDown,
+  MoreHorizontal,
   Trash2,
 } from 'lucide-react'
 import {
@@ -135,7 +135,7 @@ export default function Index() {
   const canCreate = user?.tipo_acesso === 'admin' || user?.tipo_acesso === 'tecnico_campo'
 
   const canDelete = (report: any) =>
-    report.status !== 'finalizado' &&
+    report.status === 'rascunho' &&
     (user?.tipo_acesso === 'admin' || report.criado_por === user?.id)
 
   const handleDelete = async () => {
@@ -273,9 +273,9 @@ export default function Index() {
                       <TableCell className="text-right">
                         <DropdownMenu>
                           <DropdownMenuTrigger asChild>
-                            <Button variant="outline" size="sm">
-                              Ações
-                              <ChevronDown className="ml-2 h-4 w-4" />
+                            <Button variant="ghost" className="h-8 w-8 p-0">
+                              <span className="sr-only">Abrir menu</span>
+                              <MoreHorizontal className="h-4 w-4" />
                             </Button>
                           </DropdownMenuTrigger>
                           <DropdownMenuContent align="end">
@@ -352,9 +352,9 @@ export default function Index() {
                   <CardFooter className="flex justify-end pt-3 border-t bg-muted/20">
                     <DropdownMenu>
                       <DropdownMenuTrigger asChild>
-                        <Button variant="outline" size="sm" className="w-full sm:w-auto">
-                          Ações
-                          <ChevronDown className="ml-2 h-4 w-4" />
+                        <Button variant="ghost" className="h-8 w-8 p-0">
+                          <span className="sr-only">Abrir menu</span>
+                          <MoreHorizontal className="h-4 w-4" />
                         </Button>
                       </DropdownMenuTrigger>
                       <DropdownMenuContent align="end" className="w-[200px]">

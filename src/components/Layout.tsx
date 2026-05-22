@@ -1,5 +1,6 @@
 import { Outlet, useLocation, Link, useNavigate } from 'react-router-dom'
-import { LayoutDashboard, FileText, Users, Settings, Bell, Zap, LogOut } from 'lucide-react'
+import { LayoutDashboard, FileText, Users, Settings, Bell, LogOut } from 'lucide-react'
+import logoUrl from '@/assets/logotransparente-c06b6.png'
 import {
   SidebarProvider,
   Sidebar,
@@ -32,11 +33,8 @@ export default function Layout() {
     <SidebarProvider>
       <Sidebar>
         <SidebarHeader className="border-b p-4">
-          <div className="flex items-center gap-3">
-            <div className="flex h-8 w-8 items-center justify-center rounded-md bg-primary text-primary-foreground shadow-sm">
-              <Zap className="h-5 w-5" />
-            </div>
-            <span className="font-semibold text-lg tracking-tight">PrevSys</span>
+          <div className="flex items-center h-8">
+            <img src={logoUrl} alt="EletroTeste Logo" className="h-full object-contain" />
           </div>
         </SidebarHeader>
         <SidebarContent>
