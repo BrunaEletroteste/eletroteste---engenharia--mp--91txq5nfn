@@ -21,10 +21,19 @@ export type TestItem = {
   _delete?: boolean
 }
 
+export type ParecerItem = {
+  id?: string
+  parecer?: string
+  parecer_anterior?: string
+  justificativa_mudanca?: string
+  observacoes?: string
+}
+
 export type EquipmentItem = {
   id?: string
   tipo_equipamento: string
   dados_tecnicos: Record<string, any>
   testes?: TestItem[]
+  parecer?: ParecerItem
   _delete?: boolean
 }

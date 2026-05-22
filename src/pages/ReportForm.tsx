@@ -20,6 +20,7 @@ import { ArrowLeft, Save, CheckCircle2 } from 'lucide-react'
 import { ReportHeaderSection } from '@/components/reports/ReportHeaderSection'
 import { EquipmentSection } from '@/components/reports/EquipmentSection'
 import { ElectricalTestsSection } from '@/components/reports/ElectricalTestsSection'
+import { ParecerTecnicoSection } from '@/components/reports/ParecerTecnicoSection'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { reportFormSchema, FormValues, EquipmentItem } from '@/types/reports'
 
@@ -65,21 +66,37 @@ export default function ReportForm() {
         const testesRes = await pb.collection('testes_equipamento').getFullList({
           filter: `equipamento_id.relatorio_id='${id}'`,
         })
+        const parecerRes = await pb.collection('parecer_tecnico').getFullList({
+          filter: `equipamento_id.relatorio_id='${id}'`,
+        })
+
         setEquipments(
-          eqRes.map((e) => ({
-            id: e.id,
-            tipo_equipamento: e.tipo_equipamento,
-            dados_tecnicos: e.dados_tecnicos || {},
-            testes: testesRes
-              .filter((t) => t.equipamento_id === e.id)
-              .map((t) => ({
-                id: t.id,
-                tipo_teste: t.tipo_teste,
-                valor_teste: t.valor_teste,
-                unidade: t.unidade,
-                data_teste: t.data_teste.split('T')[0],
-              })),
-          })),
+          eqRes.map((e) => {
+            const eqParecer = parecerRes.find((p) => p.equipamento_id === e.id)
+            return {
+              id: e.id,
+              tipo_equipamento: e.tipo_equipamento,
+              dados_tecnicos: e.dados_tecnicos || {},
+              testes: testesRes
+                .filter((t) => t.equipamento_id === e.id)
+                .map((t) => ({
+                  id: t.id,
+                  tipo_teste: t.tipo_teste,
+                  valor_teste: t.valor_teste,
+                  unidade: t.unidade,
+                  data_teste: t.data_teste.split('T')[0],
+                })),
+              parecer: eqParecer
+                ? {
+                    id: eqParecer.id,
+                    parecer: eqParecer.parecer as any,
+                    parecer_anterior: eqParecer.parecer_anterior as any,
+                    justificativa_mudanca: eqParecer.justificativa_mudanca,
+                    observacoes: eqParecer.observacoes,
+                  }
+                : undefined,
+            }
+          }),
         )
       } else {
         methods.reset({
@@ -103,7 +120,36 @@ export default function ReportForm() {
     loadData()
   }, [id, isView, isEdit, user])
 
+  const validateEquipments = () => {
+    for (const eq of equipments) {
+      if (eq._delete) continue
+
+      const p = eq.parecer
+      if (!p || !p.parecer) {
+        toast({
+          title: 'Erro de Validação',
+          description: `O parecer é obrigatório para o equipamento: ${eq.tipo_equipamento} - ${eq.dados_tecnicos?.numero || ''}`,
+          variant: 'destructive',
+        })
+        return false
+      }
+
+      if (p.parecer_anterior && p.parecer !== p.parecer_anterior) {
+        if (!p.justificativa_mudanca || p.justificativa_mudanca.trim() === '') {
+          toast({
+            title: 'Erro de Validação',
+            description: `Justificativa é obrigatória quando há mudança de status no equipamento: ${eq.tipo_equipamento} - ${eq.dados_tecnicos?.numero || ''}`,
+            variant: 'destructive',
+          })
+          return false
+        }
+      }
+    }
+    return true
+  }
+
   const onSubmit = async (data: FormValues) => {
+    if (!validateEquipments()) return
     try {
       setIsLoading(true)
       const payload = {
@@ -160,10 +206,30 @@ export default function ReportForm() {
               }
             }
           }
+
+          if (eq.parecer) {
+            const p = eq.parecer
+            if (p._delete && p.id) {
+              await pb.collection('parecer_tecnico').delete(p.id)
+            } else if (!p._delete) {
+              const pPayload = {
+                equipamento_id: savedEqId,
+                parecer: p.parecer,
+                parecer_anterior: p.parecer_anterior,
+                justificativa_mudanca: p.justificativa_mudanca,
+                observacoes: p.observacoes,
+              }
+              if (p.id) {
+                await pb.collection('parecer_tecnico').update(p.id, pPayload)
+              } else {
+                await pb.collection('parecer_tecnico').create(pPayload)
+              }
+            }
+          }
         }
       }
 
-      toast({ title: 'Sucesso', description: 'Relatório salvo com sucesso.' })
+      toast({ title: 'Sucesso', description: 'Relatório salvo com sucesso. Parecer registrado.' })
       navigate('/')
     } catch (error: any) {
       toast({
@@ -231,6 +297,12 @@ export default function ReportForm() {
               >
                 Testes Elétricos
               </TabsTrigger>
+              <TabsTrigger
+                value="parecer"
+                className="rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent px-0 py-2"
+              >
+                Parecer Técnico
+              </TabsTrigger>
             </TabsList>
 
             <TabsContent
@@ -250,6 +322,17 @@ export default function ReportForm() {
               className="space-y-8 pt-6 p-4 sm:p-8 mt-0 focus-visible:outline-none focus-visible:ring-0"
             >
               <ElectricalTestsSection
+                equipments={equipments}
+                setEquipments={setEquipments}
+                isView={isView}
+              />
+            </TabsContent>
+
+            <TabsContent
+              value="parecer"
+              className="space-y-8 pt-6 p-4 sm:p-8 mt-0 focus-visible:outline-none focus-visible:ring-0"
+            >
+              <ParecerTecnicoSection
                 equipments={equipments}
                 setEquipments={setEquipments}
                 isView={isView}
