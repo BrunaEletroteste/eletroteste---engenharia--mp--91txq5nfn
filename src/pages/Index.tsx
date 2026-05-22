@@ -1,6 +1,33 @@
 import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { Plus, Eye, Pencil, FileSearch, AlertCircle, Copy, Loader2 } from 'lucide-react'
+import {
+  Plus,
+  Eye,
+  Pencil,
+  FileSearch,
+  AlertCircle,
+  Copy,
+  Loader2,
+  ChevronDown,
+  Trash2,
+} from 'lucide-react'
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu'
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from '@/components/ui/alert-dialog'
 import { useAuth } from '@/hooks/use-auth'
 import { useRealtime } from '@/hooks/use-realtime'
 import { useToast } from '@/hooks/use-toast'
@@ -37,6 +64,8 @@ export default function Index() {
   const [isLoading, setIsLoading] = useState(true)
   const [hasError, setHasError] = useState(false)
   const [isDuplicating, setIsDuplicating] = useState<string | null>(null)
+  const [reportToDelete, setReportToDelete] = useState<string | null>(null)
+  const [isDeleting, setIsDeleting] = useState(false)
   const { toast } = useToast()
 
   const loadData = async () => {
@@ -104,6 +133,30 @@ export default function Index() {
   }
 
   const canCreate = user?.tipo_acesso === 'admin' || user?.tipo_acesso === 'tecnico_campo'
+
+  const canDelete = (report: any) => user?.tipo_acesso === 'admin' || report.criado_por === user?.id
+
+  const handleDelete = async () => {
+    if (!reportToDelete) return
+    try {
+      setIsDeleting(true)
+      await pb.collection('relatorios').delete(reportToDelete)
+      toast({
+        title: 'Relatório excluído',
+        description: 'O relatório foi removido com sucesso.',
+      })
+    } catch (e: any) {
+      console.error(e)
+      toast({
+        title: 'Erro ao excluir',
+        description: e?.message || 'Não foi possível excluir o relatório.',
+        variant: 'destructive',
+      })
+    } finally {
+      setIsDeleting(false)
+      setReportToDelete(null)
+    }
+  }
 
   const handleDuplicate = async (id: string) => {
     try {
@@ -216,40 +269,55 @@ export default function Index() {
                       <TableCell>{formatDate(report.data_execucao)}</TableCell>
                       <TableCell>{renderStatusBadge(report.status)}</TableCell>
                       <TableCell className="text-right">
-                        <div className="flex justify-end gap-2">
-                          <Button
-                            variant="ghost"
-                            size="icon"
-                            onClick={() => navigate(`/relatorio/visualizar/${report.id}`)}
-                            title="Visualizar"
-                          >
-                            <Eye className="h-4 w-4" />
-                          </Button>
-                          <Button
-                            variant="ghost"
-                            size="icon"
-                            onClick={() => navigate(`/relatorio/editar/${report.id}`)}
-                            disabled={report.status !== 'rascunho'}
-                            title={report.status === 'rascunho' ? 'Editar' : 'Relatório Finalizado'}
-                          >
-                            <Pencil className="h-4 w-4" />
-                          </Button>
-                          {canCreate && (
-                            <Button
-                              variant="ghost"
-                              size="icon"
-                              onClick={() => handleDuplicate(report.id)}
-                              disabled={isDuplicating === report.id}
-                              title="Duplicar"
-                            >
-                              {isDuplicating === report.id ? (
-                                <Loader2 className="h-4 w-4 animate-spin" />
-                              ) : (
-                                <Copy className="h-4 w-4" />
-                              )}
+                        <DropdownMenu>
+                          <DropdownMenuTrigger asChild>
+                            <Button variant="outline" size="sm">
+                              Ações
+                              <ChevronDown className="ml-2 h-4 w-4" />
                             </Button>
-                          )}
-                        </div>
+                          </DropdownMenuTrigger>
+                          <DropdownMenuContent align="end">
+                            <DropdownMenuItem
+                              onClick={() => navigate(`/relatorio/visualizar/${report.id}`)}
+                            >
+                              <Eye className="mr-2 h-4 w-4" />
+                              Visualizar
+                            </DropdownMenuItem>
+                            {report.status === 'rascunho' && (
+                              <DropdownMenuItem
+                                onClick={() => navigate(`/relatorio/editar/${report.id}`)}
+                              >
+                                <Pencil className="mr-2 h-4 w-4" />
+                                Editar
+                              </DropdownMenuItem>
+                            )}
+                            {canCreate && (
+                              <DropdownMenuItem
+                                onClick={() => handleDuplicate(report.id)}
+                                disabled={isDuplicating === report.id}
+                              >
+                                {isDuplicating === report.id ? (
+                                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                                ) : (
+                                  <Copy className="mr-2 h-4 w-4" />
+                                )}
+                                Duplicar
+                              </DropdownMenuItem>
+                            )}
+                            {canDelete(report) && (
+                              <>
+                                <DropdownMenuSeparator />
+                                <DropdownMenuItem
+                                  onClick={() => setReportToDelete(report.id)}
+                                  className="text-red-600 focus:text-red-600 focus:bg-red-50"
+                                >
+                                  <Trash2 className="mr-2 h-4 w-4" />
+                                  Excluir
+                                </DropdownMenuItem>
+                              </>
+                            )}
+                          </DropdownMenuContent>
+                        </DropdownMenu>
                       </TableCell>
                     </TableRow>
                   )
@@ -279,37 +347,56 @@ export default function Index() {
                     {clienteInfo && <p>CNPJ: {clienteInfo.cnpj}</p>}
                     <p>Data: {formatDate(report.data_execucao)}</p>
                   </CardContent>
-                  <CardFooter className="flex flex-wrap justify-end gap-2 pt-3 border-t bg-muted/20">
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={() => navigate(`/relatorio/visualizar/${report.id}`)}
-                    >
-                      <Eye className="mr-2 h-4 w-4" /> Visualizar
-                    </Button>
-                    <Button
-                      variant="default"
-                      size="sm"
-                      onClick={() => navigate(`/relatorio/editar/${report.id}`)}
-                      disabled={report.status !== 'rascunho'}
-                    >
-                      <Pencil className="mr-2 h-4 w-4" /> Editar
-                    </Button>
-                    {canCreate && (
-                      <Button
-                        variant="secondary"
-                        size="sm"
-                        onClick={() => handleDuplicate(report.id)}
-                        disabled={isDuplicating === report.id}
-                      >
-                        {isDuplicating === report.id ? (
-                          <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                        ) : (
-                          <Copy className="mr-2 h-4 w-4" />
+                  <CardFooter className="flex justify-end pt-3 border-t bg-muted/20">
+                    <DropdownMenu>
+                      <DropdownMenuTrigger asChild>
+                        <Button variant="outline" size="sm" className="w-full sm:w-auto">
+                          Ações
+                          <ChevronDown className="ml-2 h-4 w-4" />
+                        </Button>
+                      </DropdownMenuTrigger>
+                      <DropdownMenuContent align="end" className="w-[200px]">
+                        <DropdownMenuItem
+                          onClick={() => navigate(`/relatorio/visualizar/${report.id}`)}
+                        >
+                          <Eye className="mr-2 h-4 w-4" />
+                          Visualizar
+                        </DropdownMenuItem>
+                        {report.status === 'rascunho' && (
+                          <DropdownMenuItem
+                            onClick={() => navigate(`/relatorio/editar/${report.id}`)}
+                          >
+                            <Pencil className="mr-2 h-4 w-4" />
+                            Editar
+                          </DropdownMenuItem>
                         )}
-                        Duplicar
-                      </Button>
-                    )}
+                        {canCreate && (
+                          <DropdownMenuItem
+                            onClick={() => handleDuplicate(report.id)}
+                            disabled={isDuplicating === report.id}
+                          >
+                            {isDuplicating === report.id ? (
+                              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                            ) : (
+                              <Copy className="mr-2 h-4 w-4" />
+                            )}
+                            Duplicar
+                          </DropdownMenuItem>
+                        )}
+                        {canDelete(report) && (
+                          <>
+                            <DropdownMenuSeparator />
+                            <DropdownMenuItem
+                              onClick={() => setReportToDelete(report.id)}
+                              className="text-red-600 focus:text-red-600 focus:bg-red-50"
+                            >
+                              <Trash2 className="mr-2 h-4 w-4" />
+                              Excluir
+                            </DropdownMenuItem>
+                          </>
+                        )}
+                      </DropdownMenuContent>
+                    </DropdownMenu>
                   </CardFooter>
                 </Card>
               )
@@ -317,6 +404,34 @@ export default function Index() {
           </div>
         </div>
       )}
+
+      <AlertDialog
+        open={!!reportToDelete}
+        onOpenChange={(open) => !open && setReportToDelete(null)}
+      >
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Tem certeza?</AlertDialogTitle>
+            <AlertDialogDescription>
+              Tem certeza que deseja excluir este relatório? Esta ação não pode ser desfeita.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel disabled={isDeleting}>Cancelar</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={(e) => {
+                e.preventDefault()
+                handleDelete()
+              }}
+              disabled={isDeleting}
+              className="bg-red-600 hover:bg-red-700 focus:ring-red-600"
+            >
+              {isDeleting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+              Excluir
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   )
 }
