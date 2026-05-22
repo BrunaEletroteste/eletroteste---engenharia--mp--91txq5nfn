@@ -90,6 +90,7 @@ export default function ReportForm() {
                   valor_teste: t.valor_teste,
                   unidade: t.unidade,
                   data_teste: t.data_teste.split('T')[0],
+                  dados_detalhados: t.dados_detalhados || null,
                 })),
               parecer: eqParecer
                 ? {
@@ -184,6 +185,50 @@ export default function ReportForm() {
 
       const p = eq.parecer
       if (status === 'finalizado') {
+        if (eq.testes) {
+          for (const t of eq.testes) {
+            if (t._delete) continue
+            if (t.tipo_teste === 'Resistência dos Contatos') {
+              const d = t.dados_detalhados || {}
+              if (
+                d.fase_a === undefined ||
+                d.fase_b === undefined ||
+                d.fase_c === undefined ||
+                String(d.fase_a) === '' ||
+                String(d.fase_b) === '' ||
+                String(d.fase_c) === ''
+              ) {
+                toast({
+                  title: 'Erro de Validação',
+                  description: `Os valores das Fases no teste de Resistência dos Contatos são obrigatórios. (Equipamento: ${eq.tipo_equipamento})`,
+                  variant: 'destructive',
+                })
+                return false
+              }
+            }
+            if (t.tipo_teste === 'Isolamento') {
+              const d = t.dados_detalhados || {}
+              const rows = ['ab', 'bc', 'ac', 'abc_massa']
+              for (const r of rows) {
+                if (
+                  !d[r] ||
+                  d[r].v1 === undefined ||
+                  d[r].v2 === undefined ||
+                  String(d[r].v1) === '' ||
+                  String(d[r].v2) === ''
+                ) {
+                  toast({
+                    title: 'Erro de Validação',
+                    description: `Os valores no teste de Isolamento são obrigatórios. (Equipamento: ${eq.tipo_equipamento})`,
+                    variant: 'destructive',
+                  })
+                  return false
+                }
+              }
+            }
+          }
+        }
+
         if (!p || !p.parecer) {
           toast({
             title: 'Erro de Validação',
@@ -276,9 +321,10 @@ export default function ReportForm() {
                 const tPayload = {
                   equipamento_id: savedEqId,
                   tipo_teste: t.tipo_teste,
-                  valor_teste: t.valor_teste,
+                  valor_teste: t.valor_teste || 0,
                   unidade: t.unidade,
                   data_teste: new Date(t.data_teste).toISOString(),
+                  dados_detalhados: t.dados_detalhados || null,
                 }
                 if (t.id) {
                   await pb.collection('testes_equipamento').update(t.id, tPayload)

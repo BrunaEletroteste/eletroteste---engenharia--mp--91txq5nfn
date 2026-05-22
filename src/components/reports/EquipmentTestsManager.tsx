@@ -165,7 +165,13 @@ export function EquipmentTestsManager({
                   {currentTests.map((t, idx) => (
                     <TableRow key={idx}>
                       <TableCell>{t.tipo_teste}</TableCell>
-                      <TableCell>{t.valor_teste}</TableCell>
+                      <TableCell>
+                        {t.tipo_teste === 'Resistência dos Contatos'
+                          ? `A: ${t.dados_detalhados?.fase_a ?? '-'} | B: ${t.dados_detalhados?.fase_b ?? '-'} | C: ${t.dados_detalhados?.fase_c ?? '-'}`
+                          : t.tipo_teste === 'Isolamento'
+                            ? 'Múltiplas Medições'
+                            : t.valor_teste}
+                      </TableCell>
                       <TableCell>{t.unidade}</TableCell>
                       <TableCell>{format(parseISO(t.data_teste), 'dd/MM/yyyy')}</TableCell>
                       {!isView && (

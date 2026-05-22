@@ -18,6 +18,7 @@ export type TestItem = {
   valor_teste: number
   unidade: string
   data_teste: string
+  dados_detalhados?: Record<string, any> | null
   _delete?: boolean
 }
 
