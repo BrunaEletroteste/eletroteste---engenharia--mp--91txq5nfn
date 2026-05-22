@@ -46,7 +46,7 @@ function ComboboxField({
   opcoes: OpcaoPadronizada[]
 }) {
   const [open, setOpen] = useState(false)
-  const options = opcoes.filter((o) => o.categoria === field.name)
+  const options = opcoes.filter((o) => o.categoria.toLowerCase() === field.name.toLowerCase())
 
   return (
     <Popover open={open} onOpenChange={setOpen}>
@@ -57,7 +57,7 @@ function ComboboxField({
           aria-expanded={open}
           className={cn('w-full justify-between font-normal', !value && 'text-muted-foreground')}
         >
-          {value ? value : `Selecione...`}
+          {value ? value : field.name === 'fabricante' ? 'Selecione o fabricante' : 'Selecione...'}
           <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
         </Button>
       </PopoverTrigger>
@@ -107,14 +107,23 @@ export function EquipmentModal({ open, onOpenChange, onSave, initialData }: Prop
   const [fields, setFields] = useState<FieldDef[]>([])
   const [opcoes, setOpcoes] = useState<OpcaoPadronizada[]>([])
   const [loadingOpcoes, setLoadingOpcoes] = useState(false)
+  const [opcoesError, setOpcoesError] = useState(false)
 
   const fetchOpcoes = async () => {
     try {
       setLoadingOpcoes(true)
+      setOpcoesError(false)
       const data = await getOpcoesPadronizadas()
       setOpcoes(data)
     } catch (error) {
       console.error(error)
+      setOpcoesError(true)
+      toast({
+        title: 'Aviso',
+        description:
+          'Não foi possível carregar as opções padronizadas. Os campos de seleção funcionarão como texto livre.',
+        variant: 'destructive',
+      })
     } finally {
       setLoadingOpcoes(false)
     }
@@ -239,7 +248,7 @@ export function EquipmentModal({ open, onOpenChange, onSave, initialData }: Prop
                       )}
                     </Label>
 
-                    {field.type === 'combobox' ? (
+                    {field.type === 'combobox' && !opcoesError ? (
                       <ComboboxField
                         field={field}
                         value={dados[field.name]?.toString() || ''}
@@ -247,17 +256,17 @@ export function EquipmentModal({ open, onOpenChange, onSave, initialData }: Prop
                         opcoes={opcoes}
                       />
                     ) : (field.type === 'select' && field.options) ||
-                      [
-                        'fabricante',
-                        'corrente_nominal',
-                        'classe_isolamento',
-                        'potencia_simetrica',
-                        'capacidade_ruptura',
-                        'rele_minima_tensao',
-                        'rele_abertura',
-                        'rele_fechamento',
-                        'motorizacao',
-                      ].includes(field.name) ? (
+                      (!opcoesError &&
+                        [
+                          'corrente_nominal',
+                          'classe_isolamento',
+                          'potencia_simetrica',
+                          'capacidade_ruptura',
+                          'rele_minima_tensao',
+                          'rele_abertura',
+                          'rele_fechamento',
+                          'motorizacao',
+                        ].includes(field.name)) ? (
                       <Select
                         value={dados[field.name]?.toString() || ''}
                         onValueChange={(v) => handleFieldChange(field.name, v)}
@@ -280,14 +289,17 @@ export function EquipmentModal({ open, onOpenChange, onSave, initialData }: Prop
                               {dados[field.name] &&
                                 !opcoes.find(
                                   (op) =>
-                                    op.categoria === field.name && op.valor === dados[field.name],
+                                    op.categoria.toLowerCase() === field.name.toLowerCase() &&
+                                    op.valor === dados[field.name],
                                 ) && (
                                   <SelectItem value={dados[field.name]?.toString()}>
                                     {dados[field.name]}
                                   </SelectItem>
                                 )}
                               {opcoes
-                                .filter((o) => o.categoria === field.name)
+                                .filter(
+                                  (o) => o.categoria.toLowerCase() === field.name.toLowerCase(),
+                                )
                                 .map((o) => (
                                   <SelectItem key={o.id} value={o.valor}>
                                     {o.valor}
@@ -322,7 +334,9 @@ export function EquipmentModal({ open, onOpenChange, onSave, initialData }: Prop
                         placeholder={
                           field.readOnly
                             ? 'Calculado automaticamente'
-                            : `Insira ${field.label.toLowerCase()}`
+                            : field.name === 'fabricante'
+                              ? 'Insira o fabricante'
+                              : `Insira ${field.label.toLowerCase()}`
                         }
                         readOnly={field.readOnly}
                         className={field.readOnly ? 'bg-muted cursor-not-allowed' : ''}

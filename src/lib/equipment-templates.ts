@@ -28,7 +28,7 @@ export const getEquipmentFields = (type: string): FieldDef[] => {
     case 'Transformador de Potencial':
       return [
         ...common,
-        { name: 'marca', label: 'Marca', type: 'text' },
+        { name: 'fabricante', label: 'Fabricante', type: 'combobox' },
         { name: 'tipo', label: 'Tipo', type: 'text' },
         { name: 'tensao_primaria', label: 'Tensão Primária (V)', type: 'number' },
         { name: 'tensao_secundaria', label: 'Tensão Secundária (V)', type: 'number' },
@@ -43,7 +43,7 @@ export const getEquipmentFields = (type: string): FieldDef[] => {
     case 'Transformador de Corrente':
       return [
         ...common,
-        { name: 'marca', label: 'Marca', type: 'text' },
+        { name: 'fabricante', label: 'Fabricante', type: 'combobox' },
         { name: 'tensao_primaria', label: 'Tensão Primária (V)', type: 'number' },
         { name: 'classe_precisao', label: 'Classe de Precisão', type: 'text' },
         {
@@ -62,7 +62,7 @@ export const getEquipmentFields = (type: string): FieldDef[] => {
         { name: 'tipo', label: 'Tipo', type: 'text' },
         { name: 'corrente_nominal', label: 'Corrente Nominal (A)', type: 'text' },
         { name: 'classe_isolamento', label: 'Classe de Isolamento (kV)', type: 'text' },
-        { name: 'fabricante', label: 'Fabricante', type: 'text' },
+        { name: 'fabricante', label: 'Fabricante', type: 'combobox' },
         { name: 'possui_fusivel', label: 'Contém Fusível?', type: 'boolean' },
         {
           name: 'fusivel_tipo',
@@ -103,7 +103,7 @@ export const getEquipmentFields = (type: string): FieldDef[] => {
         },
         { name: 'volume_oleo', label: 'Volume de Óleo (L)', type: 'number' },
         { name: 'peso_total', label: 'Peso Total (kg)', type: 'number' },
-        { name: 'fabricante', label: 'Fabricante', type: 'text' },
+        { name: 'fabricante', label: 'Fabricante', type: 'combobox' },
         { name: 'buchas', label: 'Buchas de AT e BT', type: 'select', options: ['Sim', 'Não'] },
         { name: 'desl_angular', label: 'Desl. Angular', type: 'text' },
         { name: 'ligado_em', label: 'Ligado em (V)', type: 'number' },
@@ -113,7 +113,7 @@ export const getEquipmentFields = (type: string): FieldDef[] => {
       return [
         ...common,
         { name: 'tipo', label: 'Tipo', type: 'text' },
-        { name: 'fabricante', label: 'Fabricante', type: 'text' },
+        { name: 'fabricante', label: 'Fabricante', type: 'combobox' },
         { name: 'corrente_nominal', label: 'Corrente Nominal (A)', type: 'text' },
         { name: 'classe_isolamento', label: 'Classe de Isolamento (kV)', type: 'text' },
         { name: 'potencia_simetrica', label: 'Potência Simétrica (MVA)', type: 'text' },
@@ -130,9 +130,8 @@ export const getEquipmentFields = (type: string): FieldDef[] => {
     default:
       return [
         ...common,
-        { name: 'marca', label: 'Marca', type: 'text' },
+        { name: 'fabricante', label: 'Fabricante', type: 'combobox' },
         { name: 'tipo', label: 'Tipo', type: 'text' },
-        { name: 'fabricante', label: 'Fabricante', type: 'text' },
       ]
   }
 }
