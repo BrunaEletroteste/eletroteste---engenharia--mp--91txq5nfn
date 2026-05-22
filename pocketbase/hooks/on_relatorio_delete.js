@@ -1,4 +1,8 @@
-onRecordBeforeDeleteRequest((e) => {
+onRecordDeleteRequest((e) => {
+  if (e.record.getString('status') === 'finalizado') {
+    throw new ForbiddenError('Não é possível excluir um relatório finalizado.')
+  }
+
   const relatorioId = e.record.id
 
   const equipamentos = $app.findRecordsByFilter(

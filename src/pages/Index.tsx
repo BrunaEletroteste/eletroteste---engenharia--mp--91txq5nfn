@@ -134,7 +134,9 @@ export default function Index() {
 
   const canCreate = user?.tipo_acesso === 'admin' || user?.tipo_acesso === 'tecnico_campo'
 
-  const canDelete = (report: any) => user?.tipo_acesso === 'admin' || report.criado_por === user?.id
+  const canDelete = (report: any) =>
+    report.status !== 'finalizado' &&
+    (user?.tipo_acesso === 'admin' || report.criado_por === user?.id)
 
   const handleDelete = async () => {
     if (!reportToDelete) return
