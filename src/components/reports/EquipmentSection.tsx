@@ -261,7 +261,13 @@ export function EquipmentSection({ equipments, setEquipments, isView }: Props) {
                       #{seq}
                     </Badge>
                     <span className="font-semibold text-foreground">
-                      {eq.tipo_equipamento} — {eq.dados_tecnicos.subestacao || '-'}
+                      {[
+                        eq.tipo_equipamento,
+                        eq.dados_tecnicos?.subestacao,
+                        eq.dados_tecnicos?.circuito,
+                      ]
+                        .filter(Boolean)
+                        .join(' — ')}
                     </span>
                     {eq.parecer?.parecer && (
                       <Badge
