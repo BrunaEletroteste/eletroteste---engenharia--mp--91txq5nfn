@@ -20,7 +20,7 @@ export const EQUIPMENT_TYPES = [
 
 export const getEquipmentFields = (type: string): FieldDef[] => {
   const common: FieldDef[] = [
-    { name: 'subestacao', label: 'Subestação', type: 'text' },
+    { name: 'subestacao', label: 'Subestação', type: 'combobox' },
     { name: 'numero', label: 'Número', type: 'text' },
   ]
 

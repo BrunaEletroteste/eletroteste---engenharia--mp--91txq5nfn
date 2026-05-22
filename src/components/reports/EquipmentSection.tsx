@@ -81,8 +81,16 @@ export function EquipmentSection({ equipments, setEquipments, isView }: Props) {
       if (x.eq._delete) return false
       if (!searchQuery) return true
       const numero = x.eq.dados_tecnicos?.numero
-      if (!numero) return false
-      return String(numero).toLowerCase().includes(searchQuery.toLowerCase())
+      const subestacao = x.eq.dados_tecnicos?.subestacao
+      if (!numero && !subestacao) return false
+      return (
+        String(numero || '')
+          .toLowerCase()
+          .includes(searchQuery.toLowerCase()) ||
+        String(subestacao || '')
+          .toLowerCase()
+          .includes(searchQuery.toLowerCase())
+      )
     })
 
   const toggleAll = () => {
@@ -119,7 +127,7 @@ export function EquipmentSection({ equipments, setEquipments, isView }: Props) {
           <div className="flex-1 w-full max-w-md relative">
             <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
             <Input
-              placeholder="Buscar equipamento pelo número..."
+              placeholder="Buscar equipamento..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               className="pl-9 pr-8"
@@ -173,7 +181,7 @@ export function EquipmentSection({ equipments, setEquipments, isView }: Props) {
       ) : visibleEquipments.length === 0 ? (
         <div className="flex flex-col items-center justify-center py-10 text-muted-foreground bg-muted/20 rounded-lg border border-dashed">
           <Search className="h-10 w-10 mb-3 opacity-20" />
-          <p>Nenhum equipamento encontrado com este número</p>
+          <p>Nenhum equipamento encontrado com esta busca</p>
         </div>
       ) : (
         <div className="pt-2">
@@ -193,7 +201,7 @@ export function EquipmentSection({ equipments, setEquipments, isView }: Props) {
                 <div className="flex items-center justify-between pr-4 bg-muted/20">
                   <AccordionTrigger className="hover:no-underline px-4 py-3 flex-1 justify-start gap-3">
                     <span className="font-semibold text-foreground">
-                      {eq.tipo_equipamento} — {eq.dados_tecnicos.numero || 'Sem identificação'}
+                      {eq.tipo_equipamento} — {eq.dados_tecnicos.subestacao || '-'}
                     </span>
                     {eq.parecer?.parecer && (
                       <Badge
