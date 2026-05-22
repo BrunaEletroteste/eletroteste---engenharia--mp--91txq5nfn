@@ -401,13 +401,16 @@ export function EquipmentModal({ open, onOpenChange, onSave, initialData }: Prop
               ) : (
                 <>
                   {dados[field.name] &&
-                    !opcoes.find(
-                      (op) =>
-                        op.categoria.toLowerCase() === targetCategory &&
-                        op.valor === dados[field.name],
-                    ) && (
-                      <SelectItem value={dados[field.name]?.toString()}>
-                        {dados[field.name]}
+                    !opcoes.some((op) => {
+                      const cat = op.categoria.toLowerCase()
+                      const matchesCategory =
+                        cat === targetCategory ||
+                        (targetCategory === 'tensão' && cat === 'tensao_primaria') ||
+                        (targetCategory === 'corrente nominal' && cat === 'corrente_nominal')
+                      return matchesCategory && String(op.valor) === String(dados[field.name])
+                    }) && (
+                      <SelectItem value={String(dados[field.name])}>
+                        {String(dados[field.name])}
                       </SelectItem>
                     )}
                   {opcoes
@@ -420,7 +423,7 @@ export function EquipmentModal({ open, onOpenChange, onSave, initialData }: Prop
                       )
                     })
                     .map((o) => (
-                      <SelectItem key={o.id} value={o.valor}>
+                      <SelectItem key={o.id} value={String(o.valor)}>
                         {o.valor}
                       </SelectItem>
                     ))}
