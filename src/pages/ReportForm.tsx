@@ -88,9 +88,11 @@ export default function ReportForm() {
           reset({
             numero_relatorio: res.numero_relatorio,
             cliente_id: res.cliente_id,
-            data_execucao: res.data_execucao ? res.data_execucao.split('T')[0] : '',
+            data_execucao: res.data_execucao ? res.data_execucao.substring(0, 10) : '',
             acompanhante: res.acompanhante || '',
-            proxima_manutencao: res.proxima_manutencao ? res.proxima_manutencao.split('T')[0] : '',
+            proxima_manutencao: res.proxima_manutencao
+              ? res.proxima_manutencao.substring(0, 10)
+              : '',
             status: res.status as 'rascunho' | 'finalizado',
             observacoes: res.observacoes || '',
           })
@@ -118,7 +120,7 @@ export default function ReportForm() {
                   tipo_teste: t.tipo_teste,
                   valor_teste: t.valor_teste,
                   unidade: t.unidade,
-                  data_teste: t.data_teste.split('T')[0],
+                  data_teste: t.data_teste.substring(0, 10),
                   dados_detalhados: t.dados_detalhados || null,
                   observacoes: t.observacoes || '',
                 })),
@@ -317,7 +319,7 @@ export default function ReportForm() {
       const payload: Record<string, any> = {
         numero_relatorio: data.numero_relatorio,
         cliente_id: data.cliente_id,
-        data_execucao: data.data_execucao ? new Date(data.data_execucao).toISOString() : '',
+        data_execucao: data.data_execucao ? `${data.data_execucao} 12:00:00Z` : '',
         status: data.status,
       }
       if (!isEditRoute || !id) {
@@ -325,7 +327,7 @@ export default function ReportForm() {
       }
       if (data.acompanhante) payload.acompanhante = data.acompanhante
       if (data.proxima_manutencao)
-        payload.proxima_manutencao = new Date(data.proxima_manutencao).toISOString()
+        payload.proxima_manutencao = `${data.proxima_manutencao} 12:00:00Z`
       if (data.observacoes) payload.observacoes = data.observacoes
 
       const formData = new FormData()
@@ -378,7 +380,7 @@ export default function ReportForm() {
                   tipo_teste: t.tipo_teste,
                   valor_teste: t.valor_teste || 0,
                   unidade: t.unidade,
-                  data_teste: new Date(t.data_teste).toISOString(),
+                  data_teste: t.data_teste ? `${t.data_teste} 12:00:00Z` : '',
                   dados_detalhados: t.dados_detalhados || null,
                   observacoes: t.observacoes || '',
                 }

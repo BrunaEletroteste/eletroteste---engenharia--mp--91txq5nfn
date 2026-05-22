@@ -111,7 +111,7 @@ export function ReportHeaderSection({ isView }: { isView: boolean }) {
                   onChange={(e) => {
                     field.onChange(e)
                     if (e.target.value && !isView) {
-                      const nextYear = addYears(new Date(e.target.value), 1)
+                      const nextYear = addYears(new Date(`${e.target.value}T12:00:00`), 1)
                       setValue('proxima_manutencao', format(nextYear, 'yyyy-MM-dd'), {
                         shouldValidate: true,
                       })
