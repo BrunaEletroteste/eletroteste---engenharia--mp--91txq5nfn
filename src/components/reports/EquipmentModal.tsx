@@ -153,16 +153,32 @@ export function EquipmentModal({ open, onOpenChange, onSave, initialData }: Prop
 
   useEffect(() => {
     if (open) {
-      const primStr = dados.tensao_primaria
-      const secStr = dados.tensao_secundaria
+      const parseVal = (v: any) => {
+        if (v === undefined || v === null || v === '') return undefined
+        if (typeof v === 'number') return v
+        const str = String(v)
+        const clean = str.includes(',')
+          ? str.replace(/\./g, '').replace(',', '.')
+          : str.replace(/\./g, '')
+        const num = Number(clean)
+        return isNaN(num) ? undefined : num
+      }
 
-      if (primStr !== undefined || secStr !== undefined) {
-        const prim = Number(primStr)
-        const sec = Number(secStr)
+      let prim: number | undefined
+      let sec: number | undefined
 
-        if (!isNaN(prim) && !isNaN(sec) && sec !== 0) {
+      if (tipo === 'Transformador de Potencial') {
+        prim = parseVal(dados.tensao_primaria)
+        sec = parseVal(dados.tensao_secundaria)
+      } else if (tipo === 'Transformador de Corrente') {
+        prim = parseVal(dados.corrente_primaria)
+        sec = parseVal(dados.corrente_secundaria)
+      }
+
+      if (prim !== undefined && sec !== undefined) {
+        if (sec !== 0) {
           setDados((prev) => {
-            const relacao = Number((prim / sec).toFixed(4))
+            const relacao = Number((prim! / sec!).toFixed(4))
             return prev.relacao === relacao ? prev : { ...prev, relacao }
           })
         } else {
@@ -170,9 +186,20 @@ export function EquipmentModal({ open, onOpenChange, onSave, initialData }: Prop
             return prev.relacao === '' ? prev : { ...prev, relacao: '' }
           })
         }
+      } else if (tipo === 'Transformador de Potencial' || tipo === 'Transformador de Corrente') {
+        setDados((prev) => {
+          return prev.relacao === '' ? prev : { ...prev, relacao: '' }
+        })
       }
     }
-  }, [dados.tensao_primaria, dados.tensao_secundaria, open])
+  }, [
+    dados.tensao_primaria,
+    dados.tensao_secundaria,
+    dados.corrente_primaria,
+    dados.corrente_secundaria,
+    tipo,
+    open,
+  ])
 
   const handleTipoChange = (val: string) => {
     setTipo(val)
@@ -266,6 +293,8 @@ export function EquipmentModal({ open, onOpenChange, onSave, initialData }: Prop
                           'rele_abertura',
                           'rele_fechamento',
                           'motorizacao',
+                          'tensao_primaria',
+                          'classe_precisao',
                         ].includes(field.name)) ? (
                       <Select
                         value={dados[field.name]?.toString() || ''}

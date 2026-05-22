@@ -46,14 +46,14 @@ export const getEquipmentFields = (type: string): FieldDef[] => {
         { name: 'fabricante', label: 'Fabricante', type: 'combobox' },
         { name: 'tensao_primaria', label: 'Tensão Primária (V)', type: 'number' },
         { name: 'classe_precisao', label: 'Classe de Precisão', type: 'text' },
+        { name: 'corrente_primaria', label: 'Corrente Primária (A)', type: 'number' },
+        { name: 'corrente_secundaria', label: 'Corrente Secundária (A)', type: 'number' },
         {
           name: 'relacao',
-          label: 'Relação (Tensão Primária dividida por Tensão Secundária)',
+          label: 'Relação (Corrente Primária dividida por Corrente Secundária)',
           type: 'number',
           readOnly: true,
         },
-        { name: 'corrente_primaria', label: 'Corrente Primária (A)', type: 'number' },
-        { name: 'corrente_secundaria', label: 'Corrente Secundária (A)', type: 'number' },
       ]
     case 'Seccionadora':
       return [

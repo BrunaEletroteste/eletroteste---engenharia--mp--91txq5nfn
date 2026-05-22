@@ -539,17 +539,15 @@ export default function ReportForm() {
               <div className="flex flex-col sm:flex-row gap-3 w-full sm:w-auto">
                 <Button
                   type="button"
-                  variant="secondary"
-                  className="w-full sm:w-auto"
+                  className="w-full sm:w-auto bg-green-600 hover:bg-green-700 text-white shadow-sm"
                   onClick={() => handleStatusSubmit('rascunho')}
                 >
                   <Save className="mr-2 h-4 w-4" />
-                  Salvar Rascunho
+                  Salvar Relatório
                 </Button>
                 <Button
                   type="button"
-                  variant="default"
-                  className="w-full sm:w-auto bg-emerald-600 hover:bg-emerald-700 text-white shadow-sm"
+                  className="w-full sm:w-auto bg-red-600 hover:bg-red-700 text-white shadow-sm"
                   onClick={() => handleStatusSubmit('finalizado')}
                 >
                   <CheckCircle2 className="mr-2 h-4 w-4" />
