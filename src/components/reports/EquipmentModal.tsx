@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { EquipmentItem } from '@/types/reports'
 import { getOpcoesPadronizadas, OpcaoPadronizada } from '@/services/opcoes'
 import { getEquipmentFields, FieldDef, EQUIPMENT_TYPES } from '@/lib/equipment-templates'
@@ -162,6 +162,12 @@ export function EquipmentModal({ open, onOpenChange, onSave, initialData }: Prop
   const [loadingOpcoes, setLoadingOpcoes] = useState(false)
   const [opcoesError, setOpcoesError] = useState(false)
 
+  const prevCalcDeps = useRef({
+    potencia: undefined as any,
+    ligado_em: undefined as any,
+    tensao_secundaria: undefined as any,
+  })
+
   const fetchOpcoes = async () => {
     try {
       setLoadingOpcoes(true)
@@ -244,12 +250,73 @@ export function EquipmentModal({ open, onOpenChange, onSave, initialData }: Prop
           return prev.relacao === '' ? prev : { ...prev, relacao: '' }
         })
       }
+
+      if (tipo === 'Transformador') {
+        const potencia = parseVal(dados.potencia)
+        const ligadoEm = parseVal(dados.ligado_em)
+        let tensaoSecBase: number | undefined = undefined
+
+        if (dados.tensao_secundaria) {
+          const tSecStr = String(dados.tensao_secundaria)
+          const baseStr = tSecStr.split('/')[0]
+          tensaoSecBase = parseVal(baseStr)
+        }
+
+        const sqrt3 = 1.732
+
+        const pChanged = dados.potencia !== prevCalcDeps.current.potencia
+        const lChanged = dados.ligado_em !== prevCalcDeps.current.ligado_em
+        const tChanged = dados.tensao_secundaria !== prevCalcDeps.current.tensao_secundaria
+
+        if (pChanged || lChanged || tChanged) {
+          setDados((prev) => {
+            let updated = { ...prev }
+            let changed = false
+
+            if (
+              (pChanged || lChanged) &&
+              potencia !== undefined &&
+              ligadoEm !== undefined &&
+              ligadoEm !== 0
+            ) {
+              const cp = Number(((potencia * 1000) / (sqrt3 * ligadoEm)).toFixed(2))
+              if (prev.corrente_primaria !== cp) {
+                updated.corrente_primaria = cp
+                changed = true
+              }
+            }
+
+            if (
+              (pChanged || tChanged) &&
+              potencia !== undefined &&
+              tensaoSecBase !== undefined &&
+              tensaoSecBase !== 0
+            ) {
+              const cs = Number(((potencia * 1000) / (sqrt3 * tensaoSecBase)).toFixed(2))
+              if (prev.corrente_secundaria !== cs) {
+                updated.corrente_secundaria = cs
+                changed = true
+              }
+            }
+
+            return changed ? updated : prev
+          })
+        }
+
+        prevCalcDeps.current = {
+          potencia: dados.potencia,
+          ligado_em: dados.ligado_em,
+          tensao_secundaria: dados.tensao_secundaria,
+        }
+      }
     }
   }, [
     dados.tensao_primaria,
     dados.tensao_secundaria,
     dados.corrente_primaria,
     dados.corrente_secundaria,
+    dados.potencia,
+    dados.ligado_em,
     tipo,
     open,
   ])
