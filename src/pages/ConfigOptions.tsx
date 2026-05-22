@@ -1,4 +1,6 @@
 import { useState, useEffect } from 'react'
+import { Navigate } from 'react-router-dom'
+import { useAuth } from '@/hooks/use-auth'
 import {
   getOpcoesPadronizadas,
   createOpcao,
@@ -18,16 +20,33 @@ import { useToast } from '@/hooks/use-toast'
 import { Trash2, Plus } from 'lucide-react'
 
 export default function ConfigOptions() {
+  const { user } = useAuth()
   const { toast } = useToast()
   const [opcoes, setOpcoes] = useState<OpcaoPadronizada[]>([])
   const [loading, setLoading] = useState(true)
   const [selectedCategoria, setSelectedCategoria] = useState<string>('fabricante')
   const [novoValor, setNovoValor] = useState('')
 
-  const categorias = [
+  const KNOWN_CATEGORIES = [
     { value: 'fabricante', label: 'Fabricante' },
     { value: 'corrente_nominal', label: 'Corrente Nominal' },
+    { value: 'classe_isolamento', label: 'Classe de Isolamento' },
+    { value: 'potencia_simetrica', label: 'Potência Simétrica' },
+    { value: 'capacidade_ruptura', label: 'Capacidade de Ruptura' },
+    { value: 'rele_minima_tensao', label: 'Relé de Mínima Tensão' },
+    { value: 'rele_abertura', label: 'Relé de Abertura' },
+    { value: 'rele_fechamento', label: 'Relé de Fechamento' },
+    { value: 'motorizacao', label: 'Motorização' },
   ]
+
+  const dbCategorias = Array.from(new Set(opcoes.map((o) => o.categoria)))
+  const categorias = KNOWN_CATEGORIES.map((k) => k)
+
+  dbCategorias.forEach((dc) => {
+    if (!categorias.find((c) => c.value === dc)) {
+      categorias.push({ value: dc, label: dc })
+    }
+  })
 
   const loadOpcoes = async () => {
     try {
@@ -68,6 +87,10 @@ export default function ConfigOptions() {
   }
 
   const filteredOpcoes = opcoes.filter((o) => o.categoria === selectedCategoria)
+
+  if (user && user.tipo_acesso !== 'admin') {
+    return <Navigate to="/" replace />
+  }
 
   return (
     <div className="space-y-6">
