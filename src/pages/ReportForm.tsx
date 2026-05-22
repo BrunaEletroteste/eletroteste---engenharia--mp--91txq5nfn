@@ -189,7 +189,7 @@ export default function ReportForm() {
         if (eq.testes) {
           for (const t of eq.testes) {
             if (t._delete) continue
-            if (t.tipo_teste === 'Resistência dos Contatos') {
+            if (t.tipo_teste === 'Resistências dos Contatos') {
               const d = t.dados_detalhados || {}
               if (
                 d.fase_a === undefined ||
@@ -201,13 +201,13 @@ export default function ReportForm() {
               ) {
                 toast({
                   title: 'Erro de Validação',
-                  description: `Os valores das Fases no teste de Resistência dos Contatos são obrigatórios. (Equipamento: ${eq.tipo_equipamento})`,
+                  description: `Os valores das Fases no teste de Resistências dos Contatos são obrigatórios. (Equipamento: ${eq.tipo_equipamento})`,
                   variant: 'destructive',
                 })
                 return false
               }
             }
-            if (t.tipo_teste === 'Isolamento') {
+            if (t.tipo_teste === 'Resistências dos Isolamentos') {
               const d = t.dados_detalhados || {}
               const rows = ['ab', 'bc', 'ac', 'abc_massa']
               for (const r of rows) {
@@ -220,7 +220,7 @@ export default function ReportForm() {
                 ) {
                   toast({
                     title: 'Erro de Validação',
-                    description: `Os valores no teste de Isolamento são obrigatórios. (Equipamento: ${eq.tipo_equipamento})`,
+                    description: `Os valores no teste de Resistências dos Isolamentos são obrigatórios. (Equipamento: ${eq.tipo_equipamento})`,
                     variant: 'destructive',
                   })
                   return false

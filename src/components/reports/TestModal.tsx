@@ -39,7 +39,12 @@ import {
 
 const testSchema = z.object({
   tipo_teste: z.enum(
-    ['Isolamento', 'Tensão', 'Resistência dos Enrolamentos', 'Resistência dos Contatos'],
+    [
+      'Resistências dos Isolamentos',
+      'Relação de Tensões',
+      'Resistências dos Enrolamentos',
+      'Resistências dos Contatos',
+    ],
     {
       required_error: 'Selecione o tipo de teste',
     },
@@ -107,10 +112,10 @@ export function TestModal({ open, onOpenChange, onSave, initialData }: TestModal
 
   useEffect(() => {
     if (!open) return
-    if (watchTipo === 'Resistência dos Contatos') {
+    if (watchTipo === 'Resistências dos Contatos') {
       form.setValue('unidade', 'Micro-Ohm')
       form.setValue('valor_teste', 0)
-    } else if (watchTipo === 'Isolamento') {
+    } else if (watchTipo === 'Resistências dos Isolamentos') {
       form.setValue('unidade', 'Mega-Ohms')
       form.setValue('valor_teste', 0)
     }
@@ -142,15 +147,15 @@ export function TestModal({ open, onOpenChange, onSave, initialData }: TestModal
                       </SelectTrigger>
                     </FormControl>
                     <SelectContent>
-                      <SelectItem value="Isolamento">
-                        Resistência dos Isolamentos (Isolamento)
+                      <SelectItem value="Resistências dos Isolamentos">
+                        Resistências dos Isolamentos
                       </SelectItem>
-                      <SelectItem value="Tensão">Tensão</SelectItem>
-                      <SelectItem value="Resistência dos Enrolamentos">
-                        Resistência dos Enrolamentos
+                      <SelectItem value="Relação de Tensões">Relação de Tensões</SelectItem>
+                      <SelectItem value="Resistências dos Enrolamentos">
+                        Resistências dos Enrolamentos
                       </SelectItem>
-                      <SelectItem value="Resistência dos Contatos">
-                        Resistência dos Contatos
+                      <SelectItem value="Resistências dos Contatos">
+                        Resistências dos Contatos
                       </SelectItem>
                     </SelectContent>
                   </Select>
@@ -159,7 +164,7 @@ export function TestModal({ open, onOpenChange, onSave, initialData }: TestModal
               )}
             />
 
-            {watchTipo === 'Resistência dos Contatos' && (
+            {watchTipo === 'Resistências dos Contatos' && (
               <div className="space-y-4 border rounded-md p-4 bg-muted/20">
                 <h4 className="text-sm font-medium">Medições das Fases</h4>
                 <div className="grid grid-cols-3 gap-4">
@@ -224,7 +229,7 @@ export function TestModal({ open, onOpenChange, onSave, initialData }: TestModal
               </div>
             )}
 
-            {watchTipo === 'Isolamento' && (
+            {watchTipo === 'Resistências dos Isolamentos' && (
               <div className="space-y-4 border rounded-md p-4 bg-muted/20">
                 <Table>
                   <TableHeader>
@@ -286,28 +291,30 @@ export function TestModal({ open, onOpenChange, onSave, initialData }: TestModal
             )}
 
             <div className="grid grid-cols-2 gap-4">
-              {watchTipo !== 'Resistência dos Contatos' && watchTipo !== 'Isolamento' && (
-                <FormField
-                  control={form.control}
-                  name="valor_teste"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Valor</FormLabel>
-                      <FormControl>
-                        <Input type="number" step="any" {...field} />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-              )}
+              {watchTipo !== 'Resistências dos Contatos' &&
+                watchTipo !== 'Resistências dos Isolamentos' && (
+                  <FormField
+                    control={form.control}
+                    name="valor_teste"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Valor</FormLabel>
+                        <FormControl>
+                          <Input type="number" step="any" {...field} />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                )}
               <FormField
                 control={form.control}
                 name="unidade"
                 render={({ field }) => (
                   <FormItem
                     className={
-                      watchTipo === 'Resistência dos Contatos' || watchTipo === 'Isolamento'
+                      watchTipo === 'Resistências dos Contatos' ||
+                      watchTipo === 'Resistências dos Isolamentos'
                         ? 'col-span-2'
                         : ''
                     }
@@ -318,10 +325,12 @@ export function TestModal({ open, onOpenChange, onSave, initialData }: TestModal
                         placeholder="Ex: MΩ, V"
                         {...field}
                         readOnly={
-                          watchTipo === 'Resistência dos Contatos' || watchTipo === 'Isolamento'
+                          watchTipo === 'Resistências dos Contatos' ||
+                          watchTipo === 'Resistências dos Isolamentos'
                         }
                         className={
-                          watchTipo === 'Resistência dos Contatos' || watchTipo === 'Isolamento'
+                          watchTipo === 'Resistências dos Contatos' ||
+                          watchTipo === 'Resistências dos Isolamentos'
                             ? 'bg-muted cursor-not-allowed'
                             : ''
                         }
