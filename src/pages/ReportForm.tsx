@@ -7,19 +7,13 @@ import pb from '@/lib/pocketbase/client'
 import { useToast } from '@/hooks/use-toast'
 import { useRealtime } from '@/hooks/use-realtime'
 import { Button } from '@/components/ui/button'
-import {
-  Card,
-  CardHeader,
-  CardTitle,
-  CardDescription,
-  CardContent,
-  CardFooter,
-} from '@/components/ui/card'
+import { Card, CardHeader, CardTitle, CardDescription, CardFooter } from '@/components/ui/card'
 import { Skeleton } from '@/components/ui/skeleton'
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert'
 import { ArrowLeft, Save, CheckCircle2 } from 'lucide-react'
 import { ReportHeaderSection } from '@/components/reports/ReportHeaderSection'
 import { EquipmentSection } from '@/components/reports/EquipmentSection'
+import { ReportAttachmentsSection } from '@/components/reports/ReportAttachmentsSection'
 import { reportFormSchema, FormValues, EquipmentItem } from '@/types/reports'
 
 export default function ReportForm() {
@@ -35,6 +29,12 @@ export default function ReportForm() {
   const [isLoading, setIsLoading] = useState(true)
   const [hasError, setHasError] = useState(false)
   const [equipments, setEquipments] = useState<EquipmentItem[]>([])
+
+  // Attachments State
+  const [reportRecord, setReportRecord] = useState<any>(null)
+  const [existingAnexos, setExistingAnexos] = useState<string[]>([])
+  const [filesToUpload, setFilesToUpload] = useState<File[]>([])
+  const [filesToRemove, setFilesToRemove] = useState<string[]>([])
 
   const isSaving = useRef(false)
   const isReloading = useRef(false)
@@ -56,6 +56,11 @@ export default function ReportForm() {
 
         if (id && (isView || isEdit)) {
           const res = await pb.collection('relatorios').getOne(id)
+          setReportRecord(res)
+          setExistingAnexos(res.anexos || [])
+          setFilesToUpload([])
+          setFilesToRemove([])
+
           reset({
             numero_relatorio: res.numero_relatorio,
             cliente_id: res.cliente_id,
@@ -107,6 +112,10 @@ export default function ReportForm() {
 
           setEquipments(loadedEquipments)
         } else {
+          setReportRecord(null)
+          setExistingAnexos([])
+          setFilesToUpload([])
+          setFilesToRemove([])
           reset({
             numero_relatorio: `00${Math.floor(Math.random() * 1000)}/${new Date().getFullYear()}`,
             status: 'rascunho',
@@ -280,20 +289,39 @@ export default function ReportForm() {
     isSaving.current = true
     try {
       setIsLoading(true)
-      const payload = {
-        ...data,
+
+      const payload: Record<string, any> = {
+        numero_relatorio: data.numero_relatorio,
+        cliente_id: data.cliente_id,
         data_execucao: data.data_execucao ? new Date(data.data_execucao).toISOString() : '',
-        proxima_manutencao: data.proxima_manutencao
-          ? new Date(data.proxima_manutencao).toISOString()
-          : '',
-        criado_por: user?.id,
+        status: data.status,
+        criado_por: user?.id || '',
       }
+      if (data.acompanhante) payload.acompanhante = data.acompanhante
+      if (data.proxima_manutencao)
+        payload.proxima_manutencao = new Date(data.proxima_manutencao).toISOString()
+      if (data.observacoes) payload.observacoes = data.observacoes
+
+      const formData = new FormData()
+      Object.entries(payload).forEach(([key, value]) => {
+        formData.append(key, value)
+      })
+
+      if (isEdit && id) {
+        filesToRemove.forEach((filename) => {
+          formData.append('anexos-', filename)
+        })
+      }
+
+      filesToUpload.forEach((file) => {
+        formData.append('anexos', file)
+      })
 
       let relatorioId = id
       if (isEdit && id) {
-        await pb.collection('relatorios').update(id, payload)
+        await pb.collection('relatorios').update(id, formData)
       } else {
-        const created = await pb.collection('relatorios').create(payload)
+        const created = await pb.collection('relatorios').create(formData)
         relatorioId = created.id
       }
 
@@ -411,13 +439,24 @@ export default function ReportForm() {
       <FormProvider {...methods}>
         <Card className="shadow-lg border-t-4 border-t-primary">
           <CardHeader className="border-b bg-muted/20 pb-6">
-            <CardTitle className="text-2xl flex items-center gap-2">
-              {isView ? 'Visualizar Relatório' : isEdit ? 'Editar Relatório' : 'Novo Relatório'}
-            </CardTitle>
-            <CardDescription className="mt-2 text-base">
-              Preencha os dados técnicos da manutenção preventiva e adicione os equipamentos
-              inspecionados.
-            </CardDescription>
+            <div className="flex justify-between items-start">
+              <div>
+                <CardTitle className="text-2xl flex items-center gap-2">
+                  {isView ? 'Visualizar Relatório' : isEdit ? 'Editar Relatório' : 'Novo Relatório'}
+                </CardTitle>
+                <CardDescription className="mt-2 text-base">
+                  Preencha os dados técnicos da manutenção preventiva e adicione os equipamentos
+                  inspecionados.
+                </CardDescription>
+              </div>
+              <div className="hidden sm:block">
+                <img
+                  src="https://img.usecurling.com/i?q=electricity&color=blue&shape=fill"
+                  alt="Eletro Teste"
+                  className="h-12 w-auto"
+                />
+              </div>
+            </div>
           </CardHeader>
 
           <div className="space-y-8 pt-6 p-4 sm:p-8 mt-0">
@@ -427,17 +466,28 @@ export default function ReportForm() {
               setEquipments={setEquipments}
               isView={isView}
             />
+            <ReportAttachmentsSection
+              record={reportRecord}
+              existingAnexos={existingAnexos}
+              filesToUpload={filesToUpload}
+              filesToRemove={filesToRemove}
+              onAddFiles={(files) => setFilesToUpload((prev) => [...prev, ...files])}
+              onRemoveExisting={(name) => setFilesToRemove((prev) => [...prev, name])}
+              onRemoveNew={(idx) => setFilesToUpload((prev) => prev.filter((_, i) => i !== idx))}
+              isView={isView}
+            />
           </div>
 
           <CardFooter className="flex flex-col-reverse sm:flex-row justify-between items-center gap-4 bg-muted/30 p-6 border-t rounded-b-xl">
             <Button variant="outline" className="w-full sm:w-auto" onClick={() => navigate(-1)}>
               <ArrowLeft className="mr-2 h-4 w-4" />
-              Cancelar
+              Voltar
             </Button>
 
             {!isView && (
               <div className="flex flex-col sm:flex-row gap-3 w-full sm:w-auto">
                 <Button
+                  type="button"
                   variant="secondary"
                   className="w-full sm:w-auto"
                   onClick={() => handleStatusSubmit('rascunho')}
@@ -446,6 +496,7 @@ export default function ReportForm() {
                   Salvar Rascunho
                 </Button>
                 <Button
+                  type="button"
                   variant="default"
                   className="w-full sm:w-auto bg-emerald-600 hover:bg-emerald-700 text-white shadow-sm"
                   onClick={() => handleStatusSubmit('finalizado')}

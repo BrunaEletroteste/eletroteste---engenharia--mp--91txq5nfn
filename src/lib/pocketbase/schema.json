@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-05-22T15:27:03.459Z",
+  "generatedAt": "2026-05-22T15:36:38.734Z",
   "collections": [
     {
       "name": "users",
@@ -196,6 +196,12 @@
           "required": false,
           "system": false,
           "autodateTriggers": ["onCreate", "onUpdate"]
+        },
+        {
+          "name": "anexos",
+          "type": "file",
+          "required": false,
+          "system": false
         }
       ],
       "indexes": ["CREATE UNIQUE INDEX idx_relatorios_numero ON relatorios (numero_relatorio)"]
