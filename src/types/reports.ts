@@ -2,6 +2,7 @@ import { z } from 'zod'
 
 export const reportFormSchema = z.object({
   numero_relatorio: z.string().min(1, 'Número do relatório é obrigatório'),
+  numero_proposta: z.string().optional(),
   cliente_id: z.string().min(1, 'Cliente é obrigatório'),
   data_execucao: z.string().min(1, 'Data de execução é obrigatória'),
   acompanhante: z.string().optional(),

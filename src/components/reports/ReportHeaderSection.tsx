@@ -68,6 +68,25 @@ export function ReportHeaderSection({ isView }: { isView: boolean }) {
 
         <FormField
           control={control}
+          name="numero_proposta"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Número da Proposta</FormLabel>
+              <FormControl>
+                <Input
+                  {...field}
+                  disabled={isView}
+                  placeholder="Ex: PROP-001/2026"
+                  className="font-medium"
+                />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+
+        <FormField
+          control={control}
           name="cliente_id"
           render={({ field }) => (
             <FormItem>

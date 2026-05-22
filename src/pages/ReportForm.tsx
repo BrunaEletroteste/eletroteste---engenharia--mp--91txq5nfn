@@ -87,6 +87,7 @@ export default function ReportForm() {
 
           reset({
             numero_relatorio: res.numero_relatorio,
+            numero_proposta: res.numero_proposta || '',
             cliente_id: res.cliente_id,
             data_execucao: res.data_execucao ? res.data_execucao.substring(0, 10) : '',
             acompanhante: res.acompanhante || '',
@@ -146,6 +147,7 @@ export default function ReportForm() {
           setFilesToRemove([])
           reset({
             numero_relatorio: `00${Math.floor(Math.random() * 1000)}/${new Date().getFullYear()}`,
+            numero_proposta: '',
             status: 'rascunho',
             cliente_id: '',
             data_execucao: '',
@@ -320,6 +322,7 @@ export default function ReportForm() {
 
       const payload: Record<string, any> = {
         numero_relatorio: data.numero_relatorio,
+        numero_proposta: data.numero_proposta || '',
         cliente_id: data.cliente_id,
         data_execucao: data.data_execucao ? `${data.data_execucao} 12:00:00Z` : '',
         status: data.status,
