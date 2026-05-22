@@ -91,8 +91,18 @@ export const getEquipmentFields = (type: string): FieldDef[] => {
         { name: 'classe_isolamento', label: 'Classe de Isolamento (kV)', type: 'text' },
         { name: 'tap_at', label: 'Tap de AT (V)', type: 'text' },
         { name: 'tensao_secundaria', label: 'Tensão Secundária (V)', type: 'text' },
-        { name: 'corrente_primaria', label: 'Corrente Primária (A)', type: 'text' },
-        { name: 'corrente_secundaria', label: 'Corrente Secundária (A)', type: 'text' },
+        {
+          name: 'corrente_primaria',
+          label: 'Corrente Primária (A)',
+          type: 'number',
+          readOnly: true,
+        },
+        {
+          name: 'corrente_secundaria',
+          label: 'Corrente Secundária (A)',
+          type: 'number',
+          readOnly: true,
+        },
         { name: 'impedancia', label: 'Impedância (%)', type: 'number' },
         { name: 'condut_vs', label: 'Condut. de Vs (mm²)', type: 'text' },
         {

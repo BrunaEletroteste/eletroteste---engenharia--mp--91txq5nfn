@@ -273,28 +273,31 @@ export function EquipmentModal({ open, onOpenChange, onSave, initialData }: Prop
             let updated = { ...prev }
             let changed = false
 
-            if (
-              (pChanged || lChanged) &&
-              potencia !== undefined &&
-              ligadoEm !== undefined &&
-              ligadoEm !== 0
-            ) {
-              const cp = Number(((potencia * 1000) / (sqrt3 * ligadoEm)).toFixed(2))
-              if (prev.corrente_primaria !== cp) {
-                updated.corrente_primaria = cp
+            if (pChanged || lChanged) {
+              if (potencia !== undefined && ligadoEm !== undefined && ligadoEm !== 0) {
+                const cp = Number(((potencia * 1000) / (sqrt3 * ligadoEm)).toFixed(2))
+                if (prev.corrente_primaria !== cp) {
+                  updated.corrente_primaria = cp
+                  changed = true
+                }
+              } else if (prev.corrente_primaria !== undefined && prev.corrente_primaria !== '') {
+                updated.corrente_primaria = ''
                 changed = true
               }
             }
 
-            if (
-              (pChanged || tChanged) &&
-              potencia !== undefined &&
-              tensaoSecBase !== undefined &&
-              tensaoSecBase !== 0
-            ) {
-              const cs = Number(((potencia * 1000) / (sqrt3 * tensaoSecBase)).toFixed(2))
-              if (prev.corrente_secundaria !== cs) {
-                updated.corrente_secundaria = cs
+            if (pChanged || tChanged) {
+              if (potencia !== undefined && tensaoSecBase !== undefined && tensaoSecBase !== 0) {
+                const cs = Number(((potencia * 1000) / (sqrt3 * tensaoSecBase)).toFixed(2))
+                if (prev.corrente_secundaria !== cs) {
+                  updated.corrente_secundaria = cs
+                  changed = true
+                }
+              } else if (
+                prev.corrente_secundaria !== undefined &&
+                prev.corrente_secundaria !== ''
+              ) {
+                updated.corrente_secundaria = ''
                 changed = true
               }
             }
@@ -401,6 +404,7 @@ export function EquipmentModal({ open, onOpenChange, onSave, initialData }: Prop
       isSelect = true
     } else if (
       !opcoesError &&
+      !field.readOnly &&
       ([
         'corrente_nominal',
         'classe_isolamento',
