@@ -19,6 +19,7 @@ import { Badge } from '@/components/ui/badge'
 import { Input } from '@/components/ui/input'
 import { EquipmentModal } from './EquipmentModal'
 import { EquipmentTestsManager } from './EquipmentTestsManager'
+import { EquipmentPhotosManager } from './EquipmentPhotosManager'
 import { ParecerForm } from './ParecerForm'
 import { useFormContext, useWatch } from 'react-hook-form'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
@@ -359,6 +360,12 @@ export function EquipmentSection({ equipments, setEquipments, isView }: Props) {
                         Testes Elétricos
                       </TabsTrigger>
                       <TabsTrigger
+                        value="fotos"
+                        className="rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent px-0 py-2"
+                      >
+                        Fotos
+                      </TabsTrigger>
+                      <TabsTrigger
                         value="parecer"
                         className="rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent px-0 py-2"
                       >
@@ -398,6 +405,15 @@ export function EquipmentSection({ equipments, setEquipments, isView }: Props) {
                         isView={isView}
                         clienteId={clienteId}
                         reportDate={reportDate}
+                      />
+                    </TabsContent>
+
+                    <TabsContent value="fotos" className="p-4 focus-visible:outline-none">
+                      <EquipmentPhotosManager
+                        equipment={eq}
+                        index={index}
+                        setEquipments={setEquipments}
+                        isView={isView}
                       />
                     </TabsContent>
 

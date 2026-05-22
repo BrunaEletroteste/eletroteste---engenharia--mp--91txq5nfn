@@ -38,5 +38,6 @@ export type EquipmentItem = {
   ordem?: number
   testes?: TestItem[]
   parecer?: ParecerItem
+  fotos?: string[]
   _delete?: boolean
 }
