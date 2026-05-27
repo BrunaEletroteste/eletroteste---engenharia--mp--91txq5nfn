@@ -96,11 +96,45 @@ export default function ConfigOptions() {
     }
   }
 
+  const compareOpcoes = (a: string, b: string) => {
+    const parseStr = (s: string) => {
+      // Matches Brazilian formatted numbers at the start of the string
+      // e.g., "1.000", "1.000,50", "10", "1,5", "-5.000,99"
+      const match = s.trim().match(/^(-?\d{1,3}(?:\.\d{3})*|-?\d+)(?:,\d+)?/)
+      if (match) {
+        const numStr = match[0].replace(/\./g, '').replace(',', '.')
+        const num = parseFloat(numStr)
+        const rest = s.trim().substring(match[0].length).trim()
+        return { num, rest, isNum: true }
+      }
+      return { num: 0, rest: s.trim(), isNum: false }
+    }
+
+    const parsedA = parseStr(a)
+    const parsedB = parseStr(b)
+
+    if (parsedA.isNum && parsedB.isNum) {
+      if (parsedA.num !== parsedB.num) {
+        return parsedA.num - parsedB.num
+      }
+      // If numbers are equal, fallback to comparing the rest of the string
+      return parsedA.rest.localeCompare(parsedB.rest, 'pt-BR', {
+        numeric: true,
+        sensitivity: 'base',
+      })
+    }
+
+    // Numbers come before strings
+    if (parsedA.isNum && !parsedB.isNum) return -1
+    if (!parsedA.isNum && parsedB.isNum) return 1
+
+    // Standard string comparison with numeric and locale awareness for non-numbers at the start
+    return a.localeCompare(b, 'pt-BR', { numeric: true, sensitivity: 'base' })
+  }
+
   const filteredOpcoes = opcoes
     .filter((o) => o.categoria === selectedCategoria)
-    .sort((a, b) =>
-      a.valor.localeCompare(b.valor, undefined, { numeric: true, sensitivity: 'base' }),
-    )
+    .sort((a, b) => compareOpcoes(a.valor, b.valor))
 
   if (user && user.tipo_acesso !== 'admin') {
     return <Navigate to="/" replace />
