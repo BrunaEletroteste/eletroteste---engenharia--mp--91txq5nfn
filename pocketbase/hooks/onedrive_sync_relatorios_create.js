@@ -25,25 +25,32 @@ onRecordAfterCreateSuccess((e) => {
     return e.next()
   }
 
-  const clienteId = record.getString('cliente_id')
-  if (!clienteId) return e.next()
-
-  let cliente
-  try {
-    cliente = $app.findRecordById('clientes', clienteId)
-  } catch (err) {
-    $app.logger().error('Cliente not found for relatorio sync', 'relatorioId', record.id)
-    return e.next()
-  }
-
   const sanitize = (name) => {
-    return (name || '').replace(/[<>:"\/\\|?*\x00-\x1F]/g, '-').trim()
+    if (name === null || name === undefined) return ''
+    return String(name)
+      .replace(/[<>:"\/\\|?*\x00-\x1F]/g, '-')
+      .trim()
   }
 
-  const folderName = `${sanitize(cliente.getString('nome_empresa'))} - ${sanitize(cliente.getString('cnpj'))}`
-  const numRelSanitized = sanitize(record.getString('numero_relatorio'))
+  let safeClientName = 'Sem Cliente'
+  let safeCnpj = '00000000000000'
+  const clienteId = record.getString('cliente_id')
 
-  const basePath = `Engenharia/Anexos/${folderName}/${numRelSanitized}`
+  if (clienteId) {
+    try {
+      const cliente = $app.findRecordById('clientes', clienteId)
+      safeClientName = sanitize(cliente.getString('nome_empresa')) || 'Sem Cliente'
+      safeCnpj = sanitize(cliente.getString('cnpj')) || '00000000000000'
+    } catch (err) {
+      $app.logger().error('Cliente not found for relatorio sync', 'relatorioId', record.id)
+    }
+  }
+
+  const numRelRaw = record.getString('numero_relatorio')
+  const safeNumRel = sanitize(numRelRaw) || 'Sem Numero'
+
+  const folderName = `${safeClientName} - ${safeCnpj}`
+  const basePath = `Engenharia/Anexos/${folderName}/${safeNumRel}`
 
   const encodePath = (path) => {
     return path
@@ -90,7 +97,8 @@ onRecordAfterCreateSuccess((e) => {
       continue
     }
 
-    const targetPath = `${basePath}/${fileName}`
+    const safeFileName = sanitize(fileName)
+    const targetPath = `${basePath}/${safeFileName}`
     const uploadUrl = `https://graph.microsoft.com/v1.0/users/${encodeURIComponent(login)}/drive/root:/${encodePath(targetPath)}:/content`
 
     const uploadRes = $http.send({

@@ -34,36 +34,60 @@ onRecordAfterUpdateSuccess((e) => {
     return e.next()
   }
 
-  const clienteId = record.getString('cliente_id')
-  if (!clienteId) return e.next()
-
-  let cliente
-  try {
-    cliente = $app.findRecordById('clientes', clienteId)
-  } catch (err) {
-    $app.logger().error('Cliente not found for relatorio update sync', 'relatorioId', record.id)
-    return e.next()
-  }
-
   const sanitize = (name) => {
-    return (name || '').replace(/[<>:"\/\\|?*\x00-\x1F]/g, '-').trim()
+    if (name === null || name === undefined) return ''
+    return String(name)
+      .replace(/[<>:"\/\\|?*\x00-\x1F]/g, '-')
+      .trim()
   }
 
-  const folderName = `${sanitize(cliente.getString('nome_empresa'))} - ${sanitize(cliente.getString('cnpj'))}`
-  const numRelSanitized = sanitize(record.getString('numero_relatorio'))
-  const basePath = `Engenharia/Anexos/${folderName}/${numRelSanitized}`
+  let safeClientName = 'Sem Cliente'
+  let safeCnpj = '00000000000000'
+  const clienteId = record.getString('cliente_id')
+
+  if (clienteId) {
+    try {
+      const cliente = $app.findRecordById('clientes', clienteId)
+      safeClientName = sanitize(cliente.getString('nome_empresa')) || 'Sem Cliente'
+      safeCnpj = sanitize(cliente.getString('cnpj')) || '00000000000000'
+    } catch (err) {
+      $app.logger().error('Cliente not found for relatorio update sync', 'relatorioId', record.id)
+    }
+  }
+
+  const numRelRaw = record.getString('numero_relatorio')
+  const safeNumRel = sanitize(numRelRaw) || 'Sem Numero'
+
+  const folderName = `${safeClientName} - ${safeCnpj}`
+  const basePath = `Engenharia/Anexos/${folderName}/${safeNumRel}`
 
   let oldBasePath = basePath
   if (numRelChanged || cliChanged) {
-    let oldCliente = cliente
+    let oldSafeClientName = safeClientName
+    let oldSafeCnpj = safeCnpj
+
     if (cliChanged) {
-      try {
-        oldCliente = $app.findRecordById('clientes', original.getString('cliente_id'))
-      } catch (err) {}
+      const oldClienteId = original.getString('cliente_id')
+      if (oldClienteId) {
+        try {
+          const oldCliente = $app.findRecordById('clientes', oldClienteId)
+          oldSafeClientName = sanitize(oldCliente.getString('nome_empresa')) || 'Sem Cliente'
+          oldSafeCnpj = sanitize(oldCliente.getString('cnpj')) || '00000000000000'
+        } catch (err) {
+          $app
+            .logger()
+            .error('Old Cliente not found for relatorio update sync', 'relatorioId', record.id)
+        }
+      } else {
+        oldSafeClientName = 'Sem Cliente'
+        oldSafeCnpj = '00000000000000'
+      }
     }
-    const oldFolderName = `${sanitize(oldCliente.getString('nome_empresa'))} - ${sanitize(oldCliente.getString('cnpj'))}`
-    const oldNumRelSanitized = sanitize(original.getString('numero_relatorio'))
-    oldBasePath = `Engenharia/Anexos/${oldFolderName}/${oldNumRelSanitized}`
+
+    const oldNumRelRaw = original.getString('numero_relatorio')
+    const oldSafeNumRel = sanitize(oldNumRelRaw) || 'Sem Numero'
+    const oldFolderName = `${oldSafeClientName} - ${oldSafeCnpj}`
+    oldBasePath = `Engenharia/Anexos/${oldFolderName}/${oldSafeNumRel}`
   }
 
   let filesToUpload = addedFiles
@@ -118,7 +142,8 @@ onRecordAfterUpdateSuccess((e) => {
       continue
     }
 
-    const targetPath = `${basePath}/${fileName}`
+    const safeFileName = sanitize(fileName)
+    const targetPath = `${basePath}/${safeFileName}`
     const uploadUrl = `https://graph.microsoft.com/v1.0/users/${encodeURIComponent(login)}/drive/root:/${encodePath(targetPath)}:/content`
 
     const uploadRes = $http.send({
@@ -151,7 +176,8 @@ onRecordAfterUpdateSuccess((e) => {
   for (const fileObj of filesToDelete) {
     if (!fileObj.name) continue
 
-    const targetPath = `${fileObj.path}/${fileObj.name}`
+    const safeFileName = sanitize(fileObj.name)
+    const targetPath = `${fileObj.path}/${safeFileName}`
     const deleteUrl = `https://graph.microsoft.com/v1.0/users/${encodeURIComponent(login)}/drive/root:/${encodePath(targetPath)}`
 
     const delRes = $http.send({
