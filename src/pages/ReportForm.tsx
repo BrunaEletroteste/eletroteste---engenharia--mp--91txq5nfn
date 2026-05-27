@@ -16,6 +16,7 @@ import { ReportHeaderSection } from '@/components/reports/ReportHeaderSection'
 import { EquipmentSection } from '@/components/reports/EquipmentSection'
 import { ReportAttachmentsSection } from '@/components/reports/ReportAttachmentsSection'
 import { reportFormSchema, FormValues, EquipmentItem } from '@/types/reports'
+import { getEquipmentFields } from '@/lib/equipment-templates'
 
 export default function ReportForm() {
   const { id } = useParams()
@@ -220,6 +221,31 @@ export default function ReportForm() {
       if (eq._delete) continue
 
       const p = eq.parecer
+
+      if (eq.tipo_equipamento === 'Condutor Elétrico') {
+        const ceFields = getEquipmentFields('Condutor Elétrico').map((f) => f.name)
+        const missing = ceFields.filter(
+          (f) => eq.dados_tecnicos[f] === undefined || eq.dados_tecnicos[f] === '',
+        )
+        if (missing.length > 0) {
+          toast({
+            title: 'Erro de Validação',
+            description: `Todos os campos do Condutor Elétrico são obrigatórios. (Equipamento: ${eq.dados_tecnicos?.numero || eq.dados_tecnicos?.circuito || ''})`,
+            variant: 'destructive',
+          })
+          const el = document.getElementById(`equipamento-${i}`)
+          if (el) {
+            el.scrollIntoView({ behavior: 'smooth', block: 'center' })
+            el.classList.add('ring-2', 'ring-destructive', 'border-destructive')
+            setTimeout(
+              () => el.classList.remove('ring-2', 'ring-destructive', 'border-destructive'),
+              3000,
+            )
+          }
+          return false
+        }
+      }
+
       if (status === 'finalizado') {
         if (eq.testes) {
           for (const t of eq.testes) {

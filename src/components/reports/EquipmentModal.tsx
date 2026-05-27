@@ -375,6 +375,19 @@ export function EquipmentModal({ open, onOpenChange, onSave, initialData }: Prop
       return
     }
 
+    if (tipo === 'Condutor Elétrico') {
+      const requiredFieldsCE = fields.map((f) => f.name)
+      const missingCE = requiredFieldsCE.filter((f) => dados[f] === undefined || dados[f] === '')
+      if (missingCE.length > 0) {
+        toast({
+          title: 'Atenção',
+          description: 'Todos os campos do Condutor Elétrico são obrigatórios.',
+          variant: 'destructive',
+        })
+        return
+      }
+    }
+
     const hasNumeroField = fields.some((f) => f.name === 'numero')
     if (!dados.subestacao || (hasNumeroField && !dados.numero)) {
       toast({
@@ -538,7 +551,8 @@ export function EquipmentModal({ open, onOpenChange, onSave, initialData }: Prop
                 'exatidao',
                 'isolacao',
                 'fabricante',
-              ].includes(field.name))) && <span className="text-destructive"> *</span>}
+              ].includes(field.name)) ||
+            tipo === 'Condutor Elétrico') && <span className="text-destructive"> *</span>}
         </Label>
 
         {isCombobox && !opcoesError ? (
