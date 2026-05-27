@@ -2,14 +2,8 @@ onRecordAfterUpdateSuccess((e) => {
   const record = e.record
   const original = e.record.original()
 
-  const getArray = (val) => {
-    if (Array.isArray(val)) return val
-    if (typeof val === 'string' && val !== '') return [val]
-    return []
-  }
-
-  const newFiles = getArray(record.get('anexos'))
-  const oldFiles = original ? getArray(original.get('anexos')) : []
+  const newFiles = record.getStringSlice('anexos') || []
+  const oldFiles = original ? original.getStringSlice('anexos') : []
 
   const numRelChanged =
     original && record.getString('numero_relatorio') !== original.getString('numero_relatorio')

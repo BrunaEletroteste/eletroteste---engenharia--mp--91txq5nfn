@@ -1,5 +1,5 @@
-import React from 'react'
-import { Paperclip, X, Download, UploadCloud } from 'lucide-react'
+import React, { useState } from 'react'
+import { Paperclip, X, Download, UploadCloud, Loader2 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import pb from '@/lib/pocketbase/client'
 import { useToast } from '@/hooks/use-toast'
@@ -7,42 +7,51 @@ import { useToast } from '@/hooks/use-toast'
 interface Props {
   record: any
   existingAnexos: string[]
-  filesToUpload: File[]
-  filesToRemove: string[]
-  onAddFiles: (files: File[]) => void
-  onRemoveExisting: (name: string) => void
-  onRemoveNew: (index: number) => void
+  onAnexosChange: (newAnexos: string[]) => void
+  onUploadStart: () => void
+  onUploadEnd: () => void
   isView: boolean
 }
 
 export function ReportAttachmentsSection({
   record,
   existingAnexos,
-  filesToUpload,
-  filesToRemove,
-  onAddFiles,
-  onRemoveExisting,
-  onRemoveNew,
+  onAnexosChange,
+  onUploadStart,
+  onUploadEnd,
   isView,
 }: Props) {
   const { toast } = useToast()
+  const [isUploading, setIsUploading] = useState(false)
+  const [isDeleting, setIsDeleting] = useState<string | null>(null)
 
   const MAX_SIZE = 10 * 1024 * 1024 // 10MB
   const ALLOWED_TYPES = ['application/pdf', 'image/jpeg', 'image/png', 'image/jpg']
 
-  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    if (!e.target.files) return
+  const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (!e.target.files || e.target.files.length === 0) return
+
+    if (!record || !record.id) {
+      toast({
+        title: 'Ação não permitida',
+        description: 'Salve o relatório como rascunho primeiro para adicionar anexos.',
+        variant: 'destructive',
+      })
+      e.target.value = ''
+      return
+    }
+
     const newFiles = Array.from(e.target.files)
     const validFiles: File[] = []
 
-    newFiles.forEach((file) => {
+    for (const file of newFiles) {
       if (!ALLOWED_TYPES.includes(file.type)) {
         toast({
           title: 'Formato inválido',
           description: `O arquivo ${file.name} não é suportado. Use PDF, JPG ou PNG.`,
           variant: 'destructive',
         })
-        return
+        continue
       }
       if (file.size > MAX_SIZE) {
         toast({
@@ -50,20 +59,69 @@ export function ReportAttachmentsSection({
           description: `O arquivo ${file.name} excede o limite de 10MB.`,
           variant: 'destructive',
         })
-        return
+        continue
       }
       validFiles.push(file)
-    })
-
-    if (validFiles.length > 0) {
-      onAddFiles(validFiles)
     }
 
-    e.target.value = ''
+    if (validFiles.length > 0) {
+      setIsUploading(true)
+      onUploadStart()
+      try {
+        const formData = new FormData()
+        validFiles.forEach((file) => {
+          formData.append('anexos+', file)
+        })
+
+        const updatedRecord = await pb.collection('relatorios').update(record.id, formData)
+        onAnexosChange(updatedRecord.anexos || [])
+        toast({
+          title: 'Sucesso',
+          description: `${validFiles.length} arquivo(s) enviado(s) com sucesso.`,
+        })
+      } catch (error: any) {
+        console.error('Upload error', error)
+        toast({
+          title: 'Erro no upload',
+          description: 'Ocorreu um erro ao enviar os anexos. Tente novamente.',
+          variant: 'destructive',
+        })
+      } finally {
+        setIsUploading(false)
+        onUploadEnd()
+        e.target.value = ''
+      }
+    } else {
+      e.target.value = ''
+    }
   }
 
-  const currentExisting = existingAnexos.filter((name) => !filesToRemove.includes(name))
-  const hasFiles = currentExisting.length > 0 || filesToUpload.length > 0
+  const handleDelete = async (fileName: string) => {
+    if (!record || !record.id) return
+
+    setIsDeleting(fileName)
+    onUploadStart()
+    try {
+      const formData = new FormData()
+      formData.append('anexos-', fileName)
+      const updatedRecord = await pb.collection('relatorios').update(record.id, formData)
+      onAnexosChange(updatedRecord.anexos || [])
+      toast({
+        title: 'Arquivo removido',
+        description: `O anexo foi removido com sucesso.`,
+      })
+    } catch (error) {
+      console.error('Delete error', error)
+      toast({
+        title: 'Erro ao remover',
+        description: 'Não foi possível remover o anexo. Tente novamente.',
+        variant: 'destructive',
+      })
+    } finally {
+      setIsDeleting(null)
+      onUploadEnd()
+    }
+  }
 
   return (
     <div className="space-y-6">
@@ -75,19 +133,35 @@ export function ReportAttachmentsSection({
       </div>
 
       {!isView && (
-        <div className="border-2 border-dashed rounded-lg p-6 flex flex-col items-center justify-center bg-muted/20 hover:bg-muted/40 transition-colors">
+        <div
+          className={`border-2 border-dashed rounded-lg p-6 flex flex-col items-center justify-center transition-colors ${!record?.id ? 'bg-muted/50 opacity-60' : 'bg-muted/20 hover:bg-muted/40'}`}
+        >
           <UploadCloud className="h-10 w-10 text-muted-foreground mb-4" />
           <p className="text-sm font-medium mb-1">Arraste e solte arquivos aqui</p>
           <p className="text-xs text-muted-foreground mb-4">
             PDF, PNG, JPG (máx. 10MB por arquivo)
           </p>
+
           <Button
             type="button"
             variant="outline"
+            disabled={!record?.id || isUploading}
             onClick={() => document.getElementById('file-upload')?.click()}
           >
-            Selecionar Arquivos
+            {isUploading ? (
+              <>
+                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                Enviando...
+              </>
+            ) : (
+              'Selecionar Arquivos'
+            )}
           </Button>
+          {!record?.id && (
+            <p className="text-xs text-amber-600 mt-3 font-medium text-center">
+              Salve o relatório como rascunho primeiro para habilitar o envio de anexos.
+            </p>
+          )}
           <input
             id="file-upload"
             type="file"
@@ -95,13 +169,14 @@ export function ReportAttachmentsSection({
             className="hidden"
             accept=".pdf,image/jpeg,image/png,image/jpg"
             onChange={handleFileChange}
+            disabled={!record?.id || isUploading}
           />
         </div>
       )}
 
-      {hasFiles ? (
+      {existingAnexos.length > 0 ? (
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-          {currentExisting.map((name) => (
+          {existingAnexos.map((name) => (
             <div
               key={name}
               className="flex items-center justify-between p-3 border rounded-lg bg-background shadow-sm"
@@ -129,41 +204,15 @@ export function ReportAttachmentsSection({
                   <Button
                     variant="ghost"
                     size="icon"
-                    className="h-8 w-8 text-destructive"
-                    onClick={() => onRemoveExisting(name)}
+                    className="h-8 w-8 text-destructive disabled:opacity-50"
+                    disabled={isDeleting === name || isUploading}
+                    onClick={() => handleDelete(name)}
                   >
-                    <X className="h-4 w-4" />
-                  </Button>
-                )}
-              </div>
-            </div>
-          ))}
-
-          {filesToUpload.map((file, idx) => (
-            <div
-              key={`${file.name}-${idx}`}
-              className="flex items-center justify-between p-3 border border-primary/20 rounded-lg bg-primary/5 shadow-sm"
-            >
-              <div className="flex items-center gap-3 overflow-hidden">
-                <Paperclip className="h-4 w-4 text-primary shrink-0" />
-                <div className="flex flex-col overflow-hidden">
-                  <span className="text-sm font-medium truncate" title={file.name}>
-                    {file.name}
-                  </span>
-                  <span className="text-xs text-muted-foreground">
-                    {(file.size / 1024 / 1024).toFixed(2)} MB (Pronto para envio)
-                  </span>
-                </div>
-              </div>
-              <div className="flex gap-1 shrink-0 ml-2">
-                {!isView && (
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    className="h-8 w-8 text-destructive"
-                    onClick={() => onRemoveNew(idx)}
-                  >
-                    <X className="h-4 w-4" />
+                    {isDeleting === name ? (
+                      <Loader2 className="h-4 w-4 animate-spin" />
+                    ) : (
+                      <X className="h-4 w-4" />
+                    )}
                   </Button>
                 )}
               </div>

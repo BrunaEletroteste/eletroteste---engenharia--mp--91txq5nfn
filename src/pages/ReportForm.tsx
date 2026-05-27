@@ -34,8 +34,7 @@ export default function ReportForm() {
   // Attachments State
   const [reportRecord, setReportRecord] = useState<any>(null)
   const [existingAnexos, setExistingAnexos] = useState<string[]>([])
-  const [filesToUpload, setFilesToUpload] = useState<File[]>([])
-  const [filesToRemove, setFilesToRemove] = useState<string[]>([])
+  const isUploadingAttachmentRef = useRef(false)
 
   const isSavingRef = useRef(false)
   const [isSaving, setIsSaving] = useState(false)
@@ -83,8 +82,6 @@ export default function ReportForm() {
           const res = await pb.collection('relatorios').getOne(id)
           setReportRecord(res)
           setExistingAnexos(res.anexos || [])
-          setFilesToUpload([])
-          setFilesToRemove([])
 
           reset({
             numero_relatorio: res.numero_relatorio,
@@ -145,8 +142,6 @@ export default function ReportForm() {
         } else {
           setReportRecord(null)
           setExistingAnexos([])
-          setFilesToUpload([])
-          setFilesToRemove([])
           reset({
             numero_relatorio: `00${Math.floor(Math.random() * 1000)}/${new Date().getFullYear()}`,
             numero_proposta: '',
@@ -174,7 +169,7 @@ export default function ReportForm() {
   }, [loadData, user])
 
   const handleRemoteUpdate = useCallback(() => {
-    if (isReloading.current || isSavingRef.current) return
+    if (isReloading.current || isSavingRef.current || isUploadingAttachmentRef.current) return
     isReloading.current = true
     toast({
       title: 'Atenção',
@@ -340,19 +335,6 @@ export default function ReportForm() {
       Object.entries(payload).forEach(([key, value]) => {
         formData.append(key, value)
       })
-
-      if (isEditRoute && id) {
-        filesToRemove.forEach((filename) => {
-          formData.append('anexos-', filename)
-        })
-        filesToUpload.forEach((file) => {
-          formData.append('anexos+', file)
-        })
-      } else {
-        filesToUpload.forEach((file) => {
-          formData.append('anexos', file)
-        })
-      }
 
       let relatorioId = id
       if (isEditRoute && id) {
@@ -533,11 +515,15 @@ export default function ReportForm() {
             <ReportAttachmentsSection
               record={reportRecord}
               existingAnexos={existingAnexos}
-              filesToUpload={filesToUpload}
-              filesToRemove={filesToRemove}
-              onAddFiles={(files) => setFilesToUpload((prev) => [...prev, ...files])}
-              onRemoveExisting={(name) => setFilesToRemove((prev) => [...prev, name])}
-              onRemoveNew={(idx) => setFilesToUpload((prev) => prev.filter((_, i) => i !== idx))}
+              onAnexosChange={(newAnexos) => setExistingAnexos(newAnexos)}
+              onUploadStart={() => {
+                isUploadingAttachmentRef.current = true
+              }}
+              onUploadEnd={() => {
+                setTimeout(() => {
+                  isUploadingAttachmentRef.current = false
+                }, 1000)
+              }}
               isView={isReadOnly}
             />
           </div>

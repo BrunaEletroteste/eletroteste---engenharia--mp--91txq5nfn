@@ -12,15 +12,7 @@ onRecordAfterCreateSuccess((e) => {
   }
 
   const record = e.record
-  const anexosVal = record.get('anexos')
-
-  const getArray = (val) => {
-    if (Array.isArray(val)) return val
-    if (typeof val === 'string' && val !== '') return [val]
-    return []
-  }
-
-  const files = getArray(anexosVal)
+  const files = record.getStringSlice('anexos') || []
   if (files.length === 0) {
     return e.next()
   }
