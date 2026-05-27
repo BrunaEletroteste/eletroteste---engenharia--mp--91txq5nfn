@@ -38,6 +38,7 @@ onRecordAfterUpdateSuccess((e) => {
     if (name === null || name === undefined) return ''
     return String(name)
       .replace(/[<>:"\/\\|?*\x00-\x1F]/g, '-')
+      .replace(/\s+/g, ' ')
       .trim()
   }
 

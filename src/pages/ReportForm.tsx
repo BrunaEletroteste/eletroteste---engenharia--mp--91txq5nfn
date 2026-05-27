@@ -37,7 +37,8 @@ export default function ReportForm() {
   const [filesToUpload, setFilesToUpload] = useState<File[]>([])
   const [filesToRemove, setFilesToRemove] = useState<string[]>([])
 
-  const isSaving = useRef(false)
+  const isSavingRef = useRef(false)
+  const [isSaving, setIsSaving] = useState(false)
   const isReloading = useRef(false)
 
   const methods = useForm<FormValues>({
@@ -173,7 +174,7 @@ export default function ReportForm() {
   }, [loadData, user])
 
   const handleRemoteUpdate = useCallback(() => {
-    if (isReloading.current || isSaving.current) return
+    if (isReloading.current || isSavingRef.current) return
     isReloading.current = true
     toast({
       title: 'Atenção',
@@ -317,10 +318,9 @@ export default function ReportForm() {
 
   const onSubmit = async (data: FormValues) => {
     if (!validateEquipments(data.status)) return
-    isSaving.current = true
+    isSavingRef.current = true
+    setIsSaving(true)
     try {
-      setIsLoading(true)
-
       const payload: Record<string, any> = {
         numero_relatorio: data.numero_relatorio,
         numero_proposta: data.numero_proposta || '',
@@ -345,11 +345,14 @@ export default function ReportForm() {
         filesToRemove.forEach((filename) => {
           formData.append('anexos-', filename)
         })
+        filesToUpload.forEach((file) => {
+          formData.append('anexos+', file)
+        })
+      } else {
+        filesToUpload.forEach((file) => {
+          formData.append('anexos', file)
+        })
       }
-
-      filesToUpload.forEach((file) => {
-        formData.append('anexos', file)
-      })
 
       let relatorioId = id
       if (isEditRoute && id) {
@@ -434,7 +437,8 @@ export default function ReportForm() {
       })
       navigate('/')
     } catch (error: any) {
-      isSaving.current = false
+      isSavingRef.current = false
+      setIsSaving(false)
       const fieldErrors = extractFieldErrors(error)
       const hasFieldErrors = Object.keys(fieldErrors).length > 0
 
@@ -459,7 +463,6 @@ export default function ReportForm() {
         description: errMsg,
         variant: 'destructive',
       })
-      setIsLoading(false)
     }
   }
 
@@ -549,19 +552,29 @@ export default function ReportForm() {
               <div className="flex flex-col sm:flex-row gap-3 w-full sm:w-auto">
                 <Button
                   type="button"
+                  disabled={isSaving}
                   className="w-full sm:w-auto bg-green-600 hover:bg-green-700 text-white shadow-sm"
                   onClick={() => handleStatusSubmit('rascunho')}
                 >
-                  <Save className="mr-2 h-4 w-4" />
-                  Salvar Relatório
+                  {isSaving ? (
+                    <span className="animate-spin mr-2 h-4 w-4 border-2 border-white border-t-transparent rounded-full" />
+                  ) : (
+                    <Save className="mr-2 h-4 w-4" />
+                  )}
+                  {isSaving ? 'Salvando...' : 'Salvar Relatório'}
                 </Button>
                 <Button
                   type="button"
+                  disabled={isSaving}
                   className="w-full sm:w-auto bg-red-600 hover:bg-red-700 text-white shadow-sm"
                   onClick={() => handleStatusSubmit('finalizado')}
                 >
-                  <CheckCircle2 className="mr-2 h-4 w-4" />
-                  Finalizar Relatório
+                  {isSaving ? (
+                    <span className="animate-spin mr-2 h-4 w-4 border-2 border-white border-t-transparent rounded-full" />
+                  ) : (
+                    <CheckCircle2 className="mr-2 h-4 w-4" />
+                  )}
+                  {isSaving ? 'Finalizando...' : 'Finalizar Relatório'}
                 </Button>
               </div>
             )}

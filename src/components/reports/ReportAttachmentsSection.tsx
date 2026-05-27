@@ -151,7 +151,7 @@ export function ReportAttachmentsSection({
                     {file.name}
                   </span>
                   <span className="text-xs text-muted-foreground">
-                    {(file.size / 1024 / 1024).toFixed(2)} MB (Pendente)
+                    {(file.size / 1024 / 1024).toFixed(2)} MB (Pronto para envio)
                   </span>
                 </div>
               </div>
