@@ -63,9 +63,32 @@ function ComboboxField({
         (categoryToMatch === 'classe_isolamento' && cat === 'classe de isolamento')
       )
     })
-    .sort((a, b) =>
-      a.valor.localeCompare(b.valor, undefined, { numeric: true, sensitivity: 'base' }),
-    )
+    .sort((a, b) => {
+      const parseBr = (val: string) => {
+        const match = val.match(/-?[\d.,]+/)
+        if (!match) return null
+        const cleanStr = match[0]
+        if (cleanStr === '.' || cleanStr === ',') return null
+        const numStr = cleanStr.replace(/\./g, '').replace(',', '.')
+        const num = parseFloat(numStr)
+        return isNaN(num) ? null : num
+      }
+      const numA = parseBr(a.valor)
+      const numB = parseBr(b.valor)
+      if (numA !== null && numB !== null) {
+        return numA - numB
+      }
+      return a.valor.localeCompare(b.valor, undefined, { numeric: true, sensitivity: 'base' })
+    })
+
+  const getCleanValue = (v: string) => {
+    if (!v) return v
+    return v.includes(',') ? v.replace(/\./g, '').replace(',', '.') : v.replace(/\./g, '')
+  }
+
+  const displayValue = value
+    ? options.find((o) => o.valor === value || getCleanValue(o.valor) === value)?.valor || value
+    : ''
 
   return (
     <Popover open={open} onOpenChange={setOpen}>
@@ -76,8 +99,8 @@ function ComboboxField({
           aria-expanded={open}
           className={cn('w-full justify-between font-normal', !value && 'text-muted-foreground')}
         >
-          {value
-            ? value
+          {displayValue
+            ? displayValue
             : field.name === 'fabricante'
               ? 'Selecione o fabricante'
               : field.name === 'subestacao'
@@ -111,25 +134,28 @@ function ComboboxField({
               )}
             </CommandEmpty>
             <CommandGroup>
-              {options.map((o) => (
-                <CommandItem
-                  key={o.id}
-                  value={o.valor}
-                  onSelect={(currentValue) => {
-                    const selected = options.find(
-                      (opt) => opt.valor.toLowerCase() === currentValue.toLowerCase(),
-                    )
-                    onChange(selected ? selected.valor : currentValue)
-                    setOpen(false)
-                    setSearchValue('')
-                  }}
-                >
-                  <Check
-                    className={cn('mr-2 h-4 w-4', value === o.valor ? 'opacity-100' : 'opacity-0')}
-                  />
-                  {o.valor}
-                </CommandItem>
-              ))}
+              {options.map((o) => {
+                const isSelected = value === o.valor || value === getCleanValue(o.valor)
+                return (
+                  <CommandItem
+                    key={o.id}
+                    value={o.valor}
+                    onSelect={(currentValue) => {
+                      const selected = options.find(
+                        (opt) => opt.valor.toLowerCase() === currentValue.toLowerCase(),
+                      )
+                      onChange(selected ? selected.valor : currentValue)
+                      setOpen(false)
+                      setSearchValue('')
+                    }}
+                  >
+                    <Check
+                      className={cn('mr-2 h-4 w-4', isSelected ? 'opacity-100' : 'opacity-0')}
+                    />
+                    {o.valor}
+                  </CommandItem>
+                )
+              })}
               {searchValue &&
                 !options.some((o) => o.valor.toLowerCase() === searchValue.toLowerCase()) && (
                   <CommandItem
@@ -403,13 +429,18 @@ export function EquipmentModal({ open, onOpenChange, onSave, initialData }: Prop
     const isCombobox =
       field.type === 'combobox' ||
       (tipo === 'Transformador de Potencial' && field.name === 'tensao_secundaria') ||
+      (tipo === 'Transformador' && field.name === 'ligado_em') ||
       (tipo === 'Transformador de Corrente' &&
         (field.name === 'corrente_primaria' || field.name === 'corrente_secundaria'))
 
     let isSelect = false
     let targetCategory = field.name.toLowerCase()
 
-    if (targetCategory === 'tensao_primaria' || targetCategory === 'tensao_secundaria')
+    if (
+      targetCategory === 'tensao_primaria' ||
+      targetCategory === 'tensao_secundaria' ||
+      targetCategory === 'ligado_em'
+    )
       targetCategory = 'tensão'
     if (
       targetCategory === 'corrente_nominal' ||
@@ -425,7 +456,6 @@ export function EquipmentModal({ open, onOpenChange, onSave, initialData }: Prop
     )
       targetCategory = 'fabricante'
     if (targetCategory === 'potencia') targetCategory = 'potência'
-    if (targetCategory === 'ligado_em') targetCategory = 'ligado em'
 
     if (field.type === 'select' && field.options) {
       isSelect = true
@@ -485,7 +515,9 @@ export function EquipmentModal({ open, onOpenChange, onSave, initialData }: Prop
             }}
             opcoes={opcoes}
             overrideCategory={
-              field.name === 'tensao_secundaria' || field.name === 'tensao_nominal'
+              field.name === 'tensao_secundaria' ||
+              field.name === 'tensao_nominal' ||
+              field.name === 'ligado_em'
                 ? 'Tensão'
                 : field.name === 'corrente_primaria' || field.name === 'corrente_secundaria'
                   ? 'Corrente Nominal'
@@ -534,12 +566,26 @@ export function EquipmentModal({ open, onOpenChange, onSave, initialData }: Prop
                         (targetCategory === 'classe_isolamento' && cat === 'classe de isolamento')
                       )
                     })
-                    .sort((a, b) =>
-                      a.valor.localeCompare(b.valor, undefined, {
+                    .sort((a, b) => {
+                      const parseBr = (val: string) => {
+                        const match = val.match(/-?[\d.,]+/)
+                        if (!match) return null
+                        const cleanStr = match[0]
+                        if (cleanStr === '.' || cleanStr === ',') return null
+                        const numStr = cleanStr.replace(/\./g, '').replace(',', '.')
+                        const num = parseFloat(numStr)
+                        return isNaN(num) ? null : num
+                      }
+                      const numA = parseBr(a.valor)
+                      const numB = parseBr(b.valor)
+                      if (numA !== null && numB !== null) {
+                        return numA - numB
+                      }
+                      return a.valor.localeCompare(b.valor, undefined, {
                         numeric: true,
                         sensitivity: 'base',
-                      }),
-                    )
+                      })
+                    })
                     .map((o) => (
                       <SelectItem key={o.id} value={String(o.valor)}>
                         {o.valor}
