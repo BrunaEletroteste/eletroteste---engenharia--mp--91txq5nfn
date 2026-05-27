@@ -39,8 +39,9 @@ export default function ConfigOptions() {
     { value: 'rele_fechamento', label: 'Relé de Fechamento' },
     { value: 'motorizacao', label: 'Motorização' },
     { value: 'relacao', label: 'Relação' },
-    { value: 'Classe de Precisão', label: 'Classe de Precisão' },
+    { value: 'Exatidão', label: 'Exatidão' },
     { value: 'Tensão', label: 'Tensão' },
+    { value: 'Isolação', label: 'Isolação' },
   ]
 
   const dbCategorias = Array.from(new Set(opcoes.map((o) => o.categoria)))

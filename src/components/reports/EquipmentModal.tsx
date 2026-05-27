@@ -406,6 +406,31 @@ export function EquipmentModal({ open, onOpenChange, onSave, initialData }: Prop
       }
     }
 
+    if (tipo === 'Transformador de Corrente') {
+      const requiredFieldsTC = [
+        'subestacao',
+        'circuito',
+        'numero',
+        'tipo_modelo',
+        'classe_tensao',
+        'corrente_primaria',
+        'corrente_secundaria',
+        'relacao',
+        'exatidao',
+        'isolacao',
+        'fabricante',
+      ]
+      const missingTC = requiredFieldsTC.filter((f) => dados[f] === undefined || dados[f] === '')
+      if (missingTC.length > 0) {
+        toast({
+          title: 'Atenção',
+          description: 'Todos os campos do Transformador de Corrente são obrigatórios.',
+          variant: 'destructive',
+        })
+        return
+      }
+    }
+
     onSave({ tipo_equipamento: tipo, dados_tecnicos: dados })
     onOpenChange(false)
   }
@@ -456,6 +481,9 @@ export function EquipmentModal({ open, onOpenChange, onSave, initialData }: Prop
     )
       targetCategory = 'fabricante'
     if (targetCategory === 'potencia') targetCategory = 'potência'
+    if (targetCategory === 'exatidao') targetCategory = 'exatidão'
+    if (targetCategory === 'classe_tensao') targetCategory = 'tensão'
+    if (targetCategory === 'isolacao') targetCategory = 'isolação'
 
     if (field.type === 'select' && field.options) {
       isSelect = true
@@ -473,11 +501,14 @@ export function EquipmentModal({ open, onOpenChange, onSave, initialData }: Prop
         'motorizacao',
         'tensao_primaria',
         'tensao_secundaria',
+        'classe_tensao',
         'corrente_primaria',
         'corrente_secundaria',
         'ligado_em',
         'potencia',
         'classe_precisao',
+        'exatidao',
+        'isolacao',
         'corrente_nominal_fusiveis',
         'fabricante_fusiveis',
       ].includes(field.name) ||
@@ -495,7 +526,19 @@ export function EquipmentModal({ open, onOpenChange, onSave, initialData }: Prop
             (tipo === 'Para-raio de Linha' &&
               ['circuito', 'modelo', 'tensao_nominal', 'corrente_descarga', 'fabricante'].includes(
                 field.name,
-              ))) && <span className="text-destructive"> *</span>}
+              )) ||
+            (tipo === 'Transformador de Corrente' &&
+              [
+                'circuito',
+                'tipo_modelo',
+                'classe_tensao',
+                'corrente_primaria',
+                'corrente_secundaria',
+                'relacao',
+                'exatidao',
+                'isolacao',
+                'fabricante',
+              ].includes(field.name))) && <span className="text-destructive"> *</span>}
         </Label>
 
         {isCombobox && !opcoesError ? (
@@ -515,13 +558,15 @@ export function EquipmentModal({ open, onOpenChange, onSave, initialData }: Prop
             }}
             opcoes={opcoes}
             overrideCategory={
-              field.name === 'tensao_secundaria' ||
-              field.name === 'tensao_nominal' ||
-              field.name === 'ligado_em'
+              ['tensao_secundaria', 'tensao_nominal', 'ligado_em', 'classe_tensao'].includes(
+                field.name,
+              )
                 ? 'Tensão'
-                : field.name === 'corrente_primaria' || field.name === 'corrente_secundaria'
+                : ['corrente_primaria', 'corrente_secundaria'].includes(field.name)
                   ? 'Corrente Nominal'
-                  : undefined
+                  : field.name === 'exatidao'
+                    ? 'Exatidão'
+                    : undefined
             }
           />
         ) : isSelect ? (

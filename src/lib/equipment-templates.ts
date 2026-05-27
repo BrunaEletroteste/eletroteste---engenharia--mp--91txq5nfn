@@ -42,18 +42,22 @@ export const getEquipmentFields = (type: string): FieldDef[] => {
       ]
     case 'Transformador de Corrente':
       return [
-        ...common,
-        { name: 'fabricante', label: 'Fabricante', type: 'combobox' },
-        { name: 'tensao_primaria', label: 'Tensão Primária (V)', type: 'number' },
-        { name: 'classe_precisao', label: 'Classe de Precisão', type: 'text' },
+        { name: 'subestacao', label: 'Subestação', type: 'combobox' },
+        { name: 'circuito', label: 'Circuito', type: 'text' },
+        { name: 'numero', label: 'Número', type: 'text' },
+        { name: 'tipo_modelo', label: 'Tipo/Modelo', type: 'text' },
+        { name: 'classe_tensao', label: 'Classe de Tensão (kV)', type: 'combobox' },
         { name: 'corrente_primaria', label: 'Corrente Primária (A)', type: 'number' },
         { name: 'corrente_secundaria', label: 'Corrente Secundária (A)', type: 'number' },
         {
           name: 'relacao',
-          label: 'Relação (Corrente Primária dividida por Corrente Secundária)',
+          label: 'Relação',
           type: 'number',
           readOnly: true,
         },
+        { name: 'exatidao', label: 'Exatidão', type: 'combobox' },
+        { name: 'isolacao', label: 'Isolação', type: 'select' },
+        { name: 'fabricante', label: 'Fabricante', type: 'combobox' },
       ]
     case 'Seccionadora':
       return [
