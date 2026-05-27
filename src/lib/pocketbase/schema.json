@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-05-27T15:38:42.062Z",
+  "generatedAt": "2026-05-27T15:55:01.867Z",
   "collections": [
     {
       "name": "users",
@@ -236,7 +236,7 @@
           "required": true,
           "system": false,
           "selectValues": [
-            "Cabo",
+            "Condutor Elétrico",
             "Para-raio de Linha",
             "Transformador de Potencial",
             "Transformador de Corrente",

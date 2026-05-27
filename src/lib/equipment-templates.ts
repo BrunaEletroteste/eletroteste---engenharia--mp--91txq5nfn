@@ -8,7 +8,7 @@ export type FieldDef = {
 }
 
 export const EQUIPMENT_TYPES = [
-  'Cabo',
+  'Condutor Elétrico',
   'Para-raio de Linha',
   'Transformador de Potencial',
   'Transformador de Corrente',
@@ -134,7 +134,7 @@ export const getEquipmentFields = (type: string): FieldDef[] => {
         { name: 'motorizacao', label: 'Motorização', type: 'text' },
         { name: 'rele_supervisor', label: 'Relé Supervisor Trifásico', type: 'text' },
       ]
-    case 'Cabo':
+    case 'Condutor Elétrico':
       return [
         { name: 'subestacao', label: 'Subestação', type: 'combobox' },
         { name: 'circuito', label: 'Circuito', type: 'text' },
@@ -181,7 +181,7 @@ export const getEquipmentFields = (type: string): FieldDef[] => {
           type: 'select',
           options: ['N/ID', 'EPR', 'HEPR', 'XLPE', 'PVC'],
         },
-        { name: 'classe_isolamento', label: 'Classe de Isolamento', type: 'text' },
+        { name: 'classe_isolamento', label: 'Classe de Isolamento (kV)', type: 'text' },
         { name: 'fabricante', label: 'Fabricante', type: 'combobox' },
       ]
     case 'Para-raio de Linha':
