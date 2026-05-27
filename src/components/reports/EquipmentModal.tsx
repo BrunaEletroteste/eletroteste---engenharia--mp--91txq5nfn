@@ -53,15 +53,19 @@ function ComboboxField({
   const categoryToMatch = overrideCategory
     ? overrideCategory.toLowerCase()
     : field.name.toLowerCase()
-  const options = opcoes.filter((o) => {
-    const cat = o.categoria.toLowerCase()
-    return (
-      cat === categoryToMatch ||
-      (categoryToMatch === 'tensão' && cat === 'tensao_primaria') ||
-      (categoryToMatch === 'corrente nominal' && cat === 'corrente_nominal') ||
-      (categoryToMatch === 'classe_isolamento' && cat === 'classe de isolamento')
+  const options = opcoes
+    .filter((o) => {
+      const cat = o.categoria.toLowerCase()
+      return (
+        cat === categoryToMatch ||
+        (categoryToMatch === 'tensão' && cat === 'tensao_primaria') ||
+        (categoryToMatch === 'corrente nominal' && cat === 'corrente_nominal') ||
+        (categoryToMatch === 'classe_isolamento' && cat === 'classe de isolamento')
+      )
+    })
+    .sort((a, b) =>
+      a.valor.localeCompare(b.valor, undefined, { numeric: true, sensitivity: 'base' }),
     )
-  })
 
   return (
     <Popover open={open} onOpenChange={setOpen}>
@@ -530,6 +534,12 @@ export function EquipmentModal({ open, onOpenChange, onSave, initialData }: Prop
                         (targetCategory === 'classe_isolamento' && cat === 'classe de isolamento')
                       )
                     })
+                    .sort((a, b) =>
+                      a.valor.localeCompare(b.valor, undefined, {
+                        numeric: true,
+                        sensitivity: 'base',
+                      }),
+                    )
                     .map((o) => (
                       <SelectItem key={o.id} value={String(o.valor)}>
                         {o.valor}

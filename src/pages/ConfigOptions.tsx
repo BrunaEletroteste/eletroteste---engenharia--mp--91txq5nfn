@@ -52,6 +52,8 @@ export default function ConfigOptions() {
     }
   })
 
+  categorias.sort((a, b) => a.label.localeCompare(b.label, undefined, { sensitivity: 'base' }))
+
   const loadOpcoes = async () => {
     try {
       setLoading(true)
@@ -94,7 +96,11 @@ export default function ConfigOptions() {
     }
   }
 
-  const filteredOpcoes = opcoes.filter((o) => o.categoria === selectedCategoria)
+  const filteredOpcoes = opcoes
+    .filter((o) => o.categoria === selectedCategoria)
+    .sort((a, b) =>
+      a.valor.localeCompare(b.valor, undefined, { numeric: true, sensitivity: 'base' }),
+    )
 
   if (user && user.tipo_acesso !== 'admin') {
     return <Navigate to="/" replace />
