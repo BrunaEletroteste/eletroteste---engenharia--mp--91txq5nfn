@@ -9,7 +9,7 @@ export type FieldDef = {
 
 export const EQUIPMENT_TYPES = [
   'Cabo',
-  'Para-raio',
+  'Para-raio de Linha',
   'Transformador de Potencial',
   'Transformador de Corrente',
   'Seccionadora',
@@ -184,7 +184,20 @@ export const getEquipmentFields = (type: string): FieldDef[] => {
         { name: 'classe_isolamento', label: 'Classe de Isolamento', type: 'text' },
         { name: 'fabricante', label: 'Fabricante', type: 'combobox' },
       ]
-    case 'Para-raio':
+    case 'Para-raio de Linha':
+      return [
+        { name: 'subestacao', label: 'Subestação', type: 'combobox' },
+        { name: 'circuito', label: 'Circuito', type: 'text' },
+        { name: 'modelo', label: 'Modelo', type: 'select', options: ['Polimérico', 'Porcelana'] },
+        { name: 'tensao_nominal', label: 'Tensão Nominal (kV)', type: 'combobox' },
+        {
+          name: 'corrente_descarga',
+          label: 'Corrente de Descarga (kA)',
+          type: 'select',
+          options: ['10'],
+        },
+        { name: 'fabricante', label: 'Fabricante', type: 'combobox' },
+      ]
     case 'Relé':
     default:
       return [

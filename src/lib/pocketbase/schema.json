@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-05-27T15:24:20.916Z",
+  "generatedAt": "2026-05-27T15:38:42.062Z",
   "collections": [
     {
       "name": "users",
@@ -237,7 +237,7 @@
           "system": false,
           "selectValues": [
             "Cabo",
-            "Para-raio",
+            "Para-raio de Linha",
             "Transformador de Potencial",
             "Transformador de Corrente",
             "Seccionadora",

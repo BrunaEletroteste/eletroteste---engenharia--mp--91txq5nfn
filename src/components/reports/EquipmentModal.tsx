@@ -357,6 +357,25 @@ export function EquipmentModal({ open, onOpenChange, onSave, initialData }: Prop
       return
     }
 
+    if (tipo === 'Para-raio de Linha') {
+      const requiredFields = [
+        'circuito',
+        'modelo',
+        'tensao_nominal',
+        'corrente_descarga',
+        'fabricante',
+      ]
+      const missing = requiredFields.filter((f) => !dados[f])
+      if (missing.length > 0) {
+        toast({
+          title: 'Atenção',
+          description: 'Todos os campos do Para-raio de Linha são obrigatórios.',
+          variant: 'destructive',
+        })
+        return
+      }
+    }
+
     onSave({ tipo_equipamento: tipo, dados_tecnicos: dados })
     onOpenChange(false)
   }
@@ -438,9 +457,11 @@ export function EquipmentModal({ open, onOpenChange, onSave, initialData }: Prop
       <div key={field.name} className="space-y-2">
         <Label>
           {field.label}
-          {['subestacao', 'numero'].includes(field.name) && (
-            <span className="text-destructive"> *</span>
-          )}
+          {(['subestacao', 'numero'].includes(field.name) ||
+            (tipo === 'Para-raio de Linha' &&
+              ['circuito', 'modelo', 'tensao_nominal', 'corrente_descarga', 'fabricante'].includes(
+                field.name,
+              ))) && <span className="text-destructive"> *</span>}
         </Label>
 
         {isCombobox && !opcoesError ? (
@@ -460,7 +481,7 @@ export function EquipmentModal({ open, onOpenChange, onSave, initialData }: Prop
             }}
             opcoes={opcoes}
             overrideCategory={
-              field.name === 'tensao_secundaria'
+              field.name === 'tensao_secundaria' || field.name === 'tensao_nominal'
                 ? 'Tensão'
                 : field.name === 'corrente_primaria' || field.name === 'corrente_secundaria'
                   ? 'Corrente Nominal'
