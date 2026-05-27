@@ -58,7 +58,8 @@ function ComboboxField({
     return (
       cat === categoryToMatch ||
       (categoryToMatch === 'tensão' && cat === 'tensao_primaria') ||
-      (categoryToMatch === 'corrente nominal' && cat === 'corrente_nominal')
+      (categoryToMatch === 'corrente nominal' && cat === 'corrente_nominal') ||
+      (categoryToMatch === 'classe_isolamento' && cat === 'classe de isolamento')
     )
   })
 
@@ -344,10 +345,13 @@ export function EquipmentModal({ open, onOpenChange, onSave, initialData }: Prop
       return
     }
 
-    if (!dados.subestacao || !dados.numero) {
+    const hasNumeroField = fields.some((f) => f.name === 'numero')
+    if (!dados.subestacao || (hasNumeroField && !dados.numero)) {
       toast({
         title: 'Atenção',
-        description: 'Subestação e Número são obrigatórios.',
+        description: hasNumeroField
+          ? 'Subestação e Número são obrigatórios.'
+          : 'Subestação é obrigatória.',
         variant: 'destructive',
       })
       return
@@ -487,7 +491,8 @@ export function EquipmentModal({ open, onOpenChange, onSave, initialData }: Prop
                       const matchesCategory =
                         cat === targetCategory ||
                         (targetCategory === 'tensão' && cat === 'tensao_primaria') ||
-                        (targetCategory === 'corrente nominal' && cat === 'corrente_nominal')
+                        (targetCategory === 'corrente nominal' && cat === 'corrente_nominal') ||
+                        (targetCategory === 'classe_isolamento' && cat === 'classe de isolamento')
                       return matchesCategory && String(op.valor) === String(dados[field.name])
                     }) && (
                       <SelectItem value={String(dados[field.name])}>
@@ -500,7 +505,8 @@ export function EquipmentModal({ open, onOpenChange, onSave, initialData }: Prop
                       return (
                         cat === targetCategory ||
                         (targetCategory === 'tensão' && cat === 'tensao_primaria') ||
-                        (targetCategory === 'corrente nominal' && cat === 'corrente_nominal')
+                        (targetCategory === 'corrente nominal' && cat === 'corrente_nominal') ||
+                        (targetCategory === 'classe_isolamento' && cat === 'classe de isolamento')
                       )
                     })
                     .map((o) => (

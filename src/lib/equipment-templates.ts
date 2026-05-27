@@ -135,6 +135,55 @@ export const getEquipmentFields = (type: string): FieldDef[] => {
         { name: 'rele_supervisor', label: 'Relé Supervisor Trifásico', type: 'text' },
       ]
     case 'Cabo':
+      return [
+        { name: 'subestacao', label: 'Subestação', type: 'combobox' },
+        { name: 'circuito', label: 'Circuito', type: 'text' },
+        {
+          name: 'condutores',
+          label: 'Condutores',
+          type: 'select',
+          options: ['01', '02', '03', '04'],
+        },
+        {
+          name: 'secao',
+          label: 'Seção',
+          type: 'select',
+          options: [
+            'N/ID',
+            '25 mm²',
+            '35 mm²',
+            '50 mm²',
+            '70 mm²',
+            '95 mm²',
+            '120 mm²',
+            '150 mm²',
+            '185 mm²',
+            '240 mm²',
+            '300 mm²',
+            '3 AWG',
+            '2 AWG',
+            '1 AWG',
+            '1/0 AWG',
+            '2/0 AWG',
+            '3/0 AWG',
+            '4/0 AWG',
+          ],
+        },
+        {
+          name: 'material_condutor',
+          label: 'Material Condutor',
+          type: 'select',
+          options: ['N/ID', 'Cobre', 'Alumínio'],
+        },
+        {
+          name: 'isolacao',
+          label: 'Isolação',
+          type: 'select',
+          options: ['N/ID', 'EPR', 'HEPR', 'XLPE', 'PVC'],
+        },
+        { name: 'classe_isolamento', label: 'Classe de Isolamento', type: 'text' },
+        { name: 'fabricante', label: 'Fabricante', type: 'combobox' },
+      ]
     case 'Para-raio':
     case 'Relé':
     default:
