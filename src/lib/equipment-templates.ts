@@ -150,7 +150,7 @@ export const getEquipmentFields = (type: string): FieldDef[] => {
         },
         {
           name: 'secao',
-          label: 'Seção (mm²)',
+          label: 'Seção',
           type: 'select',
           options: [
             'N/ID',
@@ -175,18 +175,17 @@ export const getEquipmentFields = (type: string): FieldDef[] => {
         },
         {
           name: 'material_condutor',
-          label: 'Material',
+          label: 'Material Condutor',
           type: 'select',
           options: ['N/ID', 'Cobre', 'Alumínio'],
         },
         {
           name: 'isolacao',
-          label: 'Isolamento',
+          label: 'Isolação',
           type: 'select',
           options: ['N/ID', 'EPR', 'HEPR', 'XLPE', 'PVC'],
         },
-        { name: 'classe_isolamento', label: 'Tensão (kV)', type: 'text' },
-        { name: 'comprimento', label: 'Comprimento (m)', type: 'number' },
+        { name: 'classe_isolamento', label: 'Classe de Isolamento (kV)', type: 'text' },
         { name: 'fabricante', label: 'Fabricante', type: 'combobox' },
       ]
     case 'Para-raio de Linha':
