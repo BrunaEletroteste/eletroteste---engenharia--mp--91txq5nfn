@@ -1,9 +1,58 @@
 import { useState, useRef } from 'react'
-import { ImagePlus, Trash2, Loader2, AlertCircle } from 'lucide-react'
+import { ImagePlus, Trash2, Loader2, AlertCircle, ImageOff } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { useToast } from '@/hooks/use-toast'
 import { EquipmentItem } from '@/types/reports'
 import pb from '@/lib/pocketbase/client'
+
+function PhotoItem({
+  foto,
+  url,
+  isView,
+  onDelete,
+}: {
+  foto: string
+  url: string
+  isView: boolean
+  onDelete: () => void
+}) {
+  const [hasError, setHasError] = useState(false)
+
+  return (
+    <div className="relative group aspect-square rounded-md overflow-hidden border bg-muted flex items-center justify-center">
+      {hasError ? (
+        <div className="flex flex-col items-center justify-center text-muted-foreground p-2 text-center">
+          <ImageOff className="h-8 w-8 mb-2 opacity-50" />
+          <span className="text-[10px] leading-tight">Imagem não encontrada</span>
+        </div>
+      ) : (
+        <img
+          src={url}
+          alt="Foto do equipamento"
+          className="w-full h-full object-cover transition-transform group-hover:scale-105"
+          loading="lazy"
+          onError={() => setHasError(true)}
+        />
+      )}
+      {!isView && (
+        <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+          <Button
+            variant="destructive"
+            size="icon"
+            className="h-8 w-8 rounded-full shadow-md"
+            onClick={(e) => {
+              e.stopPropagation()
+              onDelete()
+            }}
+            title="Remover foto"
+          >
+            <Trash2 className="h-4 w-4" />
+          </Button>
+        </div>
+      )}
+    </div>
+  )
+}
 
 interface Props {
   equipment: EquipmentItem
@@ -149,30 +198,13 @@ export function EquipmentPhotosManager({ equipment, index, setEquipments, isView
               foto,
             )
             return (
-              <div
+              <PhotoItem
                 key={foto}
-                className="relative group aspect-square rounded-md overflow-hidden border bg-muted"
-              >
-                <img
-                  src={url}
-                  alt="Foto do equipamento"
-                  className="w-full h-full object-cover transition-transform group-hover:scale-105"
-                  loading="lazy"
-                />
-                {!isView && (
-                  <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
-                    <Button
-                      variant="destructive"
-                      size="icon"
-                      className="h-8 w-8 rounded-full shadow-md"
-                      onClick={() => handleDelete(foto)}
-                      title="Remover foto"
-                    >
-                      <Trash2 className="h-4 w-4" />
-                    </Button>
-                  </div>
-                )}
-              </div>
+                foto={foto}
+                url={url}
+                isView={isView}
+                onDelete={() => handleDelete(foto)}
+              />
             )
           })}
         </div>

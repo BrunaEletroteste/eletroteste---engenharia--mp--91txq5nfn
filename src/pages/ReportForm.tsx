@@ -116,6 +116,7 @@ export default function ReportForm() {
               tipo_equipamento: e.tipo_equipamento,
               dados_tecnicos: e.dados_tecnicos || {},
               ordem: e.ordem,
+              fotos: e.fotos || [],
               testes: testesRes
                 .filter((t) => t.equipamento_id === e.id)
                 .map((t) => ({
