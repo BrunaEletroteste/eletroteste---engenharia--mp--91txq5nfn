@@ -47,8 +47,7 @@ export default function ReportForm() {
 
   const { reset } = methods
 
-  const canEditRecord =
-    !reportRecord || user?.tipo_acesso === 'admin' || reportRecord.criado_por === user?.id
+  const canEditRecord = !reportRecord || user?.tipo_acesso !== 'cliente'
   const isFinalized = reportRecord?.status === 'finalizado'
   const isLocked = isFinalized && user?.tipo_acesso !== 'admin'
   const isReadOnly = isViewRoute || !canEditRecord || isLocked
