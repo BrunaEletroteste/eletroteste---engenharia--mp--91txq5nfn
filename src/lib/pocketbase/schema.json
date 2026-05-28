@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-05-28T19:58:09.482Z",
+  "generatedAt": "2026-05-28T20:30:07.152Z",
   "collections": [
     {
       "name": "users",
@@ -243,7 +243,7 @@
             "Seccionadora",
             "Transformador",
             "Disjuntor",
-            "Relé"
+            "Relé de Proteção"
           ]
         },
         {

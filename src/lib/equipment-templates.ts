@@ -5,6 +5,8 @@ export type FieldDef = {
   options?: string[]
   dependsOn?: { field: string; value: any }
   readOnly?: boolean
+  section?: string
+  column?: 'left' | 'right'
 }
 
 export const EQUIPMENT_TYPES = [
@@ -15,7 +17,7 @@ export const EQUIPMENT_TYPES = [
   'Seccionadora',
   'Transformador',
   'Disjuntor',
-  'Relé',
+  'Relé de Proteção',
 ]
 
 export const getEquipmentFields = (type: string): FieldDef[] => {
@@ -210,7 +212,131 @@ export const getEquipmentFields = (type: string): FieldDef[] => {
         },
         { name: 'fabricante', label: 'Fabricante', type: 'combobox' },
       ]
-    case 'Relé':
+    case 'Relé de Proteção':
+      return [
+        { name: 'subestacao', label: 'Subestação', type: 'combobox' },
+        { name: 'circuito', label: 'Circuito', type: 'text' },
+        { name: 'tipo_modelo', label: 'Tipo/Modelo', type: 'combobox' },
+        { name: 'fabricante', label: 'Fabricante', type: 'combobox' },
+
+        // Ajustes de Corrente
+        {
+          name: 'ajuste_i_fase',
+          label: 'I>',
+          type: 'text',
+          section: 'Ajustes de Corrente',
+          column: 'left',
+        },
+        {
+          name: 'ajuste_curva_fase',
+          label: 'Curva',
+          type: 'combobox',
+          section: 'Ajustes de Corrente',
+          column: 'left',
+        },
+        {
+          name: 'ajuste_dt_fase',
+          label: 'Dt',
+          type: 'text',
+          section: 'Ajustes de Corrente',
+          column: 'left',
+        },
+        {
+          name: 'ajuste_i_def_fase',
+          label: 'I.Def.',
+          type: 'text',
+          section: 'Ajustes de Corrente',
+          column: 'left',
+        },
+        {
+          name: 'ajuste_t_def_fase',
+          label: 'T. Def.',
+          type: 'text',
+          section: 'Ajustes de Corrente',
+          column: 'left',
+        },
+        {
+          name: 'ajuste_i_3_fase',
+          label: 'I>>>',
+          type: 'text',
+          section: 'Ajustes de Corrente',
+          column: 'left',
+        },
+
+        {
+          name: 'ajuste_ie_neutro',
+          label: 'Ie>',
+          type: 'text',
+          section: 'Ajustes de Corrente',
+          column: 'right',
+        },
+        {
+          name: 'ajuste_curva_neutro',
+          label: 'Curva',
+          type: 'combobox',
+          section: 'Ajustes de Corrente',
+          column: 'right',
+        },
+        {
+          name: 'ajuste_dt_neutro',
+          label: 'Dt',
+          type: 'text',
+          section: 'Ajustes de Corrente',
+          column: 'right',
+        },
+        {
+          name: 'ajuste_i_gs_neutro',
+          label: 'I.GS.',
+          type: 'text',
+          section: 'Ajustes de Corrente',
+          column: 'right',
+        },
+        {
+          name: 'ajuste_t_gs_neutro',
+          label: 'T. GS.',
+          type: 'text',
+          section: 'Ajustes de Corrente',
+          column: 'right',
+        },
+        {
+          name: 'ajuste_ie_3_neutro',
+          label: 'Ie>>>',
+          type: 'text',
+          section: 'Ajustes de Corrente',
+          column: 'right',
+        },
+
+        // Ajuste de Tensão
+        {
+          name: 'ajuste_v_maior',
+          label: 'V>',
+          type: 'text',
+          section: 'Ajuste de Tensão',
+          column: 'left',
+        },
+        {
+          name: 'ajuste_t_v_maior',
+          label: 'T.V>',
+          type: 'text',
+          section: 'Ajuste de Tensão',
+          column: 'left',
+        },
+
+        {
+          name: 'ajuste_v_menor',
+          label: 'V<',
+          type: 'text',
+          section: 'Ajuste de Tensão',
+          column: 'right',
+        },
+        {
+          name: 'ajuste_t_v_menor',
+          label: 'T.V<',
+          type: 'text',
+          section: 'Ajuste de Tensão',
+          column: 'right',
+        },
+      ]
     default:
       return [
         ...common,

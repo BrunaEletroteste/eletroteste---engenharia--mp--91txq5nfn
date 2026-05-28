@@ -388,6 +388,19 @@ export function EquipmentModal({ open, onOpenChange, onSave, initialData }: Prop
       }
     }
 
+    if (tipo === 'Relé de Proteção') {
+      const requiredFieldsRP = fields.map((f) => f.name)
+      const missingRP = requiredFieldsRP.filter((f) => dados[f] === undefined || dados[f] === '')
+      if (missingRP.length > 0) {
+        toast({
+          title: 'Atenção',
+          description: 'Todos os campos do Relé de Proteção são obrigatórios.',
+          variant: 'destructive',
+        })
+        return
+      }
+    }
+
     const hasNumeroField = fields.some((f) => f.name === 'numero')
     if (!dados.subestacao || (hasNumeroField && !dados.numero)) {
       toast({
@@ -587,7 +600,8 @@ export function EquipmentModal({ open, onOpenChange, onSave, initialData }: Prop
                 'isolacao',
                 'fabricante',
               ].includes(field.name)) ||
-            tipo === 'Condutor Elétrico') && <span className="text-destructive"> *</span>}
+            tipo === 'Condutor Elétrico' ||
+            tipo === 'Relé de Proteção') && <span className="text-destructive"> *</span>}
         </Label>
 
         {isCombobox && !opcoesError ? (
@@ -607,15 +621,19 @@ export function EquipmentModal({ open, onOpenChange, onSave, initialData }: Prop
             }}
             opcoes={opcoes}
             overrideCategory={
-              ['tensao_secundaria', 'tensao_nominal', 'ligado_em', 'classe_tensao'].includes(
-                field.name,
-              )
-                ? 'Tensão'
-                : ['corrente_primaria', 'corrente_secundaria'].includes(field.name)
-                  ? 'Corrente Nominal'
-                  : field.name === 'exatidao'
-                    ? 'Exatidão'
-                    : undefined
+              tipo === 'Relé de Proteção' && field.name === 'tipo_modelo'
+                ? 'tipo/modelo do relé de proteção'
+                : tipo === 'Relé de Proteção' && field.name.includes('curva')
+                  ? 'curva do relé'
+                  : ['tensao_secundaria', 'tensao_nominal', 'ligado_em', 'classe_tensao'].includes(
+                        field.name,
+                      )
+                    ? 'Tensão'
+                    : ['corrente_primaria', 'corrente_secundaria'].includes(field.name)
+                      ? 'Corrente Nominal'
+                      : field.name === 'exatidao'
+                        ? 'Exatidão'
+                        : undefined
             }
           />
         ) : isSelect ? (
@@ -755,8 +773,43 @@ export function EquipmentModal({ open, onOpenChange, onSave, initialData }: Prop
           {fields.length > 0 && (
             <div className="space-y-6 border-t pt-5 mt-2">
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
-                {fields.filter((f) => !isFuseField(f)).map(renderField)}
+                {fields.filter((f) => !isFuseField(f) && !f.section).map(renderField)}
               </div>
+
+              {Array.from(new Set(fields.filter((f) => f.section).map((f) => f.section))).map(
+                (section) => (
+                  <div
+                    key={section!}
+                    className="rounded-lg border border-border bg-card p-5 shadow-sm"
+                  >
+                    <h3 className="mb-4 text-sm font-medium text-muted-foreground uppercase tracking-wider flex items-center gap-2">
+                      {section}
+                    </h3>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-8 gap-y-5">
+                      <div className="space-y-4">
+                        {section === 'Ajustes de Corrente' && (
+                          <h4 className="text-xs font-semibold uppercase text-primary border-b pb-1 mb-3">
+                            Fase
+                          </h4>
+                        )}
+                        {fields
+                          .filter((f) => f.section === section && f.column === 'left')
+                          .map(renderField)}
+                      </div>
+                      <div className="space-y-4">
+                        {section === 'Ajustes de Corrente' && (
+                          <h4 className="text-xs font-semibold uppercase text-primary border-b pb-1 mb-3">
+                            Neutro
+                          </h4>
+                        )}
+                        {fields
+                          .filter((f) => f.section === section && f.column === 'right')
+                          .map(renderField)}
+                      </div>
+                    </div>
+                  </div>
+                ),
+              )}
 
               {fields.some((f) => isFuseField(f)) && (
                 <div className="rounded-lg border border-border bg-card p-5 shadow-sm">
