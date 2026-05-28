@@ -64,6 +64,15 @@ function ComboboxField({
       )
     })
     .sort((a, b) => {
+      const isAlphabeticalOnly =
+        categoryToMatch === 'tipo/modelo do relé de proteção' ||
+        categoryToMatch === 'fabricante' ||
+        categoryToMatch.includes('fabricante')
+
+      if (isAlphabeticalOnly) {
+        return a.valor.localeCompare(b.valor, undefined, { numeric: true, sensitivity: 'base' })
+      }
+
       const parseBr = (val: string) => {
         const match = val.match(/-?[\d.,]+/)
         if (!match) return null
@@ -679,6 +688,18 @@ export function EquipmentModal({ open, onOpenChange, onSave, initialData }: Prop
                       )
                     })
                     .sort((a, b) => {
+                      const isAlphabeticalOnly =
+                        targetCategory === 'tipo/modelo do relé de proteção' ||
+                        targetCategory === 'fabricante' ||
+                        targetCategory.includes('fabricante')
+
+                      if (isAlphabeticalOnly) {
+                        return a.valor.localeCompare(b.valor, undefined, {
+                          numeric: true,
+                          sensitivity: 'base',
+                        })
+                      }
+
                       const parseBr = (val: string) => {
                         const match = val.match(/-?[\d.,]+/)
                         if (!match) return null
