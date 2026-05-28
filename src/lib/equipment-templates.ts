@@ -27,18 +27,26 @@ export const getEquipmentFields = (type: string): FieldDef[] => {
   switch (type) {
     case 'Transformador de Potencial':
       return [
-        ...common,
-        { name: 'fabricante', label: 'Fabricante', type: 'combobox' },
-        { name: 'tipo', label: 'Tipo', type: 'text' },
+        { name: 'subestacao', label: 'Subestação', type: 'combobox' },
+        { name: 'circuito', label: 'Circuito', type: 'text' },
+        { name: 'numero', label: 'Número', type: 'text' },
+        { name: 'tipo_modelo', label: 'Tipo/Modelo', type: 'text' },
         { name: 'tensao_primaria', label: 'Tensão Primária (V)', type: 'number' },
         { name: 'tensao_secundaria', label: 'Tensão Secundária (V)', type: 'number' },
-        { name: 'potencia', label: 'Potência (VA)', type: 'number' },
         {
           name: 'relacao',
-          label: 'Relação (Tensão Primária dividida por Tensão Secundária)',
+          label: 'Relação',
           type: 'number',
           readOnly: true,
         },
+        { name: 'potencia', label: 'Potência (VA)', type: 'number' },
+        {
+          name: 'isolacao',
+          label: 'Isolação',
+          type: 'select',
+          options: ['N/ID', 'Óleo', 'Epóxi'],
+        },
+        { name: 'fabricante', label: 'Fabricante', type: 'combobox' },
       ]
     case 'Transformador de Corrente':
       return [

@@ -444,6 +444,30 @@ export function EquipmentModal({ open, onOpenChange, onSave, initialData }: Prop
       }
     }
 
+    if (tipo === 'Transformador de Potencial') {
+      const requiredFieldsTP = [
+        'subestacao',
+        'circuito',
+        'numero',
+        'tipo_modelo',
+        'tensao_primaria',
+        'tensao_secundaria',
+        'relacao',
+        'potencia',
+        'isolacao',
+        'fabricante',
+      ]
+      const missingTP = requiredFieldsTP.filter((f) => dados[f] === undefined || dados[f] === '')
+      if (missingTP.length > 0) {
+        toast({
+          title: 'Atenção',
+          description: 'Todos os campos do Transformador de Potencial são obrigatórios.',
+          variant: 'destructive',
+        })
+        return
+      }
+    }
+
     onSave({ tipo_equipamento: tipo, dados_tecnicos: dados })
     onOpenChange(false)
   }
@@ -549,6 +573,17 @@ export function EquipmentModal({ open, onOpenChange, onSave, initialData }: Prop
                 'corrente_secundaria',
                 'relacao',
                 'exatidao',
+                'isolacao',
+                'fabricante',
+              ].includes(field.name)) ||
+            (tipo === 'Transformador de Potencial' &&
+              [
+                'circuito',
+                'tipo_modelo',
+                'tensao_primaria',
+                'tensao_secundaria',
+                'relacao',
+                'potencia',
                 'isolacao',
                 'fabricante',
               ].includes(field.name)) ||

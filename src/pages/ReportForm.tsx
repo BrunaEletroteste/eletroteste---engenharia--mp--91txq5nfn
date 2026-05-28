@@ -246,6 +246,30 @@ export default function ReportForm() {
         }
       }
 
+      if (eq.tipo_equipamento === 'Transformador de Potencial') {
+        const tpFields = getEquipmentFields('Transformador de Potencial').map((f) => f.name)
+        const missing = tpFields.filter(
+          (f) => eq.dados_tecnicos[f] === undefined || eq.dados_tecnicos[f] === '',
+        )
+        if (missing.length > 0) {
+          toast({
+            title: 'Erro de Validação',
+            description: `Todos os campos do Transformador de Potencial são obrigatórios. (Equipamento: ${eq.dados_tecnicos?.numero || eq.dados_tecnicos?.circuito || ''})`,
+            variant: 'destructive',
+          })
+          const el = document.getElementById(`equipamento-${i}`)
+          if (el) {
+            el.scrollIntoView({ behavior: 'smooth', block: 'center' })
+            el.classList.add('ring-2', 'ring-destructive', 'border-destructive')
+            setTimeout(
+              () => el.classList.remove('ring-2', 'ring-destructive', 'border-destructive'),
+              3000,
+            )
+          }
+          return false
+        }
+      }
+
       if (status === 'finalizado') {
         if (eq.testes) {
           for (const t of eq.testes) {
