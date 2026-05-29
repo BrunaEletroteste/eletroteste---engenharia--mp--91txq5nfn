@@ -567,6 +567,7 @@ export function EquipmentModal({ open, onOpenChange, onSave, initialData }: Prop
     if (targetCategory === 'exatidao') targetCategory = 'exatidão'
     if (targetCategory === 'classe_tensao') targetCategory = 'tensão'
     if (targetCategory === 'isolacao') targetCategory = 'isolação'
+    if (targetCategory === 'tap_at') targetCategory = 'tap de at (v)'
 
     if (field.type === 'select' && field.options) {
       isSelect = true
@@ -671,7 +672,9 @@ export function EquipmentModal({ open, onOpenChange, onSave, initialData }: Prop
                       ? 'Corrente Nominal'
                       : field.name === 'exatidao'
                         ? 'Exatidão'
-                        : undefined
+                        : field.name === 'tap_at'
+                          ? 'Tap de AT (V)'
+                          : undefined
             }
           />
         ) : isSelect ? (

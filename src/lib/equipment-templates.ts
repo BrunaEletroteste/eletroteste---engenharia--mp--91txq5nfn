@@ -103,7 +103,7 @@ export const getEquipmentFields = (type: string): FieldDef[] => {
         { name: 'tipo', label: 'Tipo', type: 'text' },
         { name: 'potencia', label: 'Potência (kVA)', type: 'text' },
         { name: 'classe_isolamento', label: 'Classe de Isolamento (kV)', type: 'text' },
-        { name: 'tap_at', label: 'Tap de AT (V)', type: 'text' },
+        { name: 'tap_at', label: 'Tap de AT (V)', type: 'combobox' },
         { name: 'tensao_secundaria', label: 'Tensão Secundária (V)', type: 'text' },
         {
           name: 'corrente_primaria',

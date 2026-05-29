@@ -42,6 +42,7 @@ export default function ConfigOptions() {
     { value: 'Exatidão', label: 'Exatidão' },
     { value: 'Tensão', label: 'Tensão' },
     { value: 'Isolação', label: 'Isolação' },
+    { value: 'Tap de AT (V)', label: 'Tap de AT (V)' },
   ]
 
   const dbCategorias = Array.from(new Set(opcoes.map((o) => o.categoria)))
