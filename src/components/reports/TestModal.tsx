@@ -147,7 +147,10 @@ const testSchema = z
             })
           }
         })
-      } else if (data.tipo_equipamento_ref === 'Transformador de Potencial') {
+      } else if (
+        data.tipo_equipamento_ref === 'Transformador de Potencial' ||
+        data.tipo_equipamento_ref === 'Transformador de Corrente'
+      ) {
         const rows = ['A', 'B', 'C']
         rows.forEach((r) => {
           const v1 = data.dados_detalhados?.fases?.[r]?.valor1
@@ -258,6 +261,7 @@ export function TestModal({
   })
 
   const watchTipo = form.watch('tipo_teste')
+  const watchUnidade = form.watch('unidade')
 
   useEffect(() => {
     if (open) {
@@ -368,7 +372,8 @@ export function TestModal({
                 })
               } else if (
                 payload.tipo_teste === 'Resistências dos Isolamentos' &&
-                equipmentType === 'Transformador de Potencial' &&
+                (equipmentType === 'Transformador de Potencial' ||
+                  equipmentType === 'Transformador de Corrente') &&
                 payload.dados_detalhados?.fases
               ) {
                 const phases = ['A', 'B', 'C']
@@ -705,8 +710,10 @@ export function TestModal({
                                 </FormItem>
                               )}
                             />
-                            <div className="h-8 flex items-center px-3 border rounded-md bg-background text-xs text-muted-foreground">
-                              {hasValues ? new Intl.NumberFormat('pt-BR').format(res) : 'Resultado'}
+                            <div className="h-8 flex items-center px-3 border rounded-md bg-background text-xs text-muted-foreground whitespace-nowrap">
+                              {hasValues
+                                ? `${new Intl.NumberFormat('pt-BR').format(res)} ${watchUnidade || 'MΩ'}`
+                                : 'Resultado'}
                             </div>
                           </div>
                         </div>
@@ -714,7 +721,8 @@ export function TestModal({
                     })}
                   </div>
                 </div>
-              ) : equipmentType === 'Transformador de Potencial' ? (
+              ) : equipmentType === 'Transformador de Potencial' ||
+                equipmentType === 'Transformador de Corrente' ? (
                 <div className="space-y-4 border rounded-md p-4 bg-muted/20">
                   <h4 className="text-sm font-medium">Medições de Isolamento</h4>
                   <div className="flex flex-col gap-4">
@@ -781,8 +789,10 @@ export function TestModal({
                                 </FormItem>
                               )}
                             />
-                            <div className="h-8 flex items-center px-3 border rounded-md bg-background text-xs text-muted-foreground">
-                              {hasValues ? new Intl.NumberFormat('pt-BR').format(res) : 'Resultado'}
+                            <div className="h-8 flex items-center px-3 border rounded-md bg-background text-xs text-muted-foreground whitespace-nowrap">
+                              {hasValues
+                                ? `${new Intl.NumberFormat('pt-BR').format(res)} ${watchUnidade || 'MΩ'}`
+                                : 'Resultado'}
                             </div>
                           </div>
                         </div>
@@ -863,9 +873,9 @@ export function TestModal({
                                 )}
                               />
                             </TableCell>
-                            <TableCell className="text-right p-2 text-xs font-medium text-muted-foreground pt-4">
+                            <TableCell className="text-right p-2 text-xs font-medium text-muted-foreground pt-4 whitespace-nowrap">
                               {v1 !== undefined && v2 !== undefined && v1 !== '' && v2 !== ''
-                                ? new Intl.NumberFormat('pt-BR').format(res)
+                                ? `${new Intl.NumberFormat('pt-BR').format(res)} ${watchUnidade || 'MΩ'}`
                                 : '-'}
                             </TableCell>
                           </TableRow>
