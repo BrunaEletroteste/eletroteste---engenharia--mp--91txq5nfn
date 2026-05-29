@@ -1512,110 +1512,121 @@ export function TestModal({
                     />
                   </div>
                   <h4 className="text-sm font-medium">Medições de Isolamento (à 01 minuto)</h4>
-                  <Table>
-                    <TableHeader>
-                      <TableRow>
-                        <TableHead className="w-[120px] p-2">Medição</TableHead>
-                        <TableHead className="p-2">
-                          Valor 1 <span className="text-destructive">*</span>
-                        </TableHead>
-                        <TableHead className="p-2">
-                          Valor 2 <span className="text-destructive">*</span>
-                        </TableHead>
-                        <TableHead className="text-right p-2">Resultado</TableHead>
-                        <TableHead className="text-right p-2 whitespace-nowrap">
-                          Valor à {meioIsolante !== 'Óleo Mineral' ? '105' : '75'}ºC
-                        </TableHead>
-                        <TableHead className="text-right p-2">Valor Limite</TableHead>
-                      </TableRow>
-                    </TableHeader>
-                    <TableBody>
-                      {[
-                        { id: 'alta_baixa', label: 'Alta/Baixa', limOleo: 22.5, limOutro: 51.7 },
-                        { id: 'alta_massa', label: 'Alta/Massa', limOleo: 22.5, limOutro: 51.7 },
-                        { id: 'baixa_massa', label: 'Baixa/Massa', limOleo: 1.8, limOutro: 22.5 },
-                      ].map((r) => {
-                        const v1 = form.watch(`dados_detalhados.medicoes.${r.id}.v1` as any)
-                        const v2 = form.watch(`dados_detalhados.medicoes.${r.id}.v2` as any)
-                        const fc = form.watch('dados_detalhados.fator_correcao') as any
-                        const res = (Number(v1) || 0) * (Number(v2) || 0)
+                  <div className="grid grid-cols-1 gap-4">
+                    {[
+                      { id: 'alta_baixa', label: 'Alta / Baixa', limOleo: 22.5, limOutro: 51.7 },
+                      { id: 'alta_massa', label: 'Alta / Massa', limOleo: 22.5, limOutro: 51.7 },
+                      { id: 'baixa_massa', label: 'Baixa / Massa', limOleo: 1.8, limOutro: 22.5 },
+                    ].map((r) => {
+                      const v1 = form.watch(`dados_detalhados.medicoes.${r.id}.v1` as any)
+                      const v2 = form.watch(`dados_detalhados.medicoes.${r.id}.v2` as any)
+                      const fc = form.watch('dados_detalhados.fator_correcao') as any
+                      const res = (Number(v1) || 0) * (Number(v2) || 0)
 
-                        const numFc = Number(fc) || 1
-                        const corrigido = numFc > 0 ? res / numFc : res
-                        const limite = meioIsolante !== 'Óleo Mineral' ? r.limOutro : r.limOleo
+                      const numFc = Number(fc) || 1
+                      const corrigido = numFc > 0 ? res / numFc : res
+                      const limite = meioIsolante !== 'Óleo Mineral' ? r.limOutro : r.limOleo
+                      const hasValues =
+                        v1 !== undefined && v2 !== undefined && v1 !== '' && v2 !== ''
 
-                        return (
-                          <TableRow key={r.id}>
-                            <TableCell className="font-medium text-xs p-2">{r.label}</TableCell>
-                            <TableCell className="p-2 align-top">
-                              <FormField
-                                control={form.control}
-                                name={`dados_detalhados.medicoes.${r.id}.v1` as any}
-                                render={({ field }) => (
-                                  <FormItem className="space-y-1">
-                                    <FormControl>
-                                      <Input
-                                        type="number"
-                                        step="any"
-                                        className="h-8 text-xs w-20"
-                                        value={field.value ?? ''}
-                                        onChange={(e) =>
-                                          field.onChange(
-                                            e.target.value === '' ? '' : Number(e.target.value),
-                                          )
-                                        }
-                                      />
-                                    </FormControl>
-                                    <FormMessage className="text-[10px]" />
-                                  </FormItem>
-                                )}
-                              />
-                            </TableCell>
-                            <TableCell className="p-2 align-top">
-                              <FormField
-                                control={form.control}
-                                name={`dados_detalhados.medicoes.${r.id}.v2` as any}
-                                render={({ field }) => (
-                                  <FormItem className="space-y-1">
-                                    <FormControl>
-                                      <Input
-                                        type="number"
-                                        step="any"
-                                        className="h-8 text-xs w-20"
-                                        value={field.value ?? ''}
-                                        onChange={(e) =>
-                                          field.onChange(
-                                            e.target.value === '' ? '' : Number(e.target.value),
-                                          )
-                                        }
-                                      />
-                                    </FormControl>
-                                    <FormMessage className="text-[10px]" />
-                                  </FormItem>
-                                )}
-                              />
-                            </TableCell>
-                            <TableCell className="text-right p-2 text-xs font-medium text-muted-foreground pt-4 whitespace-nowrap">
-                              {v1 !== undefined && v2 !== undefined && v1 !== '' && v2 !== ''
-                                ? `${new Intl.NumberFormat('pt-BR').format(res)}`
-                                : '-'}
-                            </TableCell>
-                            <TableCell className="text-right p-2 text-xs font-medium text-foreground pt-4 whitespace-nowrap">
-                              {v1 !== undefined && v2 !== undefined && v1 !== '' && v2 !== '' && fc
-                                ? `${new Intl.NumberFormat('pt-BR', { maximumFractionDigits: 2 }).format(corrigido)}`
-                                : '-'}
-                            </TableCell>
-                            <TableCell className="text-right p-2 text-xs font-semibold text-primary pt-4 whitespace-nowrap">
-                              {new Intl.NumberFormat('pt-BR', {
-                                minimumFractionDigits: 2,
-                                maximumFractionDigits: 2,
-                              }).format(limite)}
-                            </TableCell>
-                          </TableRow>
-                        )
-                      })}
-                    </TableBody>
-                  </Table>
+                      return (
+                        <div
+                          key={r.id}
+                          className="p-4 border rounded-lg bg-background space-y-4 shadow-sm"
+                        >
+                          <h5 className="font-semibold text-sm text-foreground border-b pb-2">
+                            {r.label}
+                          </h5>
+                          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                            <FormField
+                              control={form.control}
+                              name={`dados_detalhados.medicoes.${r.id}.v1` as any}
+                              render={({ field }) => (
+                                <FormItem className="space-y-1">
+                                  <FormLabel className="text-xs text-muted-foreground">
+                                    Valor 1 <span className="text-destructive">*</span>
+                                  </FormLabel>
+                                  <FormControl>
+                                    <Input
+                                      type="number"
+                                      step="any"
+                                      className="h-8 text-sm"
+                                      value={field.value ?? ''}
+                                      onChange={(e) =>
+                                        field.onChange(
+                                          e.target.value === '' ? '' : Number(e.target.value),
+                                        )
+                                      }
+                                    />
+                                  </FormControl>
+                                  <FormMessage className="text-[10px]" />
+                                </FormItem>
+                              )}
+                            />
+                            <FormField
+                              control={form.control}
+                              name={`dados_detalhados.medicoes.${r.id}.v2` as any}
+                              render={({ field }) => (
+                                <FormItem className="space-y-1">
+                                  <FormLabel className="text-xs text-muted-foreground">
+                                    Valor 2 <span className="text-destructive">*</span>
+                                  </FormLabel>
+                                  <FormControl>
+                                    <Input
+                                      type="number"
+                                      step="any"
+                                      className="h-8 text-sm"
+                                      value={field.value ?? ''}
+                                      onChange={(e) =>
+                                        field.onChange(
+                                          e.target.value === '' ? '' : Number(e.target.value),
+                                        )
+                                      }
+                                    />
+                                  </FormControl>
+                                  <FormMessage className="text-[10px]" />
+                                </FormItem>
+                              )}
+                            />
+                          </div>
+
+                          <div className="bg-muted/40 p-3 rounded-md grid grid-cols-1 sm:grid-cols-3 gap-4 text-xs border border-border/50">
+                            <div>
+                              <span className="text-muted-foreground block mb-1 font-medium">
+                                Resultado
+                              </span>
+                              <span className="font-medium text-foreground text-sm">
+                                {hasValues ? new Intl.NumberFormat('pt-BR').format(res) : '-'}
+                              </span>
+                            </div>
+                            <div>
+                              <span className="text-muted-foreground block mb-1 font-medium">
+                                Valor à {meioIsolante !== 'Óleo Mineral' ? '105' : '75'}ºC
+                              </span>
+                              <span className="font-medium text-foreground text-sm">
+                                {hasValues && fc
+                                  ? new Intl.NumberFormat('pt-BR', {
+                                      maximumFractionDigits: 2,
+                                    }).format(corrigido)
+                                  : '-'}
+                              </span>
+                            </div>
+                            <div>
+                              <span className="text-muted-foreground block mb-1 font-medium">
+                                Valor Limite
+                              </span>
+                              <span className="font-semibold text-primary text-sm">
+                                {new Intl.NumberFormat('pt-BR', {
+                                  minimumFractionDigits: 2,
+                                  maximumFractionDigits: 2,
+                                }).format(limite)}
+                              </span>
+                            </div>
+                          </div>
+                        </div>
+                      )
+                    })}
+                  </div>
                 </div>
               ) : equipmentType === 'Condutor Elétrico' ? (
                 <div className="space-y-4 border rounded-md p-4 bg-muted/20">
