@@ -73,28 +73,60 @@ const testSchema = z
   })
   .superRefine((data, ctx) => {
     if (data.tipo_teste === 'Relação de Tensões') {
-      const tp = data.dados_detalhados?.tensao_primaria
-      const ts = data.dados_detalhados?.tensao_secundaria
+      if (data.tipo_equipamento_ref === 'Transformador') {
+        const d = data.dados_detalhados || {}
+        if (!d.posicao) {
+          ctx.addIssue({
+            code: z.ZodIssueCode.custom,
+            path: ['dados_detalhados.posicao'],
+            message: 'Este campo é obrigatório',
+          })
+        }
+        if (d.h1h3_x0x1 === undefined || d.h1h3_x0x1 === null || d.h1h3_x0x1 === '') {
+          ctx.addIssue({
+            code: z.ZodIssueCode.custom,
+            path: ['dados_detalhados.h1h3_x0x1'],
+            message: 'Este campo é obrigatório',
+          })
+        }
+        if (d.h2h1_x0x2 === undefined || d.h2h1_x0x2 === null || d.h2h1_x0x2 === '') {
+          ctx.addIssue({
+            code: z.ZodIssueCode.custom,
+            path: ['dados_detalhados.h2h1_x0x2'],
+            message: 'Este campo é obrigatório',
+          })
+        }
+        if (d.h3h2_x0x3 === undefined || d.h3h2_x0x3 === null || d.h3h2_x0x3 === '') {
+          ctx.addIssue({
+            code: z.ZodIssueCode.custom,
+            path: ['dados_detalhados.h3h2_x0x3'],
+            message: 'Este campo é obrigatório',
+          })
+        }
+      } else {
+        const tp = data.dados_detalhados?.tensao_primaria
+        const ts = data.dados_detalhados?.tensao_secundaria
 
-      if (tp === undefined || tp === null || tp === '') {
-        ctx.addIssue({
-          code: z.ZodIssueCode.custom,
-          path: ['dados_detalhados.tensao_primaria'],
-          message: 'Este campo é obrigatório',
-        })
-      }
-      if (ts === undefined || ts === null || ts === '') {
-        ctx.addIssue({
-          code: z.ZodIssueCode.custom,
-          path: ['dados_detalhados.tensao_secundaria'],
-          message: 'Este campo é obrigatório',
-        })
-      } else if (Number(ts) === 0) {
-        ctx.addIssue({
-          code: z.ZodIssueCode.custom,
-          path: ['dados_detalhados.tensao_secundaria'],
-          message: 'A tensão secundária não pode ser zero.',
-        })
+        if (tp === undefined || tp === null || tp === '') {
+          ctx.addIssue({
+            code: z.ZodIssueCode.custom,
+            path: ['dados_detalhados.tensao_primaria'],
+            message: 'Este campo é obrigatório',
+          })
+        }
+        if (ts === undefined || ts === null || ts === '') {
+          ctx.addIssue({
+            code: z.ZodIssueCode.custom,
+            path: ['dados_detalhados.tensao_secundaria'],
+            message: 'Este campo é obrigatório',
+          })
+        } else if (Number(ts) === 0) {
+          ctx.addIssue({
+            code: z.ZodIssueCode.custom,
+            path: ['dados_detalhados.tensao_secundaria'],
+            message: 'A tensão secundária não pode ser zero.',
+          })
+        }
       }
     }
 
@@ -262,7 +294,8 @@ const testSchema = z
     if (
       data.tipo_teste !== 'Resistências dos Contatos' &&
       data.tipo_teste !== 'Resistências dos Isolamentos' &&
-      data.tipo_teste !== 'Resistências dos Enrolamentos'
+      data.tipo_teste !== 'Resistências dos Enrolamentos' &&
+      !(data.tipo_teste === 'Relação de Tensões' && data.tipo_equipamento_ref === 'Transformador')
     ) {
       if (data.valor_teste === undefined || data.valor_teste === null || data.valor_teste === '') {
         ctx.addIssue({
@@ -290,6 +323,7 @@ interface TestModalProps {
   onSave: (test: TestItem) => void
   initialData?: TestItem
   equipmentType?: string
+  equipmentData?: Record<string, any>
 }
 
 const isoRows = [
@@ -325,8 +359,45 @@ export function TestModal({
   onSave,
   initialData,
   equipmentType,
+  equipmentData,
 }: TestModalProps) {
   const [equipmentOptions, setEquipmentOptions] = useState<OpcaoPadronizada[]>([])
+
+  const [ligadoEm, setLigadoEm] = useState<number | null>(null)
+  const [tensaoSecundaria, setTensaoSecundaria] = useState<number | null>(null)
+
+  useEffect(() => {
+    if (open && equipmentType === 'Transformador' && equipmentData) {
+      const leVal =
+        equipmentData?.ligado_em_v ??
+        equipmentData?.ligado_em ??
+        equipmentData?.['Ligado em (V)'] ??
+        equipmentData?.['Ligado em']
+      const tsVal =
+        equipmentData?.tensao_secundaria_v ??
+        equipmentData?.tensao_secundaria ??
+        equipmentData?.['Tensão Secundária (V)'] ??
+        equipmentData?.['Tensão Secundária']
+
+      const le = parseFloat(String(leVal))
+      const tsMatch = String(tsVal).split('/')[0]
+      const ts = parseFloat(tsMatch)
+
+      setLigadoEm(isNaN(le) ? null : le)
+      setTensaoSecundaria(isNaN(ts) ? null : ts)
+    } else {
+      setLigadoEm(null)
+      setTensaoSecundaria(null)
+    }
+  }, [open, equipmentType, equipmentData])
+
+  const relacaoCalculada =
+    ligadoEm !== null && tensaoSecundaria !== null && tensaoSecundaria !== 0
+      ? (ligadoEm / tensaoSecundaria) * Math.sqrt(3)
+      : null
+
+  const relacaoMais = relacaoCalculada !== null ? relacaoCalculada * 1.005 : null
+  const relacaoMenos = relacaoCalculada !== null ? relacaoCalculada * 0.995 : null
 
   const form = useForm<TestFormValues>({
     resolver: zodResolver(testSchema),
@@ -403,7 +474,18 @@ export function TestModal({
       form.setValue('unidade', 'Mega-Ohms', { shouldValidate: true })
       form.setValue('valor_teste', 0, { shouldValidate: true })
     } else if (watchTipo === 'Relação de Tensões') {
-      form.setValue('unidade', 'V/V', { shouldValidate: true })
+      if (equipmentType === 'Transformador') {
+        form.setValue('unidade', 'V/V', { shouldValidate: true })
+        form.setValue('valor_teste', 0, { shouldValidate: true })
+        const currentObs = form.getValues('observacoes')
+        if (!currentObs) {
+          form.setValue('observacoes', 'Nota: Em conformidade com a norma ABNT NBR 5356/81.', {
+            shouldValidate: true,
+          })
+        }
+      } else {
+        form.setValue('unidade', 'V/V', { shouldValidate: true })
+      }
     } else if (watchTipo === 'Resistências dos Enrolamentos') {
       form.setValue('unidade', 'Ω / mΩ', { shouldValidate: true })
       form.setValue('valor_teste', 0, { shouldValidate: true })
@@ -420,7 +502,7 @@ export function TestModal({
   const ts = form.watch('dados_detalhados.tensao_secundaria')
 
   useEffect(() => {
-    if (watchTipo === 'Relação de Tensões' && open) {
+    if (watchTipo === 'Relação de Tensões' && equipmentType !== 'Transformador' && open) {
       const prim = Number(tp)
       const sec = Number(ts)
       if (!isNaN(prim) && !isNaN(sec) && sec !== 0) {
@@ -429,7 +511,7 @@ export function TestModal({
         form.setValue('valor_teste', 0, { shouldValidate: true })
       }
     }
-  }, [tp, ts, watchTipo, form, open])
+  }, [tp, ts, watchTipo, form, open, equipmentType])
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -547,6 +629,19 @@ export function TestModal({
                 payload.dados_detalhados
               ) {
                 payload.valor_teste = 0
+              } else if (
+                payload.tipo_teste === 'Relação de Tensões' &&
+                equipmentType === 'Transformador'
+              ) {
+                payload.valor_teste = 0
+                payload.dados_detalhados = {
+                  ...payload.dados_detalhados,
+                  relacao_teorica: relacaoCalculada,
+                  relacao_mais_05: relacaoMais,
+                  relacao_menos_05: relacaoMenos,
+                  ligado_em: ligadoEm,
+                  tensao_secundaria: tensaoSecundaria,
+                }
               } else if (
                 payload.tipo_teste === 'Resistências dos Contatos' &&
                 payload.dados_detalhados
@@ -852,7 +947,138 @@ export function TestModal({
               </div>
             )}
 
-            {watchTipo === 'Relação de Tensões' && (
+            {watchTipo === 'Relação de Tensões' && equipmentType === 'Transformador' && (
+              <div className="space-y-4 border rounded-md p-4 bg-muted/20">
+                <h4 className="text-sm font-medium">Dados Técnicos - Relação de Tensões</h4>
+                <div className="grid grid-cols-2 md:grid-cols-3 gap-4 mb-4">
+                  <div>
+                    <FormLabel className="text-xs text-muted-foreground">Ligado em (V)</FormLabel>
+                    <div className="text-sm font-medium">{ligadoEm ?? '-'}</div>
+                  </div>
+                  <div>
+                    <FormLabel className="text-xs text-muted-foreground">
+                      Tensão Secundária (V)
+                    </FormLabel>
+                    <div className="text-sm font-medium">{tensaoSecundaria ?? '-'}</div>
+                  </div>
+                  <div>
+                    <FormLabel className="text-xs text-muted-foreground">
+                      Relação (Teórica)
+                    </FormLabel>
+                    <div className="text-sm font-medium">
+                      {relacaoCalculada ? relacaoCalculada.toFixed(4) : '-'}
+                    </div>
+                  </div>
+                  <div>
+                    <FormLabel className="text-xs text-muted-foreground">Relação +0,50%</FormLabel>
+                    <div className="text-sm font-medium">
+                      {relacaoMais ? relacaoMais.toFixed(4) : '-'}
+                    </div>
+                  </div>
+                  <div>
+                    <FormLabel className="text-xs text-muted-foreground">Relação -0,50%</FormLabel>
+                    <div className="text-sm font-medium">
+                      {relacaoMenos ? relacaoMenos.toFixed(4) : '-'}
+                    </div>
+                  </div>
+                </div>
+
+                <h4 className="text-sm font-medium border-t pt-4">Medições</h4>
+                <div className="grid grid-cols-1 gap-4">
+                  <FormField
+                    control={form.control}
+                    name="dados_detalhados.posicao"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel className="text-xs">
+                          Posição <span className="text-destructive">*</span>
+                        </FormLabel>
+                        <FormControl>
+                          <Input {...field} value={field.value ?? ''} className="h-8 text-sm" />
+                        </FormControl>
+                        <FormMessage className="text-[10px]" />
+                      </FormItem>
+                    )}
+                  />
+                </div>
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mt-4">
+                  <FormField
+                    control={form.control}
+                    name="dados_detalhados.h1h3_x0x1"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel className="text-xs">
+                          H1H3/X0X1 <span className="text-destructive">*</span>
+                        </FormLabel>
+                        <FormControl>
+                          <Input
+                            type="number"
+                            step="any"
+                            {...field}
+                            value={field.value ?? ''}
+                            className="h-8 text-sm"
+                            onChange={(e) =>
+                              field.onChange(e.target.value === '' ? '' : Number(e.target.value))
+                            }
+                          />
+                        </FormControl>
+                        <FormMessage className="text-[10px]" />
+                      </FormItem>
+                    )}
+                  />
+                  <FormField
+                    control={form.control}
+                    name="dados_detalhados.h2h1_x0x2"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel className="text-xs">
+                          H2H1/X0X2 <span className="text-destructive">*</span>
+                        </FormLabel>
+                        <FormControl>
+                          <Input
+                            type="number"
+                            step="any"
+                            {...field}
+                            value={field.value ?? ''}
+                            className="h-8 text-sm"
+                            onChange={(e) =>
+                              field.onChange(e.target.value === '' ? '' : Number(e.target.value))
+                            }
+                          />
+                        </FormControl>
+                        <FormMessage className="text-[10px]" />
+                      </FormItem>
+                    )}
+                  />
+                  <FormField
+                    control={form.control}
+                    name="dados_detalhados.h3h2_x0x3"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel className="text-xs">
+                          H3H2/X0X3 <span className="text-destructive">*</span>
+                        </FormLabel>
+                        <FormControl>
+                          <Input
+                            type="number"
+                            step="any"
+                            {...field}
+                            value={field.value ?? ''}
+                            className="h-8 text-sm"
+                            onChange={(e) =>
+                              field.onChange(e.target.value === '' ? '' : Number(e.target.value))
+                            }
+                          />
+                        </FormControl>
+                        <FormMessage className="text-[10px]" />
+                      </FormItem>
+                    )}
+                  />
+                </div>
+              </div>
+            )}
+
+            {watchTipo === 'Relação de Tensões' && equipmentType !== 'Transformador' && (
               <div className="space-y-4 border rounded-md p-4 bg-muted/20">
                 <h4 className="text-sm font-medium">Cálculo de Relação de Tensões</h4>
                 <div className="grid grid-cols-2 gap-4">
@@ -1330,7 +1556,8 @@ export function TestModal({
             <div className="grid grid-cols-2 gap-4">
               {watchTipo !== 'Resistências dos Contatos' &&
                 watchTipo !== 'Resistências dos Isolamentos' &&
-                watchTipo !== 'Resistências dos Enrolamentos' && (
+                watchTipo !== 'Resistências dos Enrolamentos' &&
+                !(watchTipo === 'Relação de Tensões' && equipmentType === 'Transformador') && (
                   <FormField
                     control={form.control}
                     name="valor_teste"
@@ -1366,7 +1593,8 @@ export function TestModal({
                     <FormItem
                       className={
                         watchTipo === 'Resistências dos Contatos' ||
-                        watchTipo === 'Resistências dos Isolamentos'
+                        watchTipo === 'Resistências dos Isolamentos' ||
+                        (watchTipo === 'Relação de Tensões' && equipmentType === 'Transformador')
                           ? 'col-span-2'
                           : ''
                       }

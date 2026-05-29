@@ -128,6 +128,15 @@ const extractPhasesData = (t: any, tipoEquipamento: string, subType?: string) =>
     ].filter((p) => p.value !== undefined)
   }
 
+  if (t.tipo_teste === 'Relação de Tensões' && tipoEquipamento === 'Transformador') {
+    const d = t.dados_detalhados || {}
+    return [
+      { name: 'H1H3/X0X1', value: extractNumeric(d.h1h3_x0x1) },
+      { name: 'H2H1/X0X2', value: extractNumeric(d.h2h1_x0x2) },
+      { name: 'H3H2/X0X3', value: extractNumeric(d.h3h2_x0x3) },
+    ].filter((p) => p.value !== undefined)
+  }
+
   return [{ name: 'Valor Geral', value: extractNumeric(t.valor_teste) }]
 }
 
@@ -567,6 +576,10 @@ export function EquipmentTestsManager({
       const d = t.dados_detalhados || {}
       return `A: ${formatNum(d.fase_a) ?? '-'} | B: ${formatNum(d.fase_b) ?? '-'} | C: ${formatNum(d.fase_c) ?? '-'}`
     }
+    if (t.tipo_teste === 'Relação de Tensões' && tipoEquipamento === 'Transformador') {
+      const d = t.dados_detalhados || {}
+      return `Posição: ${d.posicao || '-'} | H1H3/X0X1: ${formatNum(d.h1h3_x0x1) || '-'} | H2H1/X0X2: ${formatNum(d.h2h1_x0x2) || '-'} | H3H2/X0X3: ${formatNum(d.h3h2_x0x3) || '-'}`
+    }
     return `${formatNum(t.valor_teste)}`
   }
 
@@ -838,6 +851,7 @@ export function EquipmentTestsManager({
         onSave={handleSaveTest}
         initialData={editingTest?.test}
         equipmentType={equipment.tipo_equipamento}
+        equipmentData={equipment.dados_tecnicos}
       />
     </div>
   )
