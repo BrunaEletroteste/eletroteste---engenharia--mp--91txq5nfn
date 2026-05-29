@@ -436,6 +436,39 @@ export function TestModal({
   const tempMedidaSource =
     isoTest?.dados_detalhados?.temperatura_medida ?? isoTest?.dados_detalhados?.temperatura
 
+  const [fatorCorrecao75, setFatorCorrecao75] = useState<Record<number, number>>({})
+  const [fatorCorrecao105, setFatorCorrecao105] = useState<Record<number, number>>({})
+
+  useEffect(() => {
+    if (open) {
+      getOpcoesPadronizadas('fator_correcao_75')
+        .then((res) => {
+          const map: Record<number, number> = {}
+          res.forEach((item) => {
+            const parts = item.valor.split(':')
+            if (parts.length === 2) {
+              map[Number(parts[0])] = Number(parts[1])
+            }
+          })
+          setFatorCorrecao75(map)
+        })
+        .catch(console.error)
+
+      getOpcoesPadronizadas('fator_correcao_105')
+        .then((res) => {
+          const map: Record<number, number> = {}
+          res.forEach((item) => {
+            const parts = item.valor.split(':')
+            if (parts.length === 2) {
+              map[Number(parts[0])] = Number(parts[1])
+            }
+          })
+          setFatorCorrecao105(map)
+        })
+        .catch(console.error)
+    }
+  }, [open])
+
   const form = useForm<TestFormValues>({
     resolver: zodResolver(testSchema),
     defaultValues: {
@@ -450,6 +483,33 @@ export function TestModal({
 
   const watchTipo = form.watch('tipo_teste')
   const watchUnidade = form.watch('unidade')
+  const watchTemperatura = form.watch('dados_detalhados.temperatura_medida')
+
+  useEffect(() => {
+    if (watchTipo === 'Resistências dos Isolamentos' && equipmentType === 'Transformador' && open) {
+      if (watchTemperatura !== undefined && watchTemperatura !== null && watchTemperatura !== '') {
+        const temp = Math.round(Number(watchTemperatura))
+        let factor = undefined
+        if (meioIsolante === 'Óleo Mineral') {
+          factor = fatorCorrecao75[temp]
+        } else {
+          factor = fatorCorrecao105[temp]
+        }
+        if (factor !== undefined) {
+          form.setValue('dados_detalhados.fator_correcao', factor, { shouldValidate: true })
+        }
+      }
+    }
+  }, [
+    watchTemperatura,
+    meioIsolante,
+    fatorCorrecao75,
+    fatorCorrecao105,
+    watchTipo,
+    equipmentType,
+    open,
+    form,
+  ])
 
   useEffect(() => {
     if (open) {
@@ -1590,7 +1650,15 @@ export function TestModal({
                             />
                           </div>
 
-                          <div className="bg-muted/40 p-3 rounded-md grid grid-cols-1 sm:grid-cols-3 gap-4 text-xs border border-border/50">
+                          <div
+                            className={cn(
+                              'bg-muted/40 p-3 rounded-md grid grid-cols-1 sm:grid-cols-4 gap-4 text-xs border border-border/50',
+                              hasValues &&
+                                fc &&
+                                corrigido < limite &&
+                                'bg-destructive/10 border-destructive/50',
+                            )}
+                          >
                             <div>
                               <span className="text-muted-foreground block mb-1 font-medium">
                                 Resultado
@@ -1601,9 +1669,24 @@ export function TestModal({
                             </div>
                             <div>
                               <span className="text-muted-foreground block mb-1 font-medium">
-                                Valor à {meioIsolante !== 'Óleo Mineral' ? '105' : '75'}ºC
+                                Fator Corr.
                               </span>
                               <span className="font-medium text-foreground text-sm">
+                                {fc ? Number(fc) : '-'}
+                              </span>
+                            </div>
+                            <div>
+                              <span className="text-muted-foreground block mb-1 font-medium">
+                                Valor à {meioIsolante !== 'Óleo Mineral' ? '105' : '75'}ºC
+                              </span>
+                              <span
+                                className={cn(
+                                  'font-medium text-sm',
+                                  hasValues && fc && corrigido < limite
+                                    ? 'text-destructive font-bold'
+                                    : 'text-foreground',
+                                )}
+                              >
                                 {hasValues && fc
                                   ? new Intl.NumberFormat('pt-BR', {
                                       maximumFractionDigits: 2,
@@ -1796,257 +1879,236 @@ export function TestModal({
                     <h4 className="text-sm font-medium text-primary border-b pb-2">
                       Disjuntor Ligado / Fechado
                     </h4>
-                    <Table>
-                      <TableHeader>
-                        <TableRow>
-                          <TableHead className="w-[120px] p-2">Medição</TableHead>
-                          <TableHead className="p-2">
-                            Valor 1 <span className="text-destructive">*</span>
-                          </TableHead>
-                          <TableHead className="p-2">
-                            Valor 2 <span className="text-destructive">*</span>
-                          </TableHead>
-                          <TableHead className="text-right p-2">Resultado</TableHead>
-                        </TableRow>
-                      </TableHeader>
-                      <TableBody>
-                        {disjuntorFechadoRows.map((r) => {
-                          const v1 = form.watch(`dados_detalhados.fechado.${r.id}.v1` as any)
-                          const v2 = form.watch(`dados_detalhados.fechado.${r.id}.v2` as any)
-                          const res = (Number(v1) || 0) * (Number(v2) || 0)
+                    <div className="grid grid-cols-1 gap-4">
+                      {disjuntorFechadoRows.map((r) => {
+                        const v1 = form.watch(`dados_detalhados.fechado.${r.id}.v1` as any)
+                        const v2 = form.watch(`dados_detalhados.fechado.${r.id}.v2` as any)
+                        const res = (Number(v1) || 0) * (Number(v2) || 0)
+                        const hasValues =
+                          v1 !== undefined && v2 !== undefined && v1 !== '' && v2 !== ''
 
-                          return (
-                            <TableRow key={r.id}>
-                              <TableCell className="font-medium text-xs p-2">{r.label}</TableCell>
-                              <TableCell className="p-2 align-top">
-                                <FormField
-                                  control={form.control}
-                                  name={`dados_detalhados.fechado.${r.id}.v1` as any}
-                                  render={({ field }) => (
-                                    <FormItem className="space-y-1">
-                                      <FormControl>
-                                        <Input
-                                          type="number"
-                                          step="any"
-                                          className="h-8 text-xs"
-                                          value={field.value ?? ''}
-                                          onChange={(e) =>
-                                            field.onChange(
-                                              e.target.value === '' ? '' : Number(e.target.value),
-                                            )
-                                          }
-                                        />
-                                      </FormControl>
-                                      <FormMessage className="text-[10px]" />
-                                    </FormItem>
-                                  )}
-                                />
-                              </TableCell>
-                              <TableCell className="p-2 align-top">
-                                <FormField
-                                  control={form.control}
-                                  name={`dados_detalhados.fechado.${r.id}.v2` as any}
-                                  render={({ field }) => (
-                                    <FormItem className="space-y-1">
-                                      <FormControl>
-                                        <Input
-                                          type="number"
-                                          step="any"
-                                          className="h-8 text-xs"
-                                          value={field.value ?? ''}
-                                          onChange={(e) =>
-                                            field.onChange(
-                                              e.target.value === '' ? '' : Number(e.target.value),
-                                            )
-                                          }
-                                        />
-                                      </FormControl>
-                                      <FormMessage className="text-[10px]" />
-                                    </FormItem>
-                                  )}
-                                />
-                              </TableCell>
-                              <TableCell className="text-right p-2 text-xs font-medium text-muted-foreground pt-4 whitespace-nowrap">
-                                {v1 !== undefined && v2 !== undefined && v1 !== '' && v2 !== ''
+                        return (
+                          <div
+                            key={r.id}
+                            className="space-y-2 p-3 border rounded-md bg-background shadow-sm"
+                          >
+                            <FormLabel className="text-xs font-semibold">
+                              {r.label} <span className="text-destructive">*</span>
+                            </FormLabel>
+                            <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 items-start">
+                              <FormField
+                                control={form.control}
+                                name={`dados_detalhados.fechado.${r.id}.v1` as any}
+                                render={({ field }) => (
+                                  <FormItem>
+                                    <FormControl>
+                                      <Input
+                                        type="number"
+                                        step="any"
+                                        placeholder="Valor 1"
+                                        className="h-8 text-xs"
+                                        value={field.value ?? ''}
+                                        onChange={(e) =>
+                                          field.onChange(
+                                            e.target.value === '' ? '' : Number(e.target.value),
+                                          )
+                                        }
+                                      />
+                                    </FormControl>
+                                    <FormMessage className="text-[10px]" />
+                                  </FormItem>
+                                )}
+                              />
+                              <FormField
+                                control={form.control}
+                                name={`dados_detalhados.fechado.${r.id}.v2` as any}
+                                render={({ field }) => (
+                                  <FormItem>
+                                    <FormControl>
+                                      <Input
+                                        type="number"
+                                        step="any"
+                                        placeholder="Valor 2"
+                                        className="h-8 text-xs"
+                                        value={field.value ?? ''}
+                                        onChange={(e) =>
+                                          field.onChange(
+                                            e.target.value === '' ? '' : Number(e.target.value),
+                                          )
+                                        }
+                                      />
+                                    </FormControl>
+                                    <FormMessage className="text-[10px]" />
+                                  </FormItem>
+                                )}
+                              />
+                              <div className="h-8 flex items-center px-3 border rounded-md bg-muted text-xs font-medium text-foreground whitespace-nowrap">
+                                {hasValues
                                   ? `${new Intl.NumberFormat('pt-BR').format(res)}`
-                                  : '-'}
-                              </TableCell>
-                            </TableRow>
-                          )
-                        })}
-                      </TableBody>
-                    </Table>
+                                  : 'Resultado'}
+                              </div>
+                            </div>
+                          </div>
+                        )
+                      })}
+                    </div>
                   </div>
 
                   <div className="space-y-4">
                     <h4 className="text-sm font-medium text-primary border-b pb-2">
                       Disjuntor Desligado / Aberto
                     </h4>
-                    <Table>
-                      <TableHeader>
-                        <TableRow>
-                          <TableHead className="w-[120px] p-2">Medição</TableHead>
-                          <TableHead className="p-2">
-                            Valor 1 <span className="text-destructive">*</span>
-                          </TableHead>
-                          <TableHead className="p-2">
-                            Valor 2 <span className="text-destructive">*</span>
-                          </TableHead>
-                          <TableHead className="text-right p-2">Resultado</TableHead>
-                        </TableRow>
-                      </TableHeader>
-                      <TableBody>
-                        {disjuntorAbertoRows.map((r) => {
-                          const v1 = form.watch(`dados_detalhados.aberto.${r.id}.v1` as any)
-                          const v2 = form.watch(`dados_detalhados.aberto.${r.id}.v2` as any)
-                          const res = (Number(v1) || 0) * (Number(v2) || 0)
+                    <div className="grid grid-cols-1 gap-4">
+                      {disjuntorAbertoRows.map((r) => {
+                        const v1 = form.watch(`dados_detalhados.aberto.${r.id}.v1` as any)
+                        const v2 = form.watch(`dados_detalhados.aberto.${r.id}.v2` as any)
+                        const res = (Number(v1) || 0) * (Number(v2) || 0)
+                        const hasValues =
+                          v1 !== undefined && v2 !== undefined && v1 !== '' && v2 !== ''
 
-                          return (
-                            <TableRow key={r.id}>
-                              <TableCell className="font-medium text-xs p-2">{r.label}</TableCell>
-                              <TableCell className="p-2 align-top">
-                                <FormField
-                                  control={form.control}
-                                  name={`dados_detalhados.aberto.${r.id}.v1` as any}
-                                  render={({ field }) => (
-                                    <FormItem className="space-y-1">
-                                      <FormControl>
-                                        <Input
-                                          type="number"
-                                          step="any"
-                                          className="h-8 text-xs"
-                                          value={field.value ?? ''}
-                                          onChange={(e) =>
-                                            field.onChange(
-                                              e.target.value === '' ? '' : Number(e.target.value),
-                                            )
-                                          }
-                                        />
-                                      </FormControl>
-                                      <FormMessage className="text-[10px]" />
-                                    </FormItem>
-                                  )}
-                                />
-                              </TableCell>
-                              <TableCell className="p-2 align-top">
-                                <FormField
-                                  control={form.control}
-                                  name={`dados_detalhados.aberto.${r.id}.v2` as any}
-                                  render={({ field }) => (
-                                    <FormItem className="space-y-1">
-                                      <FormControl>
-                                        <Input
-                                          type="number"
-                                          step="any"
-                                          className="h-8 text-xs"
-                                          value={field.value ?? ''}
-                                          onChange={(e) =>
-                                            field.onChange(
-                                              e.target.value === '' ? '' : Number(e.target.value),
-                                            )
-                                          }
-                                        />
-                                      </FormControl>
-                                      <FormMessage className="text-[10px]" />
-                                    </FormItem>
-                                  )}
-                                />
-                              </TableCell>
-                              <TableCell className="text-right p-2 text-xs font-medium text-muted-foreground pt-4 whitespace-nowrap">
-                                {v1 !== undefined && v2 !== undefined && v1 !== '' && v2 !== ''
+                        return (
+                          <div
+                            key={r.id}
+                            className="space-y-2 p-3 border rounded-md bg-background shadow-sm"
+                          >
+                            <FormLabel className="text-xs font-semibold">
+                              {r.label} <span className="text-destructive">*</span>
+                            </FormLabel>
+                            <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 items-start">
+                              <FormField
+                                control={form.control}
+                                name={`dados_detalhados.aberto.${r.id}.v1` as any}
+                                render={({ field }) => (
+                                  <FormItem>
+                                    <FormControl>
+                                      <Input
+                                        type="number"
+                                        step="any"
+                                        placeholder="Valor 1"
+                                        className="h-8 text-xs"
+                                        value={field.value ?? ''}
+                                        onChange={(e) =>
+                                          field.onChange(
+                                            e.target.value === '' ? '' : Number(e.target.value),
+                                          )
+                                        }
+                                      />
+                                    </FormControl>
+                                    <FormMessage className="text-[10px]" />
+                                  </FormItem>
+                                )}
+                              />
+                              <FormField
+                                control={form.control}
+                                name={`dados_detalhados.aberto.${r.id}.v2` as any}
+                                render={({ field }) => (
+                                  <FormItem>
+                                    <FormControl>
+                                      <Input
+                                        type="number"
+                                        step="any"
+                                        placeholder="Valor 2"
+                                        className="h-8 text-xs"
+                                        value={field.value ?? ''}
+                                        onChange={(e) =>
+                                          field.onChange(
+                                            e.target.value === '' ? '' : Number(e.target.value),
+                                          )
+                                        }
+                                      />
+                                    </FormControl>
+                                    <FormMessage className="text-[10px]" />
+                                  </FormItem>
+                                )}
+                              />
+                              <div className="h-8 flex items-center px-3 border rounded-md bg-muted text-xs font-medium text-foreground whitespace-nowrap">
+                                {hasValues
                                   ? `${new Intl.NumberFormat('pt-BR').format(res)}`
-                                  : '-'}
-                              </TableCell>
-                            </TableRow>
-                          )
-                        })}
-                      </TableBody>
-                    </Table>
+                                  : 'Resultado'}
+                              </div>
+                            </div>
+                          </div>
+                        )
+                      })}
+                    </div>
                   </div>
                 </div>
               ) : (
                 <div className="space-y-4 border rounded-md p-4 bg-muted/20">
-                  <Table>
-                    {' '}
-                    <TableHeader>
-                      <TableRow>
-                        <TableHead className="w-[120px] p-2">Medição</TableHead>
-                        <TableHead className="p-2">
-                          Valor 1 <span className="text-destructive">*</span>
-                        </TableHead>
-                        <TableHead className="p-2">
-                          Valor 2 <span className="text-destructive">*</span>
-                        </TableHead>
-                        <TableHead className="text-right p-2">Resultado</TableHead>
-                      </TableRow>
-                    </TableHeader>
-                    <TableBody>
-                      {isoRows.map((r) => {
-                        const v1 = form.watch(`dados_detalhados.${r.id}.v1` as any)
-                        const v2 = form.watch(`dados_detalhados.${r.id}.v2` as any)
-                        const res = (Number(v1) || 0) * (Number(v2) || 0)
+                  <h4 className="text-sm font-medium">Medições de Isolamento</h4>
+                  <div className="grid grid-cols-1 gap-4">
+                    {isoRows.map((r) => {
+                      const v1 = form.watch(`dados_detalhados.${r.id}.v1` as any)
+                      const v2 = form.watch(`dados_detalhados.${r.id}.v2` as any)
+                      const res = (Number(v1) || 0) * (Number(v2) || 0)
+                      const hasValues =
+                        v1 !== undefined && v2 !== undefined && v1 !== '' && v2 !== ''
 
-                        return (
-                          <TableRow key={r.id}>
-                            <TableCell className="font-medium text-xs p-2">{r.label}</TableCell>
-                            <TableCell className="p-2 align-top">
-                              <FormField
-                                control={form.control}
-                                name={`dados_detalhados.${r.id}.v1` as any}
-                                render={({ field }) => (
-                                  <FormItem className="space-y-1">
-                                    <FormControl>
-                                      <Input
-                                        type="number"
-                                        step="any"
-                                        className="h-8 text-xs"
-                                        value={field.value ?? ''}
-                                        onChange={(e) =>
-                                          field.onChange(
-                                            e.target.value === '' ? '' : Number(e.target.value),
-                                          )
-                                        }
-                                      />
-                                    </FormControl>
-                                    <FormMessage className="text-[10px]" />
-                                  </FormItem>
-                                )}
-                              />
-                            </TableCell>
-                            <TableCell className="p-2 align-top">
-                              <FormField
-                                control={form.control}
-                                name={`dados_detalhados.${r.id}.v2` as any}
-                                render={({ field }) => (
-                                  <FormItem className="space-y-1">
-                                    <FormControl>
-                                      <Input
-                                        type="number"
-                                        step="any"
-                                        className="h-8 text-xs"
-                                        value={field.value ?? ''}
-                                        onChange={(e) =>
-                                          field.onChange(
-                                            e.target.value === '' ? '' : Number(e.target.value),
-                                          )
-                                        }
-                                      />
-                                    </FormControl>
-                                    <FormMessage className="text-[10px]" />
-                                  </FormItem>
-                                )}
-                              />
-                            </TableCell>
-                            <TableCell className="text-right p-2 text-xs font-medium text-muted-foreground pt-4 whitespace-nowrap">
-                              {v1 !== undefined && v2 !== undefined && v1 !== '' && v2 !== ''
+                      return (
+                        <div
+                          key={r.id}
+                          className="space-y-2 p-3 border rounded-md bg-background shadow-sm"
+                        >
+                          <FormLabel className="text-xs font-semibold">
+                            {r.label} <span className="text-destructive">*</span>
+                          </FormLabel>
+                          <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 items-start">
+                            <FormField
+                              control={form.control}
+                              name={`dados_detalhados.${r.id}.v1` as any}
+                              render={({ field }) => (
+                                <FormItem>
+                                  <FormControl>
+                                    <Input
+                                      type="number"
+                                      step="any"
+                                      placeholder="Valor 1"
+                                      className="h-8 text-xs"
+                                      value={field.value ?? ''}
+                                      onChange={(e) =>
+                                        field.onChange(
+                                          e.target.value === '' ? '' : Number(e.target.value),
+                                        )
+                                      }
+                                    />
+                                  </FormControl>
+                                  <FormMessage className="text-[10px]" />
+                                </FormItem>
+                              )}
+                            />
+                            <FormField
+                              control={form.control}
+                              name={`dados_detalhados.${r.id}.v2` as any}
+                              render={({ field }) => (
+                                <FormItem>
+                                  <FormControl>
+                                    <Input
+                                      type="number"
+                                      step="any"
+                                      placeholder="Valor 2"
+                                      className="h-8 text-xs"
+                                      value={field.value ?? ''}
+                                      onChange={(e) =>
+                                        field.onChange(
+                                          e.target.value === '' ? '' : Number(e.target.value),
+                                        )
+                                      }
+                                    />
+                                  </FormControl>
+                                  <FormMessage className="text-[10px]" />
+                                </FormItem>
+                              )}
+                            />
+                            <div className="h-8 flex items-center px-3 border rounded-md bg-muted text-xs font-medium text-foreground whitespace-nowrap">
+                              {hasValues
                                 ? `${new Intl.NumberFormat('pt-BR').format(res)}`
-                                : '-'}
-                            </TableCell>
-                          </TableRow>
-                        )
-                      })}
-                    </TableBody>
-                  </Table>
+                                : 'Resultado'}
+                            </div>
+                          </div>
+                        </div>
+                      )
+                    })}
+                  </div>
                 </div>
               ))}
 
