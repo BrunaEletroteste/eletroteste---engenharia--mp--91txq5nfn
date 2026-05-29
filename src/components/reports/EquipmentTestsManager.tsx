@@ -127,6 +127,8 @@ export function EquipmentTestsManager({
   const [historicalTests, setHistoricalTests] = useState<any[]>([])
   const [isLoadingHistory, setIsLoadingHistory] = useState(false)
   const [historyError, setHistoryError] = useState(false)
+  const [activeTab, setActiveTab] = useState<string>('')
+
   const { toast } = useToast()
   const isMobile = useIsMobile()
 
@@ -175,15 +177,28 @@ export function EquipmentTestsManager({
     return true
   })
 
+  const testTypes = Array.from(
+    new Set([
+      ...currentTests.map((t) => t.tipo_teste),
+      ...filteredHistorical.map((t) => t.tipo_teste),
+    ]),
+  )
+
+  useEffect(() => {
+    if (testTypes.length > 0) {
+      if (!activeTab || !testTypes.includes(activeTab)) {
+        setActiveTab(testTypes[0])
+      }
+    } else {
+      setActiveTab('')
+    }
+  }, [testTypes.join(','), activeTab])
+
   // Pre-filter: only previous tests (strictly before the current report's year)
   const prevTestsAll = filteredHistorical.filter((t) => {
     const tYear = new Date(t.data_teste).getFullYear()
     return tYear < currentYear
   })
-
-  const testTypes = Array.from(
-    new Set([...currentTests.map((t) => t.tipo_teste), ...prevTestsAll.map((t) => t.tipo_teste)]),
-  )
 
   const chartDataByType = testTypes.reduce(
     (acc, type) => {
@@ -381,7 +396,7 @@ export function EquipmentTestsManager({
     })
   }
 
-  const formatTestValue = (t: any, tipoEquipamento: string) => {
+  const formatTestValue = (t: any, tipoEquipamento: string, subType?: string) => {
     const formatNum = (val: any) => {
       if (typeof val === 'number' && !isNaN(val)) return new Intl.NumberFormat('pt-BR').format(val)
       return val
@@ -450,6 +465,13 @@ export function EquipmentTestsManager({
         const a_bb = formatRes(da.bb)
         const a_cc = formatRes(da.cc)
 
+        if (subType === 'Fechado') {
+          return `A x B: ${f_ab} | B x C: ${f_bc} | C x A: ${f_ca} | Massa: ${f_massa}`
+        }
+        if (subType === 'Aberto') {
+          return `A x A: ${a_aa} | B x B: ${a_bb} | C x C: ${a_cc}`
+        }
+
         return `Fechado (A x B: ${f_ab} | B x C: ${f_bc} | C x A: ${f_ca} | Massa: ${f_massa}) | Aberto (A x A: ${a_aa} | B x B: ${a_bb} | C x C: ${a_cc})`
       } else {
         const d = t.dados_detalhados || {}
@@ -467,41 +489,43 @@ export function EquipmentTestsManager({
     return `${formatNum(t.valor_teste)}`
   }
 
-  return (
-    <div className="space-y-8 animate-fade-in">
-      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-        <div>
-          <h3 className="text-lg font-semibold text-primary">Gerenciamento de Testes Elétricos</h3>
-          <p className="text-sm text-muted-foreground">Registre e compare os testes realizados.</p>
-        </div>
-        {!isView && (
-          <Button
-            size="sm"
-            onClick={() => {
-              setEditingTest(null)
-              setModalOpen(true)
-            }}
-          >
-            <Plus className="h-4 w-4 mr-2" /> Adicionar Teste
-          </Button>
-        )}
-      </div>
+  const renderTabContent = (type: string, subType?: string) => {
+    const cTests = currentTests.filter((t) => t.tipo_teste === type)
+    const hTests = filteredHistorical.filter((t) => t.tipo_teste === type)
 
-      <div className="space-y-8">
+    const typeData = chartDataByType[type]
+    let chartData: any[] = []
+    let unidade = ''
+    let pYear = currentYear - 1
+
+    if (typeData) {
+      if (typeData.isDisjuntorIsolamento && subType) {
+        chartData = typeData.subTypes[subType]?.data || []
+        unidade = typeData.subTypes[subType]?.unidade || ''
+        pYear = typeData.subTypes[subType]?.pYear || currentYear - 1
+      } else {
+        chartData = typeData.data || []
+        unidade = typeData.unidade || ''
+        pYear = typeData.pYear || currentYear - 1
+      }
+    }
+
+    return (
+      <div className="space-y-8 pt-2 animate-fade-in">
         <div className="space-y-4">
           <h4 className="font-medium text-sm text-muted-foreground uppercase tracking-wider">
             Testes Atuais
           </h4>
-          {currentTests.length === 0 ? (
+          {cTests.length === 0 ? (
             <div className="text-center py-6 bg-muted/20 border border-dashed rounded-md text-sm text-muted-foreground">
-              Nenhum teste registrado. Clique em 'Adicionar Teste' para começar.
+              Nenhum teste atual para esta categoria.
             </div>
           ) : (
             <div className="rounded-md border overflow-x-auto">
               <Table>
                 <TableHeader>
                   <TableRow>
-                    <TableHead>Teste / Equipamento</TableHead>
+                    <TableHead>Equipamento Utilizado</TableHead>
                     <TableHead>Valor</TableHead>
                     <TableHead>Unidade</TableHead>
                     <TableHead>Data</TableHead>
@@ -509,18 +533,19 @@ export function EquipmentTestsManager({
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  {currentTests.map((t, idx) => (
+                  {cTests.map((t, idx) => (
                     <TableRow key={idx}>
                       <TableCell>
-                        <div className="font-medium text-sm">{t.tipo_teste}</div>
                         <div
-                          className="text-xs text-muted-foreground truncate max-w-[200px]"
+                          className="font-medium text-sm truncate max-w-[200px]"
                           title={t.equipamento_utilizado}
                         >
-                          {t.equipamento_utilizado}
+                          {t.equipamento_utilizado || '-'}
                         </div>
                       </TableCell>
-                      <TableCell>{formatTestValue(t, equipment.tipo_equipamento)}</TableCell>
+                      <TableCell>
+                        {formatTestValue(t, equipment.tipo_equipamento, subType)}
+                      </TableCell>
                       <TableCell className="text-sm text-muted-foreground">
                         {t.unidade || '-'}
                       </TableCell>
@@ -561,7 +586,7 @@ export function EquipmentTestsManager({
           )}
         </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 pt-4 border-t">
+        <div className="grid grid-cols-1 xl:grid-cols-2 gap-8 pt-4 border-t">
           <div className="space-y-4">
             <h4 className="font-medium text-sm text-muted-foreground uppercase tracking-wider">
               Histórico de Testes (Leitura)
@@ -576,35 +601,34 @@ export function EquipmentTestsManager({
                 <AlertCircle className="h-4 w-4" />
                 Erro ao carregar histórico.
               </div>
-            ) : filteredHistorical.length === 0 ? (
+            ) : hTests.length === 0 ? (
               <div className="text-center py-6 bg-muted/20 border border-dashed rounded-md text-sm text-muted-foreground">
-                Sem dados históricos para este equipamento.
+                Sem dados históricos para esta categoria.
               </div>
             ) : (
               <div className="rounded-md border overflow-x-auto">
                 <Table>
                   <TableHeader>
                     <TableRow>
-                      <TableHead>Teste / Equipamento</TableHead>
+                      <TableHead>Equipamento Utilizado</TableHead>
                       <TableHead>Valor</TableHead>
                       <TableHead>Unidade</TableHead>
                       <TableHead>Ano</TableHead>
                     </TableRow>
                   </TableHeader>
                   <TableBody>
-                    {filteredHistorical.map((ht) => (
+                    {hTests.map((ht) => (
                       <TableRow key={ht.id}>
                         <TableCell className="py-2">
-                          <div className="font-medium text-sm">{ht.tipo_teste}</div>
                           <div
-                            className="text-xs text-muted-foreground truncate max-w-[150px]"
+                            className="font-medium text-sm truncate max-w-[150px]"
                             title={ht.equipamento_utilizado}
                           >
-                            {ht.equipamento_utilizado}
+                            {ht.equipamento_utilizado || '-'}
                           </div>
                         </TableCell>
                         <TableCell className="py-2 text-sm">
-                          {formatTestValue(ht, equipment.tipo_equipamento)}
+                          {formatTestValue(ht, equipment.tipo_equipamento, subType)}
                         </TableCell>
                         <TableCell className="py-2 text-sm text-muted-foreground">
                           {ht.unidade || '-'}
@@ -624,59 +648,86 @@ export function EquipmentTestsManager({
             <h4 className="font-medium text-sm text-muted-foreground uppercase tracking-wider">
               Comparativo de Medições (Fases)
             </h4>
-            {testTypes.length === 0 ? (
+            {chartData && chartData.length > 0 ? (
+              renderChart(chartData, unidade, pYear, subType ? `${type} - ${subType}` : type)
+            ) : (
               <div className="text-center py-10 bg-muted/20 border border-dashed rounded-md text-sm text-muted-foreground h-[250px] flex items-center justify-center">
                 Sem dados para comparação.
               </div>
-            ) : (
-              <Tabs defaultValue={testTypes[0]} className="w-full">
-                <TabsList className="w-full flex flex-wrap h-auto mb-4 bg-muted p-1 rounded-md justify-start">
-                  {testTypes.map((type) => (
-                    <TabsTrigger key={type} value={type} className="flex-1 min-w-[120px]">
-                      {type}
-                    </TabsTrigger>
-                  ))}
-                </TabsList>
-                {testTypes.map((type) => {
-                  const typeData = chartDataByType[type]
-
-                  if (typeData.isDisjuntorIsolamento) {
-                    return (
-                      <TabsContent key={type} value={type} className="mt-0">
-                        <Tabs defaultValue="Fechado" className="w-full">
-                          <TabsList className="w-full flex h-auto mb-4 bg-muted/40 p-1 rounded-md justify-start gap-1">
-                            <TabsTrigger value="Fechado" className="flex-1 min-w-[120px]">
-                              Contatos Fechados
-                            </TabsTrigger>
-                            <TabsTrigger value="Aberto" className="flex-1 min-w-[120px]">
-                              Contatos Abertos
-                            </TabsTrigger>
-                          </TabsList>
-                          {['Fechado', 'Aberto'].map((sub) => {
-                            const { data, unidade, pYear } = typeData.subTypes[sub]
-                            return (
-                              <TabsContent key={sub} value={sub} className="mt-0">
-                                {renderChart(data, unidade, pYear, `${type} - ${sub}`)}
-                              </TabsContent>
-                            )
-                          })}
-                        </Tabs>
-                      </TabsContent>
-                    )
-                  }
-
-                  const { data, unidade, pYear } = typeData
-                  return (
-                    <TabsContent key={type} value={type} className="mt-0">
-                      {renderChart(data, unidade, pYear, type)}
-                    </TabsContent>
-                  )
-                })}
-              </Tabs>
             )}
           </div>
         </div>
       </div>
+    )
+  }
+
+  return (
+    <div className="space-y-8 animate-fade-in">
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+        <div>
+          <h3 className="text-lg font-semibold text-primary">Gerenciamento de Testes Elétricos</h3>
+          <p className="text-sm text-muted-foreground">Registre e compare os testes realizados.</p>
+        </div>
+        {!isView && (
+          <Button
+            size="sm"
+            onClick={() => {
+              setEditingTest(null)
+              setModalOpen(true)
+            }}
+          >
+            <Plus className="h-4 w-4 mr-2" /> Adicionar Teste
+          </Button>
+        )}
+      </div>
+
+      {testTypes.length === 0 ? (
+        <div className="text-center py-10 bg-muted/10 border border-dashed rounded-md text-sm text-muted-foreground">
+          <p>Nenhum teste registrado para este equipamento.</p>
+          {!isView && <p className="mt-1">Clique em 'Adicionar Teste' para começar.</p>}
+        </div>
+      ) : (
+        <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full space-y-4">
+          <TabsList className="w-full flex flex-wrap h-auto bg-muted p-1 rounded-md justify-start gap-1">
+            {testTypes.map((type) => (
+              <TabsTrigger key={type} value={type} className="flex-1 min-w-[150px]">
+                {type}
+              </TabsTrigger>
+            ))}
+          </TabsList>
+
+          {testTypes.map((type) => {
+            const isDisjuntorIsolamento =
+              type === 'Resistências dos Isolamentos' && equipment.tipo_equipamento === 'Disjuntor'
+
+            return (
+              <TabsContent key={type} value={type} className="mt-0 outline-none">
+                {isDisjuntorIsolamento ? (
+                  <Tabs defaultValue="Fechado" className="w-full space-y-4">
+                    <TabsList className="w-full flex h-auto bg-muted/40 p-1 rounded-md justify-start gap-1">
+                      <TabsTrigger value="Fechado" className="flex-1 min-w-[120px]">
+                        Contatos Fechados
+                      </TabsTrigger>
+                      <TabsTrigger value="Aberto" className="flex-1 min-w-[120px]">
+                        Contatos Abertos
+                      </TabsTrigger>
+                    </TabsList>
+                    <TabsContent value="Fechado" className="mt-0 outline-none">
+                      {renderTabContent(type, 'Fechado')}
+                    </TabsContent>
+                    <TabsContent value="Aberto" className="mt-0 outline-none">
+                      {renderTabContent(type, 'Aberto')}
+                    </TabsContent>
+                  </Tabs>
+                ) : (
+                  renderTabContent(type)
+                )}
+              </TabsContent>
+            )
+          })}
+        </Tabs>
+      )}
+
       <TestModal
         open={modalOpen}
         onOpenChange={setModalOpen}
