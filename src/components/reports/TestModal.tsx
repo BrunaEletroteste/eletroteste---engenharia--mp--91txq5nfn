@@ -159,7 +159,27 @@ const testSchema = z
     }
 
     if (data.tipo_teste === 'Resistências dos Isolamentos') {
-      if (data.tipo_equipamento_ref === 'Condutor Elétrico') {
+      if (data.tipo_equipamento_ref === 'Transformador') {
+        const rows = ['alta_baixa', 'alta_massa', 'baixa_massa']
+        rows.forEach((r) => {
+          const v1 = data.dados_detalhados?.[r]?.v1
+          const v2 = data.dados_detalhados?.[r]?.v2
+          if (v1 === undefined || v1 === null || String(v1) === '') {
+            ctx.addIssue({
+              code: z.ZodIssueCode.custom,
+              path: [`dados_detalhados.${r}.v1`],
+              message: 'Obrigatório',
+            })
+          }
+          if (v2 === undefined || v2 === null || String(v2) === '') {
+            ctx.addIssue({
+              code: z.ZodIssueCode.custom,
+              path: [`dados_detalhados.${r}.v2`],
+              message: 'Obrigatório',
+            })
+          }
+        })
+      } else if (data.tipo_equipamento_ref === 'Condutor Elétrico') {
         const rows = ['fase_a', 'fase_b', 'fase_c']
         rows.forEach((r) => {
           const v1 = data.dados_detalhados?.[r]?.v1
@@ -538,6 +558,18 @@ export function TestModal({
     } else if (watchTipo === 'Resistências dos Isolamentos') {
       form.setValue('unidade', 'Mega-Ohms', { shouldValidate: true })
       form.setValue('valor_teste', 0, { shouldValidate: true })
+      if (equipmentType === 'Transformador') {
+        const currentObs = form.getValues('observacoes')
+        if (!currentObs) {
+          form.setValue(
+            'observacoes',
+            'Nota: Os valores dos testes acima foram comparados com parâmetros de norma de manutenção para transformadores de distribuição: ABNT-NB 108-I.',
+            {
+              shouldValidate: true,
+            },
+          )
+        }
+      }
     } else if (watchTipo === 'Relação de Tensões') {
       if (equipmentType === 'Transformador') {
         form.setValue('unidade', 'V', { shouldValidate: true })
@@ -667,12 +699,32 @@ export function TestModal({
                 }
               } else if (
                 payload.tipo_teste === 'Resistências dos Isolamentos' &&
+                equipmentType === 'Transformador' &&
+                payload.dados_detalhados
+              ) {
+                let minVal = Infinity
+                const rows = ['alta_baixa', 'alta_massa', 'baixa_massa']
+                rows.forEach((p) => {
+                  if (payload.dados_detalhados[p]) {
+                    const v1 = Number(payload.dados_detalhados[p].v1) || 0
+                    const v2 = Number(payload.dados_detalhados[p].v2) || 0
+                    const res = v1 * v2
+                    payload.dados_detalhados[p].resultado = res
+                    if (res > 0 && res < minVal) minVal = res
+                  }
+                })
+                if (minVal !== Infinity) {
+                  payload.valor_teste = minVal
+                }
+              } else if (
+                payload.tipo_teste === 'Resistências dos Isolamentos' &&
                 payload.dados_detalhados &&
                 ![
                   'Condutor Elétrico',
                   'Transformador de Potencial',
                   'Transformador de Corrente',
                   'Disjuntor',
+                  'Transformador',
                 ].includes(equipmentType || '')
               ) {
                 let minVal = Infinity
@@ -1374,7 +1426,149 @@ export function TestModal({
             )}
 
             {watchTipo === 'Resistências dos Isolamentos' &&
-              (equipmentType === 'Condutor Elétrico' ? (
+              (equipmentType === 'Transformador' ? (
+                <div className="space-y-4 border rounded-md p-4 bg-muted/20">
+                  <div className="flex flex-col md:flex-row gap-4 mb-4 border-b pb-4 border-border">
+                    <FormField
+                      control={form.control}
+                      name="dados_detalhados.temperatura"
+                      render={({ field }) => (
+                        <FormItem className="flex-1 max-w-[250px]">
+                          <FormLabel className="text-xs">
+                            {meioIsolante === 'Epóxi'
+                              ? 'Temperatura do Enrolamento (°C)'
+                              : 'Temperatura do Óleo (°C)'}
+                          </FormLabel>
+                          <FormControl>
+                            <Input
+                              type="number"
+                              step="any"
+                              className="h-8 text-xs"
+                              {...field}
+                              value={field.value ?? ''}
+                              onChange={(e) =>
+                                field.onChange(e.target.value === '' ? '' : Number(e.target.value))
+                              }
+                            />
+                          </FormControl>
+                          <FormMessage className="text-[10px]" />
+                        </FormItem>
+                      )}
+                    />
+                    <FormField
+                      control={form.control}
+                      name="dados_detalhados.fator_correcao"
+                      render={({ field }) => (
+                        <FormItem className="flex-1 max-w-[250px]">
+                          <FormLabel className="text-xs">
+                            {meioIsolante === 'Epóxi'
+                              ? 'Fator de Correção 105ºC'
+                              : 'Fator de Correção 75ºC'}
+                          </FormLabel>
+                          <FormControl>
+                            <Input
+                              type="number"
+                              step="any"
+                              className="h-8 text-xs"
+                              {...field}
+                              value={field.value ?? ''}
+                              onChange={(e) =>
+                                field.onChange(e.target.value === '' ? '' : Number(e.target.value))
+                              }
+                            />
+                          </FormControl>
+                          <FormMessage className="text-[10px]" />
+                        </FormItem>
+                      )}
+                    />
+                  </div>
+                  <h4 className="text-sm font-medium">Medições de Isolamento</h4>
+                  <Table>
+                    <TableHeader>
+                      <TableRow>
+                        <TableHead className="w-[120px] p-2">Medição</TableHead>
+                        <TableHead className="p-2">
+                          Valor 1 <span className="text-destructive">*</span>
+                        </TableHead>
+                        <TableHead className="p-2">
+                          Valor 2 <span className="text-destructive">*</span>
+                        </TableHead>
+                        <TableHead className="text-right p-2">Resultado</TableHead>
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      {[
+                        { id: 'alta_baixa', label: 'Alta/Baixa' },
+                        { id: 'alta_massa', label: 'Alta/Massa' },
+                        { id: 'baixa_massa', label: 'Baixa/Massa' },
+                      ].map((r) => {
+                        const v1 = form.watch(`dados_detalhados.${r.id}.v1` as any)
+                        const v2 = form.watch(`dados_detalhados.${r.id}.v2` as any)
+                        const res = (Number(v1) || 0) * (Number(v2) || 0)
+
+                        return (
+                          <TableRow key={r.id}>
+                            <TableCell className="font-medium text-xs p-2">{r.label}</TableCell>
+                            <TableCell className="p-2 align-top">
+                              <FormField
+                                control={form.control}
+                                name={`dados_detalhados.${r.id}.v1` as any}
+                                render={({ field }) => (
+                                  <FormItem className="space-y-1">
+                                    <FormControl>
+                                      <Input
+                                        type="number"
+                                        step="any"
+                                        className="h-8 text-xs"
+                                        value={field.value ?? ''}
+                                        onChange={(e) =>
+                                          field.onChange(
+                                            e.target.value === '' ? '' : Number(e.target.value),
+                                          )
+                                        }
+                                      />
+                                    </FormControl>
+                                    <FormMessage className="text-[10px]" />
+                                  </FormItem>
+                                )}
+                              />
+                            </TableCell>
+                            <TableCell className="p-2 align-top">
+                              <FormField
+                                control={form.control}
+                                name={`dados_detalhados.${r.id}.v2` as any}
+                                render={({ field }) => (
+                                  <FormItem className="space-y-1">
+                                    <FormControl>
+                                      <Input
+                                        type="number"
+                                        step="any"
+                                        className="h-8 text-xs"
+                                        value={field.value ?? ''}
+                                        onChange={(e) =>
+                                          field.onChange(
+                                            e.target.value === '' ? '' : Number(e.target.value),
+                                          )
+                                        }
+                                      />
+                                    </FormControl>
+                                    <FormMessage className="text-[10px]" />
+                                  </FormItem>
+                                )}
+                              />
+                            </TableCell>
+                            <TableCell className="text-right p-2 text-xs font-medium text-muted-foreground pt-4 whitespace-nowrap">
+                              {v1 !== undefined && v2 !== undefined && v1 !== '' && v2 !== ''
+                                ? `${new Intl.NumberFormat('pt-BR').format(res)}`
+                                : '-'}
+                            </TableCell>
+                          </TableRow>
+                        )
+                      })}
+                    </TableBody>
+                  </Table>
+                </div>
+              ) : equipmentType === 'Condutor Elétrico' ? (
                 <div className="space-y-4 border rounded-md p-4 bg-muted/20">
                   <h4 className="text-sm font-medium">Medições de Isolamento</h4>
                   <div className="flex flex-col gap-4">
@@ -1795,37 +1989,6 @@ export function TestModal({
                   </Table>
                 </div>
               ))}
-
-            {watchTipo === 'Resistências dos Isolamentos' && equipmentType === 'Transformador' && (
-              <div className="space-y-4 border rounded-md p-4 bg-muted/20 mt-4">
-                <FormField
-                  control={form.control}
-                  name="dados_detalhados.temperatura"
-                  render={({ field }) => (
-                    <FormItem className="max-w-[300px]">
-                      <FormLabel className="text-xs">
-                        {meioIsolante === 'Epóxi'
-                          ? 'Temperatura do Enrolamento (°C)'
-                          : 'Temperatura do Óleo (°C)'}
-                      </FormLabel>
-                      <FormControl>
-                        <Input
-                          type="number"
-                          step="any"
-                          className="h-8 text-xs"
-                          {...field}
-                          value={field.value ?? ''}
-                          onChange={(e) =>
-                            field.onChange(e.target.value === '' ? '' : Number(e.target.value))
-                          }
-                        />
-                      </FormControl>
-                      <FormMessage className="text-[10px]" />
-                    </FormItem>
-                  )}
-                />
-              </div>
-            )}
 
             <div className="grid grid-cols-2 gap-4">
               {watchTipo !== 'Resistências dos Contatos' &&

@@ -90,6 +90,13 @@ const extractPhasesData = (t: any, tipoEquipamento: string, subType?: string) =>
           { name: 'Massa', value: calcRes(df.abc_massa) },
         ].filter((p) => p.value !== undefined)
       }
+    } else if (tipoEquipamento === 'Transformador') {
+      const d = t.dados_detalhados || {}
+      return [
+        { name: 'Alta/Baixa', value: calcRes(d.alta_baixa) },
+        { name: 'Alta/Massa', value: calcRes(d.alta_massa) },
+        { name: 'Baixa/Massa', value: calcRes(d.baixa_massa) },
+      ].filter((p) => p.value !== undefined)
     } else {
       const d = t.dados_detalhados || {}
       return [
@@ -549,6 +556,17 @@ export function EquipmentTestsManager({
         }
 
         return `Fechado (A x B: ${f_ab} | B x C: ${f_bc} | C x A: ${f_ca} | Massa: ${f_massa}) | Aberto (A x A: ${a_aa} | B x B: ${a_bb} | C x C: ${a_cc})`
+      } else if (tipoEquipamento === 'Transformador') {
+        const d = t.dados_detalhados || {}
+        const calcRes = (row: any) => {
+          if (!row) return '-'
+          if (row.resultado !== undefined) return formatNum(row.resultado)
+          const v1 = Number(row.v1)
+          const v2 = Number(row.v2)
+          if (!isNaN(v1) && !isNaN(v2)) return formatNum(v1 * v2)
+          return '-'
+        }
+        return `A/B: ${calcRes(d.alta_baixa)} | A/M: ${calcRes(d.alta_massa)} | B/M: ${calcRes(d.baixa_massa)}`
       } else {
         const d = t.dados_detalhados || {}
         const ab = formatNum((Number(d.ab?.v1) || 0) * (Number(d.ab?.v2) || 0))
