@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-05-29T16:47:55.348Z",
+  "generatedAt": "2026-05-29T17:05:52.574Z",
   "collections": [
     {
       "name": "users",
@@ -314,7 +314,7 @@
         {
           "name": "valor_teste",
           "type": "number",
-          "required": true,
+          "required": false,
           "system": false
         },
         {

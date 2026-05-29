@@ -524,7 +524,7 @@ export default function ReportForm() {
                 const tPayload = {
                   equipamento_id: savedEqId,
                   tipo_teste: t.tipo_teste,
-                  valor_teste: t.valor_teste || 0,
+                  valor_teste: typeof t.valor_teste === 'number' ? t.valor_teste : 0,
                   unidade: t.unidade,
                   data_teste: t.data_teste ? `${t.data_teste} 12:00:00Z` : '',
                   dados_detalhados: t.dados_detalhados || null,

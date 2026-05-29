@@ -415,13 +415,19 @@ export function TestModal({
                 payload.dados_detalhados
               ) {
                 const phases = ['fase_a', 'fase_b', 'fase_c', 'reserva']
+                let minVal = Infinity
                 phases.forEach((p) => {
                   if (payload.dados_detalhados[p]) {
                     const v1 = Number(payload.dados_detalhados[p].v1) || 0
                     const v2 = Number(payload.dados_detalhados[p].v2) || 0
-                    payload.dados_detalhados[p].resultado = v1 * v2
+                    const res = v1 * v2
+                    payload.dados_detalhados[p].resultado = res
+                    if (res > 0 && res < minVal) minVal = res
                   }
                 })
+                if (minVal !== Infinity) {
+                  payload.valor_teste = minVal
+                }
               } else if (
                 payload.tipo_teste === 'Resistências dos Isolamentos' &&
                 (equipmentType === 'Transformador de Potencial' ||
@@ -449,12 +455,15 @@ export function TestModal({
                 equipmentType === 'Disjuntor' &&
                 payload.dados_detalhados
               ) {
+                let minVal = Infinity
                 if (payload.dados_detalhados.fechado) {
                   ;['ab', 'bc', 'ac', 'abc_massa'].forEach((p) => {
                     if (payload.dados_detalhados.fechado[p]) {
                       const v1 = Number(payload.dados_detalhados.fechado[p].v1) || 0
                       const v2 = Number(payload.dados_detalhados.fechado[p].v2) || 0
-                      payload.dados_detalhados.fechado[p].resultado = v1 * v2
+                      const res = v1 * v2
+                      payload.dados_detalhados.fechado[p].resultado = res
+                      if (res > 0 && res < minVal) minVal = res
                     }
                   })
                 }
@@ -463,9 +472,56 @@ export function TestModal({
                     if (payload.dados_detalhados.aberto[p]) {
                       const v1 = Number(payload.dados_detalhados.aberto[p].v1) || 0
                       const v2 = Number(payload.dados_detalhados.aberto[p].v2) || 0
-                      payload.dados_detalhados.aberto[p].resultado = v1 * v2
+                      const res = v1 * v2
+                      payload.dados_detalhados.aberto[p].resultado = res
+                      if (res > 0 && res < minVal) minVal = res
                     }
                   })
+                }
+                if (minVal !== Infinity) {
+                  payload.valor_teste = minVal
+                }
+              } else if (
+                payload.tipo_teste === 'Resistências dos Isolamentos' &&
+                payload.dados_detalhados &&
+                ![
+                  'Condutor Elétrico',
+                  'Transformador de Potencial',
+                  'Transformador de Corrente',
+                  'Disjuntor',
+                ].includes(equipmentType || '')
+              ) {
+                let minVal = Infinity
+                const rows = ['ab', 'bc', 'ac', 'abc_massa']
+                rows.forEach((p) => {
+                  if (payload.dados_detalhados[p]) {
+                    const v1 = Number(payload.dados_detalhados[p].v1) || 0
+                    const v2 = Number(payload.dados_detalhados[p].v2) || 0
+                    const res = v1 * v2
+                    payload.dados_detalhados[p].resultado = res
+                    if (res > 0 && res < minVal) minVal = res
+                  }
+                })
+                if (minVal !== Infinity) {
+                  payload.valor_teste = minVal
+                }
+              } else if (
+                payload.tipo_teste === 'Resistências dos Contatos' &&
+                payload.dados_detalhados
+              ) {
+                let maxVal = -Infinity
+                const phases = ['fase_a', 'fase_b', 'fase_c']
+                phases.forEach((p) => {
+                  if (
+                    payload.dados_detalhados[p] !== undefined &&
+                    payload.dados_detalhados[p] !== ''
+                  ) {
+                    const v = Number(payload.dados_detalhados[p])
+                    if (!isNaN(v) && v > maxVal) maxVal = v
+                  }
+                })
+                if (maxVal !== -Infinity) {
+                  payload.valor_teste = maxVal
                 }
               }
 
