@@ -712,7 +712,7 @@ export function TestModal({
                             />
                             <div className="h-8 flex items-center px-3 border rounded-md bg-background text-xs text-muted-foreground whitespace-nowrap">
                               {hasValues
-                                ? `${new Intl.NumberFormat('pt-BR').format(res)} ${watchUnidade || 'MΩ'}`
+                                ? `${new Intl.NumberFormat('pt-BR').format(res)}`
                                 : 'Resultado'}
                             </div>
                           </div>
@@ -875,7 +875,7 @@ export function TestModal({
                             </TableCell>
                             <TableCell className="text-right p-2 text-xs font-medium text-muted-foreground pt-4 whitespace-nowrap">
                               {v1 !== undefined && v2 !== undefined && v1 !== '' && v2 !== ''
-                                ? `${new Intl.NumberFormat('pt-BR').format(res)} ${watchUnidade || 'MΩ'}`
+                                ? `${new Intl.NumberFormat('pt-BR').format(res)}`
                                 : '-'}
                             </TableCell>
                           </TableRow>

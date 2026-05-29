@@ -125,7 +125,6 @@ export function EquipmentTestsManager({
       if (typeof val === 'number' && !isNaN(val)) return new Intl.NumberFormat('pt-BR').format(val)
       return val
     }
-    const unidadeStr = t.unidade ? ` ${t.unidade}` : ''
 
     if (t.tipo_teste === 'Resistências dos Isolamentos') {
       if (tipoEquipamento === 'Condutor Elétrico') {
@@ -147,7 +146,7 @@ export function EquipmentTestsManager({
         const rVal = calcRes(d.reserva)
         const r = rVal !== '-' ? ` | R: ${rVal}` : ''
 
-        return `A: ${a} | B: ${b} | C: ${c}${r}${unidadeStr}`
+        return `A: ${a} | B: ${b} | C: ${c}${r}`
       } else if (
         tipoEquipamento === 'Transformador de Potencial' ||
         tipoEquipamento === 'Transformador de Corrente'
@@ -174,14 +173,14 @@ export function EquipmentTestsManager({
         const bc = formatNum((Number(d.bc?.v1) || 0) * (Number(d.bc?.v2) || 0))
         const ac = formatNum((Number(d.ac?.v1) || 0) * (Number(d.ac?.v2) || 0))
         const abcm = formatNum((Number(d.abc_massa?.v1) || 0) * (Number(d.abc_massa?.v2) || 0))
-        return `AB: ${ab} | BC: ${bc} | AC: ${ac} | ABC-M: ${abcm}${unidadeStr}`
+        return `AB: ${ab} | BC: ${bc} | AC: ${ac} | ABC-M: ${abcm}`
       }
     }
     if (t.tipo_teste === 'Resistências dos Contatos') {
       const d = t.dados_detalhados || {}
-      return `A: ${formatNum(d.fase_a) ?? '-'} | B: ${formatNum(d.fase_b) ?? '-'} | C: ${formatNum(d.fase_c) ?? '-'}${unidadeStr}`
+      return `A: ${formatNum(d.fase_a) ?? '-'} | B: ${formatNum(d.fase_b) ?? '-'} | C: ${formatNum(d.fase_c) ?? '-'}`
     }
-    return `${formatNum(t.valor_teste)}${unidadeStr}`
+    return `${formatNum(t.valor_teste)}`
   }
 
   return (
@@ -220,6 +219,7 @@ export function EquipmentTestsManager({
                   <TableRow>
                     <TableHead>Teste / Equipamento</TableHead>
                     <TableHead>Valor</TableHead>
+                    <TableHead>Unidade</TableHead>
                     <TableHead>Data</TableHead>
                     {!isView && <TableHead className="w-[100px]">Ações</TableHead>}
                   </TableRow>
@@ -237,6 +237,9 @@ export function EquipmentTestsManager({
                         </div>
                       </TableCell>
                       <TableCell>{formatTestValue(t, equipment.tipo_equipamento)}</TableCell>
+                      <TableCell className="text-sm text-muted-foreground">
+                        {t.unidade || '-'}
+                      </TableCell>
                       <TableCell>{format(parseISO(t.data_teste), 'dd/MM/yyyy')}</TableCell>
                       {!isView && (
                         <TableCell>
@@ -300,6 +303,7 @@ export function EquipmentTestsManager({
                     <TableRow>
                       <TableHead>Teste / Equipamento</TableHead>
                       <TableHead>Valor</TableHead>
+                      <TableHead>Unidade</TableHead>
                       <TableHead>Ano</TableHead>
                     </TableRow>
                   </TableHeader>
@@ -317,6 +321,9 @@ export function EquipmentTestsManager({
                         </TableCell>
                         <TableCell className="py-2 text-sm">
                           {formatTestValue(ht, equipment.tipo_equipamento)}
+                        </TableCell>
+                        <TableCell className="py-2 text-sm text-muted-foreground">
+                          {ht.unidade || '-'}
                         </TableCell>
                         <TableCell className="py-2 text-sm">
                           {new Date(ht.data_teste).getFullYear()}
