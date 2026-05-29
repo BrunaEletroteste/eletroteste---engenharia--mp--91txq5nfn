@@ -60,26 +60,112 @@ const testSchema = z
         'Resistências dos Contatos',
       ],
       {
-        required_error: 'Selecione o tipo de teste',
+        required_error: 'Este campo é obrigatório',
       },
     ),
     equipamento_utilizado: z.array(z.string()).min(1, 'Selecione ao menos um equipamento'),
-    valor_teste: z.coerce.number().optional(),
-    unidade: z.string().min(1, 'Unidade é obrigatória'),
-    data_teste: z.string().min(1, 'Data é obrigatória'),
+    valor_teste: z.union([z.coerce.number(), z.string()]).optional(),
+    unidade: z.string().optional(),
+    data_teste: z.string().min(1, 'Este campo é obrigatório'),
     dados_detalhados: z.any().optional(),
     observacoes: z.string().optional(),
   })
   .superRefine((data, ctx) => {
     if (data.tipo_teste === 'Relação de Tensões') {
+      const tp = data.dados_detalhados?.tensao_primaria
       const ts = data.dados_detalhados?.tensao_secundaria
-      if (ts === 0) {
+
+      if (tp === undefined || tp === null || tp === '') {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          path: ['dados_detalhados.tensao_primaria'],
+          message: 'Este campo é obrigatório',
+        })
+      }
+      if (ts === undefined || ts === null || ts === '') {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          path: ['dados_detalhados.tensao_secundaria'],
+          message: 'Este campo é obrigatório',
+        })
+      } else if (Number(ts) === 0) {
         ctx.addIssue({
           code: z.ZodIssueCode.custom,
           path: ['dados_detalhados.tensao_secundaria'],
           message: 'A tensão secundária não pode ser zero.',
         })
       }
+    }
+
+    if (data.tipo_teste === 'Resistências dos Contatos') {
+      const fa = data.dados_detalhados?.fase_a
+      const fb = data.dados_detalhados?.fase_b
+      const fc = data.dados_detalhados?.fase_c
+
+      if (fa === undefined || fa === null || fa === '') {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          path: ['dados_detalhados.fase_a'],
+          message: 'Este campo é obrigatório',
+        })
+      }
+      if (fb === undefined || fb === null || fb === '') {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          path: ['dados_detalhados.fase_b'],
+          message: 'Este campo é obrigatório',
+        })
+      }
+      if (fc === undefined || fc === null || fc === '') {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          path: ['dados_detalhados.fase_c'],
+          message: 'Este campo é obrigatório',
+        })
+      }
+    }
+
+    if (data.tipo_teste === 'Resistências dos Isolamentos') {
+      const rows = ['ab', 'bc', 'ac', 'abc_massa']
+      rows.forEach((r) => {
+        const v1 = data.dados_detalhados?.[r]?.v1
+        const v2 = data.dados_detalhados?.[r]?.v2
+        if (v1 === undefined || v1 === null || v1 === '') {
+          ctx.addIssue({
+            code: z.ZodIssueCode.custom,
+            path: [`dados_detalhados.${r}.v1`],
+            message: 'Obrigatório',
+          })
+        }
+        if (v2 === undefined || v2 === null || v2 === '') {
+          ctx.addIssue({
+            code: z.ZodIssueCode.custom,
+            path: [`dados_detalhados.${r}.v2`],
+            message: 'Obrigatório',
+          })
+        }
+      })
+    }
+
+    if (
+      data.tipo_teste !== 'Resistências dos Contatos' &&
+      data.tipo_teste !== 'Resistências dos Isolamentos'
+    ) {
+      if (data.valor_teste === undefined || data.valor_teste === null || data.valor_teste === '') {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          path: ['valor_teste'],
+          message: 'Este campo é obrigatório',
+        })
+      }
+    }
+
+    if (data.unidade === undefined || data.unidade === null || data.unidade === '') {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        path: ['unidade'],
+        message: 'Este campo é obrigatório',
+      })
     }
   })
 
@@ -163,7 +249,7 @@ export function TestModal({ open, onOpenChange, onSave, initialData }: TestModal
             const current = form.getValues('equipamento_utilizado') || []
             const valid = current.filter((c) => options.find((o) => o.valor === c))
             if (valid.length !== current.length) {
-              form.setValue('equipamento_utilizado', valid)
+              form.setValue('equipamento_utilizado', valid, { shouldValidate: true })
             }
           })
           .catch(console.error)
@@ -175,13 +261,13 @@ export function TestModal({ open, onOpenChange, onSave, initialData }: TestModal
     }
 
     if (watchTipo === 'Resistências dos Contatos') {
-      form.setValue('unidade', 'Micro-Ohm')
-      form.setValue('valor_teste', 0)
+      form.setValue('unidade', 'Micro-Ohm', { shouldValidate: true })
+      form.setValue('valor_teste', 0, { shouldValidate: true })
     } else if (watchTipo === 'Resistências dos Isolamentos') {
-      form.setValue('unidade', 'Mega-Ohms')
-      form.setValue('valor_teste', 0)
+      form.setValue('unidade', 'Mega-Ohms', { shouldValidate: true })
+      form.setValue('valor_teste', 0, { shouldValidate: true })
     } else if (watchTipo === 'Relação de Tensões') {
-      form.setValue('unidade', 'V/V')
+      form.setValue('unidade', 'V/V', { shouldValidate: true })
     }
   }, [watchTipo, form, open])
 
@@ -193,9 +279,9 @@ export function TestModal({ open, onOpenChange, onSave, initialData }: TestModal
       const prim = Number(tp)
       const sec = Number(ts)
       if (!isNaN(prim) && !isNaN(sec) && sec !== 0) {
-        form.setValue('valor_teste', Number((prim / sec).toFixed(4)))
+        form.setValue('valor_teste', Number((prim / sec).toFixed(4)), { shouldValidate: true })
       } else {
-        form.setValue('valor_teste', 0)
+        form.setValue('valor_teste', 0, { shouldValidate: true })
       }
     }
   }, [tp, ts, watchTipo, form, open])
@@ -212,7 +298,7 @@ export function TestModal({ open, onOpenChange, onSave, initialData }: TestModal
               onSave({
                 ...data,
                 equipamento_utilizado: data.equipamento_utilizado.join(', '),
-                valor_teste: data.valor_teste || 0,
+                valor_teste: Number(data.valor_teste) || 0,
               } as unknown as TestItem),
             )}
             className="space-y-4"
@@ -222,7 +308,9 @@ export function TestModal({ open, onOpenChange, onSave, initialData }: TestModal
               name="tipo_teste"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Tipo de Teste</FormLabel>
+                  <FormLabel>
+                    Tipo de Teste <span className="text-destructive">*</span>
+                  </FormLabel>
                   <Select onValueChange={field.onChange} value={field.value || ''}>
                     <FormControl>
                       <SelectTrigger>
@@ -252,7 +340,9 @@ export function TestModal({ open, onOpenChange, onSave, initialData }: TestModal
               name="equipamento_utilizado"
               render={({ field }) => (
                 <FormItem className="flex flex-col">
-                  <FormLabel>Equipamento Utilizado</FormLabel>
+                  <FormLabel>
+                    Equipamento Utilizado <span className="text-destructive">*</span>
+                  </FormLabel>
                   <Popover>
                     <PopoverTrigger asChild>
                       <FormControl>
@@ -262,6 +352,8 @@ export function TestModal({ open, onOpenChange, onSave, initialData }: TestModal
                           className={cn(
                             'w-full justify-between h-auto min-h-[2.5rem] py-2',
                             !field.value?.length && 'text-muted-foreground',
+                            form.formState.errors.equipamento_utilizado &&
+                              'border-destructive focus-visible:ring-destructive',
                           )}
                           disabled={!watchTipo || equipmentOptions.length === 0}
                         >
@@ -332,7 +424,9 @@ export function TestModal({ open, onOpenChange, onSave, initialData }: TestModal
                     name="dados_detalhados.fase_a"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel className="text-xs">Fase A</FormLabel>
+                        <FormLabel className="text-xs">
+                          Fase A <span className="text-destructive">*</span>
+                        </FormLabel>
                         <FormControl>
                           <Input
                             type="number"
@@ -343,6 +437,7 @@ export function TestModal({ open, onOpenChange, onSave, initialData }: TestModal
                             }
                           />
                         </FormControl>
+                        <FormMessage className="text-[10px]" />
                       </FormItem>
                     )}
                   />
@@ -351,7 +446,9 @@ export function TestModal({ open, onOpenChange, onSave, initialData }: TestModal
                     name="dados_detalhados.fase_b"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel className="text-xs">Fase B</FormLabel>
+                        <FormLabel className="text-xs">
+                          Fase B <span className="text-destructive">*</span>
+                        </FormLabel>
                         <FormControl>
                           <Input
                             type="number"
@@ -362,6 +459,7 @@ export function TestModal({ open, onOpenChange, onSave, initialData }: TestModal
                             }
                           />
                         </FormControl>
+                        <FormMessage className="text-[10px]" />
                       </FormItem>
                     )}
                   />
@@ -370,7 +468,9 @@ export function TestModal({ open, onOpenChange, onSave, initialData }: TestModal
                     name="dados_detalhados.fase_c"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel className="text-xs">Fase C</FormLabel>
+                        <FormLabel className="text-xs">
+                          Fase C <span className="text-destructive">*</span>
+                        </FormLabel>
                         <FormControl>
                           <Input
                             type="number"
@@ -381,6 +481,7 @@ export function TestModal({ open, onOpenChange, onSave, initialData }: TestModal
                             }
                           />
                         </FormControl>
+                        <FormMessage className="text-[10px]" />
                       </FormItem>
                     )}
                   />
@@ -397,7 +498,9 @@ export function TestModal({ open, onOpenChange, onSave, initialData }: TestModal
                     name="dados_detalhados.tensao_primaria"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel className="text-xs">Tensão Primária</FormLabel>
+                        <FormLabel className="text-xs">
+                          Tensão Primária <span className="text-destructive">*</span>
+                        </FormLabel>
                         <FormControl>
                           <Input
                             type="number"
@@ -408,7 +511,7 @@ export function TestModal({ open, onOpenChange, onSave, initialData }: TestModal
                             }
                           />
                         </FormControl>
-                        <FormMessage />
+                        <FormMessage className="text-[10px]" />
                       </FormItem>
                     )}
                   />
@@ -417,7 +520,9 @@ export function TestModal({ open, onOpenChange, onSave, initialData }: TestModal
                     name="dados_detalhados.tensao_secundaria"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel className="text-xs">Tensão Secundária</FormLabel>
+                        <FormLabel className="text-xs">
+                          Tensão Secundária <span className="text-destructive">*</span>
+                        </FormLabel>
                         <FormControl>
                           <Input
                             type="number"
@@ -428,16 +533,11 @@ export function TestModal({ open, onOpenChange, onSave, initialData }: TestModal
                             }
                           />
                         </FormControl>
-                        <FormMessage />
+                        <FormMessage className="text-[10px]" />
                       </FormItem>
                     )}
                   />
                 </div>
-                {form.watch('dados_detalhados.tensao_secundaria') === 0 && (
-                  <p className="text-sm text-destructive mt-2">
-                    Atenção: A tensão secundária não pode ser zero.
-                  </p>
-                )}
               </div>
             )}
 
@@ -447,8 +547,12 @@ export function TestModal({ open, onOpenChange, onSave, initialData }: TestModal
                   <TableHeader>
                     <TableRow>
                       <TableHead className="w-[120px] p-2">Medição</TableHead>
-                      <TableHead className="p-2">Valor 1</TableHead>
-                      <TableHead className="p-2">Valor 2</TableHead>
+                      <TableHead className="p-2">
+                        Valor 1 <span className="text-destructive">*</span>
+                      </TableHead>
+                      <TableHead className="p-2">
+                        Valor 2 <span className="text-destructive">*</span>
+                      </TableHead>
                       <TableHead className="text-right p-2">Resultado</TableHead>
                     </TableRow>
                   </TableHeader>
@@ -461,35 +565,55 @@ export function TestModal({ open, onOpenChange, onSave, initialData }: TestModal
                       return (
                         <TableRow key={r.id}>
                           <TableCell className="font-medium text-xs p-2">{r.label}</TableCell>
-                          <TableCell className="p-2">
-                            <Input
-                              type="number"
-                              step="any"
-                              className="h-8 text-xs"
-                              value={v1 ?? ''}
-                              onChange={(e) =>
-                                form.setValue(
-                                  `dados_detalhados.${r.id}.v1` as any,
-                                  e.target.value === '' ? '' : Number(e.target.value),
-                                )
-                              }
+                          <TableCell className="p-2 align-top">
+                            <FormField
+                              control={form.control}
+                              name={`dados_detalhados.${r.id}.v1` as any}
+                              render={({ field }) => (
+                                <FormItem className="space-y-1">
+                                  <FormControl>
+                                    <Input
+                                      type="number"
+                                      step="any"
+                                      className="h-8 text-xs"
+                                      value={field.value ?? ''}
+                                      onChange={(e) =>
+                                        field.onChange(
+                                          e.target.value === '' ? '' : Number(e.target.value),
+                                        )
+                                      }
+                                    />
+                                  </FormControl>
+                                  <FormMessage className="text-[10px]" />
+                                </FormItem>
+                              )}
                             />
                           </TableCell>
-                          <TableCell className="p-2">
-                            <Input
-                              type="number"
-                              step="any"
-                              className="h-8 text-xs"
-                              value={v2 ?? ''}
-                              onChange={(e) =>
-                                form.setValue(
-                                  `dados_detalhados.${r.id}.v2` as any,
-                                  e.target.value === '' ? '' : Number(e.target.value),
-                                )
-                              }
+                          <TableCell className="p-2 align-top">
+                            <FormField
+                              control={form.control}
+                              name={`dados_detalhados.${r.id}.v2` as any}
+                              render={({ field }) => (
+                                <FormItem className="space-y-1">
+                                  <FormControl>
+                                    <Input
+                                      type="number"
+                                      step="any"
+                                      className="h-8 text-xs"
+                                      value={field.value ?? ''}
+                                      onChange={(e) =>
+                                        field.onChange(
+                                          e.target.value === '' ? '' : Number(e.target.value),
+                                        )
+                                      }
+                                    />
+                                  </FormControl>
+                                  <FormMessage className="text-[10px]" />
+                                </FormItem>
+                              )}
                             />
                           </TableCell>
-                          <TableCell className="text-right p-2 text-xs font-medium text-muted-foreground">
+                          <TableCell className="text-right p-2 text-xs font-medium text-muted-foreground pt-4">
                             {v1 !== undefined && v2 !== undefined && v1 !== '' && v2 !== ''
                               ? res
                               : '-'}
@@ -510,12 +634,15 @@ export function TestModal({ open, onOpenChange, onSave, initialData }: TestModal
                     name="valor_teste"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>Valor</FormLabel>
+                        <FormLabel>
+                          Valor <span className="text-destructive">*</span>
+                        </FormLabel>
                         <FormControl>
                           <Input
                             type="number"
                             step="any"
                             {...field}
+                            value={field.value ?? ''}
                             readOnly={watchTipo === 'Relação de Tensões'}
                             className={
                               watchTipo === 'Relação de Tensões'
@@ -541,11 +668,14 @@ export function TestModal({ open, onOpenChange, onSave, initialData }: TestModal
                         : ''
                     }
                   >
-                    <FormLabel>Unidade</FormLabel>
+                    <FormLabel>
+                      Unidade <span className="text-destructive">*</span>
+                    </FormLabel>
                     <FormControl>
                       <Input
                         placeholder="Ex: MΩ, V"
                         {...field}
+                        value={field.value ?? ''}
                         readOnly={
                           watchTipo === 'Resistências dos Contatos' ||
                           watchTipo === 'Resistências dos Isolamentos' ||
@@ -570,7 +700,9 @@ export function TestModal({ open, onOpenChange, onSave, initialData }: TestModal
               name="data_teste"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Data do Teste</FormLabel>
+                  <FormLabel>
+                    Data do Teste <span className="text-destructive">*</span>
+                  </FormLabel>
                   <FormControl>
                     <Input type="date" {...field} />
                   </FormControl>
