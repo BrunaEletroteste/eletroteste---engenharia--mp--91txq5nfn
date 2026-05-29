@@ -13,6 +13,7 @@ import { Skeleton } from '@/components/ui/skeleton'
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert'
 import { ArrowLeft, Save, CheckCircle2 } from 'lucide-react'
 import { ReportHeaderSection } from '@/components/reports/ReportHeaderSection'
+import { ReportGeneralSection } from '@/components/reports/ReportGeneralSection'
 import { EquipmentSection } from '@/components/reports/EquipmentSection'
 import { ReportAttachmentsSection } from '@/components/reports/ReportAttachmentsSection'
 import { reportFormSchema, FormValues, EquipmentItem } from '@/types/reports'
@@ -35,6 +36,8 @@ export default function ReportForm() {
   // Attachments State
   const [reportRecord, setReportRecord] = useState<any>(null)
   const [existingAnexos, setExistingAnexos] = useState<string[]>([])
+  const [existingFotosEstrutura, setExistingFotosEstrutura] = useState<string[]>([])
+  const [fotosEstruturaFiles, setFotosEstruturaFiles] = useState<File[]>([])
   const isUploadingAttachmentRef = useRef(false)
 
   const isSavingRef = useRef(false)
@@ -82,6 +85,8 @@ export default function ReportForm() {
           const res = await pb.collection('relatorios').getOne(id)
           setReportRecord(res)
           setExistingAnexos(res.anexos || [])
+          setExistingFotosEstrutura(res.fotos_estrutura || [])
+          setFotosEstruturaFiles([])
 
           reset({
             numero_relatorio: res.numero_relatorio,
@@ -94,6 +99,9 @@ export default function ReportForm() {
               : '',
             status: res.status as 'rascunho' | 'finalizado',
             observacoes: res.observacoes || '',
+            temperatura_ambiente: res.temperatura_ambiente,
+            umidade_relativa: res.umidade_relativa,
+            parecer_geral: res.parecer_geral || '',
           })
 
           const eqRes = await pb.collection('equipamentos_relatorio').getFullList({
@@ -143,6 +151,8 @@ export default function ReportForm() {
         } else {
           setReportRecord(null)
           setExistingAnexos([])
+          setExistingFotosEstrutura([])
+          setFotosEstruturaFiles([])
           reset({
             numero_relatorio: `00${Math.floor(Math.random() * 1000)}/${new Date().getFullYear()}`,
             numero_proposta: '',
@@ -152,6 +162,9 @@ export default function ReportForm() {
             acompanhante: '',
             proxima_manutencao: '',
             observacoes: '',
+            temperatura_ambiente: '',
+            umidade_relativa: '',
+            parecer_geral: '',
           })
         }
       } catch (err) {
@@ -481,11 +494,26 @@ export default function ReportForm() {
       if (data.proxima_manutencao)
         payload.proxima_manutencao = `${data.proxima_manutencao} 12:00:00Z`
       if (data.observacoes) payload.observacoes = data.observacoes
+      if (data.temperatura_ambiente !== undefined && data.temperatura_ambiente !== '')
+        payload.temperatura_ambiente = Number(data.temperatura_ambiente)
+      if (data.umidade_relativa !== undefined && data.umidade_relativa !== '')
+        payload.umidade_relativa = Number(data.umidade_relativa)
+      if (data.parecer_geral) payload.parecer_geral = data.parecer_geral
 
       const formData = new FormData()
       Object.entries(payload).forEach(([key, value]) => {
         formData.append(key, value)
       })
+
+      if (reportRecord?.fotos_estrutura) {
+        const removed = reportRecord.fotos_estrutura.filter(
+          (f: string) => !existingFotosEstrutura.includes(f),
+        )
+        removed.forEach((f: string) => {
+          formData.append('-fotos_estrutura', f)
+        })
+      }
+      fotosEstruturaFiles.forEach((f) => formData.append('fotos_estrutura', f))
 
       let relatorioId = id
       if (isEditRoute && id) {
@@ -667,6 +695,14 @@ export default function ReportForm() {
 
           <div className="space-y-8 pt-6 p-4 sm:p-8 mt-0">
             <ReportHeaderSection isView={isReadOnly} />
+            <ReportGeneralSection
+              isView={isReadOnly}
+              existingFotos={existingFotosEstrutura}
+              onExistingFotosChange={setExistingFotosEstrutura}
+              newFotos={fotosEstruturaFiles}
+              onNewFotosChange={setFotosEstruturaFiles}
+              record={reportRecord}
+            />
             <EquipmentSection
               equipments={equipments}
               setEquipments={setEquipments}

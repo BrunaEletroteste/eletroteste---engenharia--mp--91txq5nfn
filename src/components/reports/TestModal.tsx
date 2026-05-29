@@ -324,6 +324,7 @@ interface TestModalProps {
   initialData?: TestItem
   equipmentType?: string
   equipmentData?: Record<string, any>
+  allTests?: TestItem[]
 }
 
 const isoRows = [
@@ -360,6 +361,7 @@ export function TestModal({
   initialData,
   equipmentType,
   equipmentData,
+  allTests,
 }: TestModalProps) {
   const [equipmentOptions, setEquipmentOptions] = useState<OpcaoPadronizada[]>([])
 
@@ -406,6 +408,13 @@ export function TestModal({
   const relacaoMais = relacaoCalculada !== null ? relacaoCalculada * 1.005 : null
   const relacaoMenos = relacaoCalculada !== null ? relacaoCalculada * 0.995 : null
 
+  const meioIsolante =
+    equipmentData?.meio_isolante || equipmentData?.['Meio Isolante'] || 'Óleo Mineral'
+  const isoTest = allTests?.find(
+    (t) => t.tipo_teste === 'Resistências dos Isolamentos' && !t._delete,
+  )
+  const tempMedidaSource = isoTest?.dados_detalhados?.temperatura
+
   const form = useForm<TestFormValues>({
     resolver: zodResolver(testSchema),
     defaultValues: {
@@ -450,6 +459,18 @@ export function TestModal({
       }
     }
   }, [open, initialData, form, equipmentType])
+
+  useEffect(() => {
+    if (
+      watchTipo === 'Resistências dos Enrolamentos' &&
+      open &&
+      equipmentType === 'Transformador'
+    ) {
+      if (!initialData?.dados_detalhados?.temperatura_medida && tempMedidaSource) {
+        form.setValue('dados_detalhados.temperatura_medida', tempMedidaSource)
+      }
+    }
+  }, [watchTipo, open, tempMedidaSource, initialData, equipmentType, form])
 
   useEffect(() => {
     if (!open) return
@@ -636,6 +657,25 @@ export function TestModal({
                 payload.dados_detalhados
               ) {
                 payload.valor_teste = 0
+                if (equipmentType === 'Transformador') {
+                  const tMedida = Number(payload.dados_detalhados.temperatura_medida)
+                  const tRef = meioIsolante === 'Epóxi' ? 105 : 75
+                  payload.dados_detalhados.temperatura_referencia = tRef
+
+                  if (!isNaN(tMedida) && tMedida > 0) {
+                    const k = (234.5 + tRef) / (234.5 + tMedida)
+                    payload.dados_detalhados.ets_corr = {
+                      h1_h3: (Number(payload.dados_detalhados.ets?.h1_h3 || 0) * k).toFixed(4),
+                      h2_h1: (Number(payload.dados_detalhados.ets?.h2_h1 || 0) * k).toFixed(4),
+                      h3_h2: (Number(payload.dados_detalhados.ets?.h3_h2 || 0) * k).toFixed(4),
+                    }
+                    payload.dados_detalhados.eti_corr = {
+                      x1_x3: (Number(payload.dados_detalhados.eti?.x1_x3 || 0) * k).toFixed(4),
+                      x2_x1: (Number(payload.dados_detalhados.eti?.x2_x1 || 0) * k).toFixed(4),
+                      x3_x2: (Number(payload.dados_detalhados.eti?.x3_x2 || 0) * k).toFixed(4),
+                    }
+                  }
+                }
               } else if (
                 payload.tipo_teste === 'Relação de Tensões' &&
                 equipmentType === 'Transformador'
@@ -883,6 +923,38 @@ export function TestModal({
                     </div>
                   </div>
                 </div>
+                {equipmentType === 'Transformador' && (
+                  <div className="mt-6 pt-4 border-t">
+                    <FormField
+                      control={form.control}
+                      name="dados_detalhados.temperatura_medida"
+                      render={({ field }) => (
+                        <FormItem className="max-w-[250px]">
+                          <FormLabel className="text-xs">Temperatura Medida (°C)</FormLabel>
+                          <FormControl>
+                            <Input
+                              type="number"
+                              step="any"
+                              className="h-8 text-xs"
+                              {...field}
+                              value={field.value ?? ''}
+                              onChange={(e) =>
+                                field.onChange(e.target.value === '' ? '' : Number(e.target.value))
+                              }
+                            />
+                          </FormControl>
+                          <FormMessage className="text-[10px]" />
+                          {!tempMedidaSource && (
+                            <p className="text-[10px] text-muted-foreground leading-tight mt-1">
+                              Preencha a temperatura para calcular a correção para{' '}
+                              {meioIsolante === 'Epóxi' ? '105' : '75'}ºC.
+                            </p>
+                          )}
+                        </FormItem>
+                      )}
+                    />
+                  </div>
+                )}
               </div>
             )}
 
@@ -1592,6 +1664,37 @@ export function TestModal({
                   </Table>
                 </div>
               ))}
+
+            {watchTipo === 'Resistências dos Isolamentos' && equipmentType === 'Transformador' && (
+              <div className="space-y-4 border rounded-md p-4 bg-muted/20 mt-4">
+                <FormField
+                  control={form.control}
+                  name="dados_detalhados.temperatura"
+                  render={({ field }) => (
+                    <FormItem className="max-w-[300px]">
+                      <FormLabel className="text-xs">
+                        {meioIsolante === 'Epóxi'
+                          ? 'Temperatura do Enrolamento (°C)'
+                          : 'Temperatura do Óleo (°C)'}
+                      </FormLabel>
+                      <FormControl>
+                        <Input
+                          type="number"
+                          step="any"
+                          className="h-8 text-xs"
+                          {...field}
+                          value={field.value ?? ''}
+                          onChange={(e) =>
+                            field.onChange(e.target.value === '' ? '' : Number(e.target.value))
+                          }
+                        />
+                      </FormControl>
+                      <FormMessage className="text-[10px]" />
+                    </FormItem>
+                  )}
+                />
+              </div>
+            )}
 
             <div className="grid grid-cols-2 gap-4">
               {watchTipo !== 'Resistências dos Contatos' &&

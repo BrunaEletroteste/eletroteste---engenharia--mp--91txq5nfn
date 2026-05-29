@@ -561,12 +561,22 @@ export function EquipmentTestsManager({
     if (t.tipo_teste === 'Resistências dos Enrolamentos') {
       const ets = t.dados_detalhados?.ets || {}
       const eti = t.dados_detalhados?.eti || {}
+      const ets_corr = t.dados_detalhados?.ets_corr
+      const eti_corr = t.dados_detalhados?.eti_corr
+      const tRef = t.dados_detalhados?.temperatura_referencia || 75
 
       const formatField = (val: any, unit: string) =>
         val !== undefined && val !== null && val !== '' ? `${formatNum(val)} ${unit}` : '-'
 
-      const f_ets = `H1-H3: ${formatField(ets.h1_h3, 'Ω')} | H2-H1: ${formatField(ets.h2_h1, 'Ω')} | H3-H2: ${formatField(ets.h3_h2, 'Ω')}`
-      const f_eti = `X1-X3: ${formatField(eti.x1_x3, 'mΩ')} | X2-X1: ${formatField(eti.x2_x1, 'mΩ')} | X3-X2: ${formatField(eti.x3_x2, 'mΩ')}`
+      let f_ets = `H1-H3: ${formatField(ets.h1_h3, 'Ω')} | H2-H1: ${formatField(ets.h2_h1, 'Ω')} | H3-H2: ${formatField(ets.h3_h2, 'Ω')}`
+      let f_eti = `X1-X3: ${formatField(eti.x1_x3, 'mΩ')} | X2-X1: ${formatField(eti.x2_x1, 'mΩ')} | X3-X2: ${formatField(eti.x3_x2, 'mΩ')}`
+
+      if (ets_corr) {
+        f_ets += ` (Corr. ${tRef}ºC: H1-H3: ${formatField(ets_corr.h1_h3, 'Ω')} | H2-H1: ${formatField(ets_corr.h2_h1, 'Ω')} | H3-H2: ${formatField(ets_corr.h3_h2, 'Ω')})`
+      }
+      if (eti_corr) {
+        f_eti += ` (Corr. ${tRef}ºC: X1-X3: ${formatField(eti_corr.x1_x3, 'mΩ')} | X2-X1: ${formatField(eti_corr.x2_x1, 'mΩ')} | X3-X2: ${formatField(eti_corr.x3_x2, 'mΩ')})`
+      }
 
       if (subType === 'ETS') return f_ets
       if (subType === 'ETI') return f_eti
@@ -852,6 +862,7 @@ export function EquipmentTestsManager({
         initialData={editingTest?.test}
         equipmentType={equipment.tipo_equipamento}
         equipmentData={equipment.dados_tecnicos}
+        allTests={equipment.testes}
       />
     </div>
   )
