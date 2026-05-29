@@ -354,6 +354,155 @@ const CATEGORY_MAP: Record<string, string> = {
   'Resistências dos Contatos': 'equipamento_contatos',
 }
 
+const FACTOR_75: Record<number, number> = {
+  0: 181,
+  1: 169,
+  2: 158,
+  3: 147,
+  4: 137,
+  5: 128,
+  6: 119,
+  7: 111,
+  8: 104,
+  9: 97,
+  10: 91,
+  11: 84,
+  12: 79,
+  13: 74,
+  14: 69,
+  15: 64,
+  16: 60,
+  17: 56,
+  18: 52,
+  19: 48.5,
+  20: 45.3,
+  21: 42.2,
+  22: 39.4,
+  23: 36.8,
+  24: 34.3,
+  25: 32,
+  26: 29.9,
+  27: 27.9,
+  28: 26,
+  29: 24.3,
+  30: 22.6,
+  31: 21.1,
+  32: 19.7,
+  33: 18.4,
+  34: 17.2,
+  35: 16,
+  36: 14.9,
+  37: 13.9,
+  38: 13,
+  39: 12.1,
+  40: 11.3,
+  41: 10.6,
+  42: 9.9,
+  43: 9.2,
+  44: 8.6,
+  45: 8,
+  46: 7.5,
+  47: 7,
+  48: 6.5,
+  49: 6.1,
+  50: 5.7,
+  51: 5.3,
+  52: 4.92,
+  53: 4.59,
+  54: 4.29,
+  55: 4,
+  56: 3.73,
+  57: 3.48,
+  58: 3.25,
+  59: 3.03,
+  60: 2.83,
+  61: 2.64,
+  62: 2.46,
+  63: 2.3,
+  64: 2.14,
+  65: 2,
+  66: 1.87,
+  67: 1.74,
+  68: 1.62,
+  69: 1.52,
+  70: 1.41,
+  71: 1.32,
+  72: 1.25,
+  73: 1.15,
+  74: 1.07,
+  75: 1,
+  76: 0.93,
+  77: 0.87,
+  78: 0.81,
+  79: 0.76,
+  80: 0.71,
+  81: 0.66,
+  82: 0.61,
+}
+
+const FACTOR_105: Record<number, number> = {
+  41: 84,
+  42: 79,
+  43: 74,
+  44: 69,
+  45: 64,
+  46: 60,
+  47: 56,
+  48: 52,
+  49: 48.5,
+  50: 45.3,
+  51: 42.2,
+  52: 39.4,
+  53: 36.8,
+  54: 34.3,
+  55: 32,
+  56: 29.9,
+  57: 27.9,
+  58: 26,
+  59: 24.3,
+  60: 22.6,
+  61: 21.1,
+  62: 19.7,
+  63: 18.4,
+  64: 17.2,
+  65: 16,
+  66: 14.9,
+  67: 13.9,
+  68: 13,
+  69: 12.1,
+  70: 11.3,
+  71: 10.6,
+  72: 9.9,
+  73: 9.2,
+  74: 8.6,
+  75: 8,
+  76: 7.5,
+  77: 7,
+  78: 6.5,
+  79: 6.1,
+  80: 5.7,
+  81: 5.3,
+  82: 4.92,
+  83: 4.59,
+  84: 4.29,
+  85: 4,
+  86: 3.73,
+  87: 3.48,
+  88: 3.25,
+  89: 3.03,
+  90: 2.83,
+  91: 2.64,
+  92: 2.46,
+  93: 2.3,
+  94: 2.14,
+  95: 2,
+  96: 1.87,
+  97: 1.74,
+  98: 1.62,
+  99: 1.52,
+  100: 1.41,
+}
+
 export function TestModal({
   open,
   onOpenChange,
@@ -467,10 +616,27 @@ export function TestModal({
       equipmentType === 'Transformador'
     ) {
       if (!initialData?.dados_detalhados?.temperatura_medida && tempMedidaSource) {
-        form.setValue('dados_detalhados.temperatura_medida', tempMedidaSource)
+        form.setValue('dados_detalhados.temperatura_medida', Math.round(Number(tempMedidaSource)))
       }
     }
   }, [watchTipo, open, tempMedidaSource, initialData, equipmentType, form])
+
+  const tempMedida = form.watch('dados_detalhados.temperatura_medida')
+  const isEpoxy = meioIsolante === 'Epóxi'
+  const ets = form.watch('dados_detalhados.ets')
+  const eti = form.watch('dados_detalhados.eti')
+
+  let currentFactor: number | null = null
+  if (tempMedida !== undefined && tempMedida !== null && tempMedida !== '') {
+    const t = Math.round(Number(tempMedida))
+    if (isEpoxy) {
+      const clamped = t < 41 ? 41 : t > 100 ? 100 : t
+      currentFactor = FACTOR_105[clamped] ?? null
+    } else {
+      const clamped = t < 0 ? 0 : t > 82 ? 82 : t
+      currentFactor = FACTOR_75[clamped] ?? null
+    }
+  }
 
   useEffect(() => {
     if (!open) return
@@ -658,21 +824,50 @@ export function TestModal({
               ) {
                 payload.valor_teste = 0
                 if (equipmentType === 'Transformador') {
-                  const tMedida = Number(payload.dados_detalhados.temperatura_medida)
-                  const tRef = meioIsolante === 'Epóxi' ? 105 : 75
+                  const tMedidaRaw = payload.dados_detalhados.temperatura_medida
+                  const tMedida =
+                    tMedidaRaw !== undefined && tMedidaRaw !== ''
+                      ? Math.round(Number(tMedidaRaw))
+                      : NaN
+                  const isEpoxi = meioIsolante === 'Epóxi'
+                  const tRef = isEpoxi ? 105 : 75
                   payload.dados_detalhados.temperatura_referencia = tRef
 
-                  if (!isNaN(tMedida) && tMedida > 0) {
-                    const k = (234.5 + tRef) / (234.5 + tMedida)
-                    payload.dados_detalhados.ets_corr = {
-                      h1_h3: (Number(payload.dados_detalhados.ets?.h1_h3 || 0) * k).toFixed(4),
-                      h2_h1: (Number(payload.dados_detalhados.ets?.h2_h1 || 0) * k).toFixed(4),
-                      h3_h2: (Number(payload.dados_detalhados.ets?.h3_h2 || 0) * k).toFixed(4),
+                  if (!isNaN(tMedida)) {
+                    payload.dados_detalhados.temperatura_medida = tMedida
+                    let k = null
+                    if (isEpoxi) {
+                      const clamped = tMedida < 41 ? 41 : tMedida > 100 ? 100 : tMedida
+                      k = FACTOR_105[clamped] ?? null
+                    } else {
+                      const clamped = tMedida < 0 ? 0 : tMedida > 82 ? 82 : tMedida
+                      k = FACTOR_75[clamped] ?? null
                     }
-                    payload.dados_detalhados.eti_corr = {
-                      x1_x3: (Number(payload.dados_detalhados.eti?.x1_x3 || 0) * k).toFixed(4),
-                      x2_x1: (Number(payload.dados_detalhados.eti?.x2_x1 || 0) * k).toFixed(4),
-                      x3_x2: (Number(payload.dados_detalhados.eti?.x3_x2 || 0) * k).toFixed(4),
+
+                    if (k !== null) {
+                      payload.dados_detalhados.fator_correcao = k
+                      payload.dados_detalhados.ets_corr = {
+                        h1_h3: payload.dados_detalhados.ets?.h1_h3
+                          ? (Number(payload.dados_detalhados.ets.h1_h3) * k).toFixed(4)
+                          : '',
+                        h2_h1: payload.dados_detalhados.ets?.h2_h1
+                          ? (Number(payload.dados_detalhados.ets.h2_h1) * k).toFixed(4)
+                          : '',
+                        h3_h2: payload.dados_detalhados.ets?.h3_h2
+                          ? (Number(payload.dados_detalhados.ets.h3_h2) * k).toFixed(4)
+                          : '',
+                      }
+                      payload.dados_detalhados.eti_corr = {
+                        x1_x3: payload.dados_detalhados.eti?.x1_x3
+                          ? (Number(payload.dados_detalhados.eti.x1_x3) * k).toFixed(4)
+                          : '',
+                        x2_x1: payload.dados_detalhados.eti?.x2_x1
+                          ? (Number(payload.dados_detalhados.eti.x2_x1) * k).toFixed(4)
+                          : '',
+                        x3_x2: payload.dados_detalhados.eti?.x3_x2
+                          ? (Number(payload.dados_detalhados.eti.x3_x2) * k).toFixed(4)
+                          : '',
+                      }
                     }
                   }
                 }
@@ -837,6 +1032,43 @@ export function TestModal({
 
             {watchTipo === 'Resistências dos Enrolamentos' && (
               <div className="space-y-4 border rounded-md p-4 bg-muted/20">
+                {equipmentType === 'Transformador' && (
+                  <div className="flex flex-col md:flex-row gap-4 mb-4 border-b pb-4 border-border">
+                    <FormField
+                      control={form.control}
+                      name="dados_detalhados.temperatura_medida"
+                      render={({ field }) => (
+                        <FormItem className="flex-1 max-w-[250px]">
+                          <FormLabel className="text-xs">Temperatura Medida (°C)</FormLabel>
+                          <FormControl>
+                            <Input
+                              type="number"
+                              step="1"
+                              className="h-8 text-xs"
+                              {...field}
+                              value={field.value ?? ''}
+                              onChange={(e) =>
+                                field.onChange(
+                                  e.target.value === '' ? '' : Math.round(Number(e.target.value)),
+                                )
+                              }
+                            />
+                          </FormControl>
+                          <FormMessage className="text-[10px]" />
+                        </FormItem>
+                      )}
+                    />
+                    <div className="flex-1 max-w-[250px] space-y-2">
+                      <FormLabel className="text-xs text-muted-foreground block font-medium">
+                        Fator de Correção {isEpoxy ? '105ºC' : '75ºC'}
+                      </FormLabel>
+                      <div className="h-8 flex items-center px-3 border rounded-md bg-muted text-xs text-muted-foreground">
+                        {currentFactor !== null ? currentFactor : '-'}
+                      </div>
+                    </div>
+                  </div>
+                )}
+
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   <div className="space-y-4">
                     <h4 className="text-sm font-medium border-b pb-2">ETS (Alta Tensão)</h4>
@@ -845,39 +1077,59 @@ export function TestModal({
                         { id: 'h1_h3', label: 'H1 - H3' },
                         { id: 'h2_h1', label: 'H2 - H1' },
                         { id: 'h3_h2', label: 'H3 - H2' },
-                      ].map((r) => (
-                        <FormField
-                          key={r.id}
-                          control={form.control}
-                          name={`dados_detalhados.ets.${r.id}` as any}
-                          render={({ field }) => (
-                            <FormItem className="flex items-center gap-4 space-y-0">
-                              <FormLabel className="text-xs w-16 text-right font-semibold">
-                                {r.label} <span className="text-destructive">*</span>
-                              </FormLabel>
-                              <div className="flex-1 relative">
-                                <FormControl>
-                                  <Input
-                                    type="number"
-                                    step="any"
-                                    className="h-8 text-xs pr-8"
-                                    value={field.value ?? ''}
-                                    onChange={(e) =>
-                                      field.onChange(
-                                        e.target.value === '' ? '' : Number(e.target.value),
-                                      )
-                                    }
-                                  />
-                                </FormControl>
-                                <span className="absolute right-3 top-1/2 -translate-y-1/2 text-xs text-muted-foreground pointer-events-none select-none">
-                                  Ω
-                                </span>
+                      ].map((r) => {
+                        const rawVal = ets?.[r.id]
+                        const corrVal =
+                          rawVal && currentFactor !== null
+                            ? (Number(rawVal) * currentFactor).toFixed(4)
+                            : null
+                        return (
+                          <FormField
+                            key={r.id}
+                            control={form.control}
+                            name={`dados_detalhados.ets.${r.id}` as any}
+                            render={({ field }) => (
+                              <FormItem className="flex flex-col gap-1 space-y-0 relative pb-1">
+                                <div className="flex items-center gap-4">
+                                  <FormLabel className="text-xs w-16 text-right font-semibold shrink-0">
+                                    {r.label} <span className="text-destructive">*</span>
+                                  </FormLabel>
+                                  <div className="flex-1 relative">
+                                    <FormControl>
+                                      <Input
+                                        type="number"
+                                        step="any"
+                                        className="h-8 text-xs pr-8"
+                                        value={field.value ?? ''}
+                                        onChange={(e) =>
+                                          field.onChange(
+                                            e.target.value === '' ? '' : Number(e.target.value),
+                                          )
+                                        }
+                                      />
+                                    </FormControl>
+                                    <span className="absolute right-3 top-1/2 -translate-y-1/2 text-xs text-muted-foreground pointer-events-none select-none">
+                                      Ω
+                                    </span>
+                                  </div>
+                                </div>
+                                {currentFactor !== null && equipmentType === 'Transformador' && (
+                                  <div className="flex items-center gap-4 mt-1">
+                                    <div className="w-16 shrink-0" />
+                                    <div className="text-[10px] text-muted-foreground bg-muted/50 px-2 py-1 rounded w-full flex justify-between items-center">
+                                      <span>Corr. {isEpoxy ? '105' : '75'}ºC:</span>
+                                      <span className="font-medium text-foreground">
+                                        {corrVal ? `${corrVal} Ω` : '-'}
+                                      </span>
+                                    </div>
+                                  </div>
+                                )}
                                 <FormMessage className="text-[10px]" />
-                              </div>
-                            </FormItem>
-                          )}
-                        />
-                      ))}
+                              </FormItem>
+                            )}
+                          />
+                        )
+                      })}
                     </div>
                   </div>
                   <div className="space-y-4">
@@ -887,74 +1139,62 @@ export function TestModal({
                         { id: 'x1_x3', label: 'X1 - X3' },
                         { id: 'x2_x1', label: 'X2 - X1' },
                         { id: 'x3_x2', label: 'X3 - X2' },
-                      ].map((r) => (
-                        <FormField
-                          key={r.id}
-                          control={form.control}
-                          name={`dados_detalhados.eti.${r.id}` as any}
-                          render={({ field }) => (
-                            <FormItem className="flex items-center gap-4 space-y-0">
-                              <FormLabel className="text-xs w-16 text-right font-semibold">
-                                {r.label} <span className="text-destructive">*</span>
-                              </FormLabel>
-                              <div className="flex-1 relative">
-                                <FormControl>
-                                  <Input
-                                    type="number"
-                                    step="any"
-                                    className="h-8 text-xs pr-10"
-                                    value={field.value ?? ''}
-                                    onChange={(e) =>
-                                      field.onChange(
-                                        e.target.value === '' ? '' : Number(e.target.value),
-                                      )
-                                    }
-                                  />
-                                </FormControl>
-                                <span className="absolute right-3 top-1/2 -translate-y-1/2 text-xs text-muted-foreground pointer-events-none select-none">
-                                  mΩ
-                                </span>
+                      ].map((r) => {
+                        const rawVal = eti?.[r.id]
+                        const corrVal =
+                          rawVal && currentFactor !== null
+                            ? (Number(rawVal) * currentFactor).toFixed(4)
+                            : null
+                        return (
+                          <FormField
+                            key={r.id}
+                            control={form.control}
+                            name={`dados_detalhados.eti.${r.id}` as any}
+                            render={({ field }) => (
+                              <FormItem className="flex flex-col gap-1 space-y-0 relative pb-1">
+                                <div className="flex items-center gap-4">
+                                  <FormLabel className="text-xs w-16 text-right font-semibold shrink-0">
+                                    {r.label} <span className="text-destructive">*</span>
+                                  </FormLabel>
+                                  <div className="flex-1 relative">
+                                    <FormControl>
+                                      <Input
+                                        type="number"
+                                        step="any"
+                                        className="h-8 text-xs pr-10"
+                                        value={field.value ?? ''}
+                                        onChange={(e) =>
+                                          field.onChange(
+                                            e.target.value === '' ? '' : Number(e.target.value),
+                                          )
+                                        }
+                                      />
+                                    </FormControl>
+                                    <span className="absolute right-3 top-1/2 -translate-y-1/2 text-xs text-muted-foreground pointer-events-none select-none">
+                                      mΩ
+                                    </span>
+                                  </div>
+                                </div>
+                                {currentFactor !== null && equipmentType === 'Transformador' && (
+                                  <div className="flex items-center gap-4 mt-1">
+                                    <div className="w-16 shrink-0" />
+                                    <div className="text-[10px] text-muted-foreground bg-muted/50 px-2 py-1 rounded w-full flex justify-between items-center">
+                                      <span>Corr. {isEpoxy ? '105' : '75'}ºC:</span>
+                                      <span className="font-medium text-foreground">
+                                        {corrVal ? `${corrVal} mΩ` : '-'}
+                                      </span>
+                                    </div>
+                                  </div>
+                                )}
                                 <FormMessage className="text-[10px]" />
-                              </div>
-                            </FormItem>
-                          )}
-                        />
-                      ))}
+                              </FormItem>
+                            )}
+                          />
+                        )
+                      })}
                     </div>
                   </div>
                 </div>
-                {equipmentType === 'Transformador' && (
-                  <div className="mt-6 pt-4 border-t">
-                    <FormField
-                      control={form.control}
-                      name="dados_detalhados.temperatura_medida"
-                      render={({ field }) => (
-                        <FormItem className="max-w-[250px]">
-                          <FormLabel className="text-xs">Temperatura Medida (°C)</FormLabel>
-                          <FormControl>
-                            <Input
-                              type="number"
-                              step="any"
-                              className="h-8 text-xs"
-                              {...field}
-                              value={field.value ?? ''}
-                              onChange={(e) =>
-                                field.onChange(e.target.value === '' ? '' : Number(e.target.value))
-                              }
-                            />
-                          </FormControl>
-                          <FormMessage className="text-[10px]" />
-                          {!tempMedidaSource && (
-                            <p className="text-[10px] text-muted-foreground leading-tight mt-1">
-                              Preencha a temperatura para calcular a correção para{' '}
-                              {meioIsolante === 'Epóxi' ? '105' : '75'}ºC.
-                            </p>
-                          )}
-                        </FormItem>
-                      )}
-                    />
-                  </div>
-                )}
               </div>
             )}
 
