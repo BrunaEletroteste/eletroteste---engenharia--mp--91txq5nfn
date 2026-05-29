@@ -702,9 +702,12 @@ export function TestModal({
                           Resistências dos Enrolamentos
                         </SelectItem>
                       )}
-                      <SelectItem value="Resistências dos Contatos">
-                        Resistências dos Contatos
-                      </SelectItem>
+                      {(equipmentType !== 'Transformador' ||
+                        field.value === 'Resistências dos Contatos') && (
+                        <SelectItem value="Resistências dos Contatos">
+                          Resistências dos Contatos
+                        </SelectItem>
+                      )}
                     </SelectContent>
                   </Select>
                   <FormMessage />
@@ -971,7 +974,11 @@ export function TestModal({
                     <FormLabel className="text-xs text-muted-foreground">
                       Tensão Secundária (V)
                     </FormLabel>
-                    <div className="text-sm font-medium">{tensaoSecundaria ?? '-'}</div>
+                    <div className="text-sm font-medium">
+                      {tensaoSecundaria !== null
+                        ? new Intl.NumberFormat('pt-BR').format(tensaoSecundaria)
+                        : '-'}
+                    </div>
                   </div>
                 </div>
                 <div className="grid grid-cols-3 gap-4 mb-4">
@@ -980,7 +987,12 @@ export function TestModal({
                       Relação (Teórica) (V)
                     </FormLabel>
                     <div className="text-sm font-medium">
-                      {relacaoCalculada ? relacaoCalculada.toFixed(4) : '-'}
+                      {relacaoCalculada
+                        ? new Intl.NumberFormat('pt-BR', {
+                            minimumFractionDigits: 4,
+                            maximumFractionDigits: 4,
+                          }).format(relacaoCalculada)
+                        : '-'}
                     </div>
                   </div>
                   <div>
@@ -988,7 +1000,12 @@ export function TestModal({
                       Relação +0,50% (V)
                     </FormLabel>
                     <div className="text-sm font-medium">
-                      {relacaoMais ? relacaoMais.toFixed(4) : '-'}
+                      {relacaoMais
+                        ? new Intl.NumberFormat('pt-BR', {
+                            minimumFractionDigits: 4,
+                            maximumFractionDigits: 4,
+                          }).format(relacaoMais)
+                        : '-'}
                     </div>
                   </div>
                   <div>
@@ -996,7 +1013,12 @@ export function TestModal({
                       Relação -0,50% (V)
                     </FormLabel>
                     <div className="text-sm font-medium">
-                      {relacaoMenos ? relacaoMenos.toFixed(4) : '-'}
+                      {relacaoMenos
+                        ? new Intl.NumberFormat('pt-BR', {
+                            minimumFractionDigits: 4,
+                            maximumFractionDigits: 4,
+                          }).format(relacaoMenos)
+                        : '-'}
                     </div>
                   </div>
                 </div>
