@@ -379,8 +379,15 @@ export function TestModal({
         equipmentData?.['Tensão Secundária (V)'] ??
         equipmentData?.['Tensão Secundária']
 
-      const le = parseFloat(String(leVal))
-      const tsMatch = String(tsVal).split('/')[0]
+      const leStr = String(leVal ?? '')
+        .replace(/\./g, '')
+        .replace(',', '.')
+      const le = parseFloat(leStr)
+
+      const tsMatch = String(tsVal ?? '')
+        .split('/')[0]
+        .replace(/\./g, '')
+        .replace(',', '.')
       const ts = parseFloat(tsMatch)
 
       setLigadoEm(isNaN(le) ? null : le)
@@ -475,7 +482,7 @@ export function TestModal({
       form.setValue('valor_teste', 0, { shouldValidate: true })
     } else if (watchTipo === 'Relação de Tensões') {
       if (equipmentType === 'Transformador') {
-        form.setValue('unidade', 'V/V', { shouldValidate: true })
+        form.setValue('unidade', 'V', { shouldValidate: true })
         form.setValue('valor_teste', 0, { shouldValidate: true })
         const currentObs = form.getValues('observacoes')
         if (!currentObs) {
@@ -484,7 +491,7 @@ export function TestModal({
           })
         }
       } else {
-        form.setValue('unidade', 'V/V', { shouldValidate: true })
+        form.setValue('unidade', 'V', { shouldValidate: true })
       }
     } else if (watchTipo === 'Resistências dos Enrolamentos') {
       form.setValue('unidade', 'Ω / mΩ', { shouldValidate: true })
@@ -685,7 +692,10 @@ export function TestModal({
                       <SelectItem value="Resistências dos Isolamentos">
                         Resistências dos Isolamentos
                       </SelectItem>
-                      <SelectItem value="Relação de Tensões">Relação de Tensões</SelectItem>
+                      {(equipmentType === 'Transformador' ||
+                        field.value === 'Relação de Tensões') && (
+                        <SelectItem value="Relação de Tensões">Relação de Tensões</SelectItem>
+                      )}
                       {(equipmentType === 'Transformador' ||
                         field.value === 'Resistências dos Enrolamentos') && (
                         <SelectItem value="Resistências dos Enrolamentos">
@@ -950,10 +960,12 @@ export function TestModal({
             {watchTipo === 'Relação de Tensões' && equipmentType === 'Transformador' && (
               <div className="space-y-4 border rounded-md p-4 bg-muted/20">
                 <h4 className="text-sm font-medium">Dados Técnicos - Relação de Tensões</h4>
-                <div className="grid grid-cols-2 md:grid-cols-3 gap-4 mb-4">
+                <div className="grid grid-cols-2 gap-4 mb-4">
                   <div>
                     <FormLabel className="text-xs text-muted-foreground">Ligado em (V)</FormLabel>
-                    <div className="text-sm font-medium">{ligadoEm ?? '-'}</div>
+                    <div className="text-sm font-medium">
+                      {ligadoEm !== null ? new Intl.NumberFormat('pt-BR').format(ligadoEm) : '-'}
+                    </div>
                   </div>
                   <div>
                     <FormLabel className="text-xs text-muted-foreground">
@@ -961,22 +973,28 @@ export function TestModal({
                     </FormLabel>
                     <div className="text-sm font-medium">{tensaoSecundaria ?? '-'}</div>
                   </div>
+                </div>
+                <div className="grid grid-cols-3 gap-4 mb-4">
                   <div>
                     <FormLabel className="text-xs text-muted-foreground">
-                      Relação (Teórica)
+                      Relação (Teórica) (V)
                     </FormLabel>
                     <div className="text-sm font-medium">
                       {relacaoCalculada ? relacaoCalculada.toFixed(4) : '-'}
                     </div>
                   </div>
                   <div>
-                    <FormLabel className="text-xs text-muted-foreground">Relação +0,50%</FormLabel>
+                    <FormLabel className="text-xs text-muted-foreground">
+                      Relação +0,50% (V)
+                    </FormLabel>
                     <div className="text-sm font-medium">
                       {relacaoMais ? relacaoMais.toFixed(4) : '-'}
                     </div>
                   </div>
                   <div>
-                    <FormLabel className="text-xs text-muted-foreground">Relação -0,50%</FormLabel>
+                    <FormLabel className="text-xs text-muted-foreground">
+                      Relação -0,50% (V)
+                    </FormLabel>
                     <div className="text-sm font-medium">
                       {relacaoMenos ? relacaoMenos.toFixed(4) : '-'}
                     </div>
