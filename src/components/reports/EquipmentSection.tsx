@@ -376,29 +376,17 @@ export function EquipmentSection({ equipments, setEquipments, isView }: Props) {
                 </div>
                 <AccordionContent className="bg-background">
                   <Tabs defaultValue="dados" className="w-full">
-                    <TabsList className="w-full justify-start border-b rounded-none px-4 h-auto space-x-6 bg-muted/5 overflow-x-auto">
-                      <TabsTrigger
-                        value="dados"
-                        className="rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent px-0 py-2"
-                      >
+                    <TabsList className="w-full justify-start rounded-none px-4 py-2 h-auto space-x-2 bg-muted/20 border-b overflow-x-auto">
+                      <TabsTrigger value="dados" className="px-4 py-2">
                         Dados Técnicos
                       </TabsTrigger>
-                      <TabsTrigger
-                        value="testes"
-                        className="rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent px-0 py-2"
-                      >
+                      <TabsTrigger value="testes" className="px-4 py-2">
                         Testes Elétricos
                       </TabsTrigger>
-                      <TabsTrigger
-                        value="fotos"
-                        className="rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent px-0 py-2"
-                      >
+                      <TabsTrigger value="fotos" className="px-4 py-2">
                         Fotos
                       </TabsTrigger>
-                      <TabsTrigger
-                        value="parecer"
-                        className="rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent px-0 py-2"
-                      >
+                      <TabsTrigger value="parecer" className="px-4 py-2">
                         Parecer Técnico
                       </TabsTrigger>
                     </TabsList>
