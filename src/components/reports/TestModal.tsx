@@ -908,7 +908,7 @@ export function TestModal({
                     payload.dados_detalhados.medicoes[p].corrigido = corrigido
                     payload.dados_detalhados.medicoes[p].limite = limites[p as keyof typeof limites]
 
-                    if (corrigido > 0 && corrigido < minVal) minVal = corrigido
+                    if (res > 0 && res < minVal) minVal = res
                   }
                 })
                 if (minVal !== Infinity) {

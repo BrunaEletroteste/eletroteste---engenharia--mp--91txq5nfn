@@ -25,6 +25,7 @@ import { BarChart, Bar, XAxis, YAxis, CartesianGrid, ResponsiveContainer } from 
 import { useIsMobile } from '@/hooks/use-mobile'
 import { TestModal } from './TestModal'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
+import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip'
 import { useRealtime } from '@/hooks/use-realtime'
 
 interface Props {
@@ -94,9 +95,9 @@ const extractPhasesData = (t: any, tipoEquipamento: string, subType?: string) =>
       const d = t.dados_detalhados || {}
       const m = d.medicoes || d
       return [
-        { name: 'Alta/Baixa', value: m.alta_baixa?.corrigido ?? calcRes(m.alta_baixa) },
-        { name: 'Alta/Massa', value: m.alta_massa?.corrigido ?? calcRes(m.alta_massa) },
-        { name: 'Baixa/Massa', value: m.baixa_massa?.corrigido ?? calcRes(m.baixa_massa) },
+        { name: 'Alta/Baixa', value: calcRes(m.alta_baixa) },
+        { name: 'Alta/Massa', value: calcRes(m.alta_massa) },
+        { name: 'Baixa/Massa', value: calcRes(m.baixa_massa) },
       ].filter((p) => p.value !== undefined)
     } else {
       const d = t.dados_detalhados || {}
@@ -562,7 +563,6 @@ export function EquipmentTestsManager({
         const m = d.medicoes || d
         const calcRes = (row: any) => {
           if (!row) return '-'
-          if (row.corrigido !== undefined) return formatNum(row.corrigido)
           if (row.resultado !== undefined) return formatNum(row.resultado)
           const v1 = Number(row.v1)
           const v2 = Number(row.v2)
@@ -833,9 +833,16 @@ export function EquipmentTestsManager({
         <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full space-y-4">
           <TabsList className="w-full flex flex-wrap h-auto bg-muted p-1 rounded-md justify-start gap-1">
             {testTypes.map((type) => (
-              <TabsTrigger key={type} value={type} className="flex-1 min-w-[150px]">
-                {type}
-              </TabsTrigger>
+              <Tooltip key={type} delayDuration={300}>
+                <TooltipTrigger asChild>
+                  <TabsTrigger value={type} className="flex-1 min-w-[150px]">
+                    {type}
+                  </TabsTrigger>
+                </TooltipTrigger>
+                <TooltipContent>
+                  <p>Visualizar {type}</p>
+                </TooltipContent>
+              </Tooltip>
             ))}
           </TabsList>
 
@@ -849,12 +856,26 @@ export function EquipmentTestsManager({
                 {isDisjuntorIsolamento ? (
                   <Tabs defaultValue="Fechado" className="w-full space-y-4">
                     <TabsList className="w-full flex h-auto bg-muted/40 p-1 rounded-md justify-start gap-1">
-                      <TabsTrigger value="Fechado" className="flex-1 min-w-[120px]">
-                        Contatos Fechados
-                      </TabsTrigger>
-                      <TabsTrigger value="Aberto" className="flex-1 min-w-[120px]">
-                        Contatos Abertos
-                      </TabsTrigger>
+                      <Tooltip delayDuration={300}>
+                        <TooltipTrigger asChild>
+                          <TabsTrigger value="Fechado" className="flex-1 min-w-[120px]">
+                            Contatos Fechados
+                          </TabsTrigger>
+                        </TooltipTrigger>
+                        <TooltipContent>
+                          <p>Visualizar Contatos Fechados</p>
+                        </TooltipContent>
+                      </Tooltip>
+                      <Tooltip delayDuration={300}>
+                        <TooltipTrigger asChild>
+                          <TabsTrigger value="Aberto" className="flex-1 min-w-[120px]">
+                            Contatos Abertos
+                          </TabsTrigger>
+                        </TooltipTrigger>
+                        <TooltipContent>
+                          <p>Visualizar Contatos Abertos</p>
+                        </TooltipContent>
+                      </Tooltip>
                     </TabsList>
                     <TabsContent value="Fechado" className="mt-0 outline-none">
                       {renderTabContent(type, 'Fechado')}
@@ -866,12 +887,26 @@ export function EquipmentTestsManager({
                 ) : isEnrolamentos ? (
                   <Tabs defaultValue="ETS" className="w-full space-y-4">
                     <TabsList className="w-full flex h-auto bg-muted/40 p-1 rounded-md justify-start gap-1">
-                      <TabsTrigger value="ETS" className="flex-1 min-w-[120px]">
-                        ETS (Alta Tensão)
-                      </TabsTrigger>
-                      <TabsTrigger value="ETI" className="flex-1 min-w-[120px]">
-                        ETI (Baixa Tensão)
-                      </TabsTrigger>
+                      <Tooltip delayDuration={300}>
+                        <TooltipTrigger asChild>
+                          <TabsTrigger value="ETS" className="flex-1 min-w-[120px]">
+                            ETS (Alta Tensão)
+                          </TabsTrigger>
+                        </TooltipTrigger>
+                        <TooltipContent>
+                          <p>Visualizar ETS (Alta Tensão)</p>
+                        </TooltipContent>
+                      </Tooltip>
+                      <Tooltip delayDuration={300}>
+                        <TooltipTrigger asChild>
+                          <TabsTrigger value="ETI" className="flex-1 min-w-[120px]">
+                            ETI (Baixa Tensão)
+                          </TabsTrigger>
+                        </TooltipTrigger>
+                        <TooltipContent>
+                          <p>Visualizar ETI (Baixa Tensão)</p>
+                        </TooltipContent>
+                      </Tooltip>
                     </TabsList>
                     <TabsContent value="ETS" className="mt-0 outline-none">
                       {renderTabContent(type, 'ETS')}
