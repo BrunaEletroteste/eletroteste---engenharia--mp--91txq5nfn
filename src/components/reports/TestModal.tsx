@@ -128,31 +128,25 @@ const testSchema = z
 
     if (data.tipo_teste === 'Resistências dos Isolamentos') {
       if (data.tipo_equipamento_ref === 'Condutor Elétrico') {
-        const fa = data.dados_detalhados?.fase_a
-        const fb = data.dados_detalhados?.fase_b
-        const fc = data.dados_detalhados?.fase_c
-
-        if (fa === undefined || fa === null || String(fa) === '') {
-          ctx.addIssue({
-            code: z.ZodIssueCode.custom,
-            path: ['dados_detalhados.fase_a'],
-            message: 'Obrigatório',
-          })
-        }
-        if (fb === undefined || fb === null || String(fb) === '') {
-          ctx.addIssue({
-            code: z.ZodIssueCode.custom,
-            path: ['dados_detalhados.fase_b'],
-            message: 'Obrigatório',
-          })
-        }
-        if (fc === undefined || fc === null || String(fc) === '') {
-          ctx.addIssue({
-            code: z.ZodIssueCode.custom,
-            path: ['dados_detalhados.fase_c'],
-            message: 'Obrigatório',
-          })
-        }
+        const rows = ['fase_a', 'fase_b', 'fase_c']
+        rows.forEach((r) => {
+          const v1 = data.dados_detalhados?.[r]?.v1
+          const v2 = data.dados_detalhados?.[r]?.v2
+          if (v1 === undefined || v1 === null || String(v1) === '') {
+            ctx.addIssue({
+              code: z.ZodIssueCode.custom,
+              path: [`dados_detalhados.${r}.v1`],
+              message: 'Obrigatório',
+            })
+          }
+          if (v2 === undefined || v2 === null || String(v2) === '') {
+            ctx.addIssue({
+              code: z.ZodIssueCode.custom,
+              path: [`dados_detalhados.${r}.v2`],
+              message: 'Obrigatório',
+            })
+          }
+        })
       } else {
         const rows = ['ab', 'bc', 'ac', 'abc_massa']
         rows.forEach((r) => {
@@ -338,6 +332,22 @@ export function TestModal({
                 equipamento_utilizado: data.equipamento_utilizado.join(', '),
                 valor_teste: Number(data.valor_teste) || 0,
               } as Record<string, any>
+
+              if (
+                payload.tipo_teste === 'Resistências dos Isolamentos' &&
+                equipmentType === 'Condutor Elétrico' &&
+                payload.dados_detalhados
+              ) {
+                const phases = ['fase_a', 'fase_b', 'fase_c', 'reserva']
+                phases.forEach((p) => {
+                  if (payload.dados_detalhados[p]) {
+                    const v1 = Number(payload.dados_detalhados[p].v1) || 0
+                    const v2 = Number(payload.dados_detalhados[p].v2) || 0
+                    payload.dados_detalhados[p].resultado = v1 * v2
+                  }
+                })
+              }
+
               delete payload.tipo_equipamento_ref
               onSave(payload as unknown as TestItem)
             })}
@@ -585,94 +595,82 @@ export function TestModal({
               (equipmentType === 'Condutor Elétrico' ? (
                 <div className="space-y-4 border rounded-md p-4 bg-muted/20">
                   <h4 className="text-sm font-medium">Medições de Isolamento</h4>
-                  <div className="grid grid-cols-2 gap-4">
-                    <FormField
-                      control={form.control}
-                      name="dados_detalhados.fase_a"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel className="text-xs">
-                            Fase A <span className="text-destructive">*</span>
+                  <div className="flex flex-col gap-4">
+                    {[
+                      { id: 'fase_a', label: 'Fase A', req: true },
+                      { id: 'fase_b', label: 'Fase B', req: true },
+                      { id: 'fase_c', label: 'Fase C', req: true },
+                      { id: 'reserva', label: 'Reserva', req: false },
+                    ].map((r) => {
+                      const v1 = form.watch(`dados_detalhados.${r.id}.v1` as any)
+                      const v2 = form.watch(`dados_detalhados.${r.id}.v2` as any)
+                      const res = (Number(v1) || 0) * (Number(v2) || 0)
+                      const hasValues =
+                        v1 !== undefined && v2 !== undefined && v1 !== '' && v2 !== ''
+
+                      return (
+                        <div key={r.id} className="space-y-2">
+                          <FormLabel className="text-xs font-semibold">
+                            {r.label} {r.req && <span className="text-destructive">*</span>}
                           </FormLabel>
-                          <FormControl>
-                            <Input
-                              type="number"
-                              step="any"
-                              value={field.value ?? ''}
-                              onChange={(e) =>
-                                field.onChange(e.target.value === '' ? '' : Number(e.target.value))
-                              }
+                          <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 items-start">
+                            <FormField
+                              control={form.control}
+                              name={`dados_detalhados.${r.id}.v1` as any}
+                              render={({ field }) => (
+                                <FormItem>
+                                  <FormControl>
+                                    <Input
+                                      type="number"
+                                      step="any"
+                                      placeholder={
+                                        !r.req
+                                          ? 'Preencher apenas se houver condutor reserva'
+                                          : 'Valor 1'
+                                      }
+                                      className="h-8 text-xs"
+                                      value={field.value ?? ''}
+                                      onChange={(e) =>
+                                        field.onChange(
+                                          e.target.value === '' ? '' : Number(e.target.value),
+                                        )
+                                      }
+                                    />
+                                  </FormControl>
+                                  <FormMessage className="text-[10px]" />
+                                </FormItem>
+                              )}
                             />
-                          </FormControl>
-                          <FormMessage className="text-[10px]" />
-                        </FormItem>
-                      )}
-                    />
-                    <FormField
-                      control={form.control}
-                      name="dados_detalhados.fase_b"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel className="text-xs">
-                            Fase B <span className="text-destructive">*</span>
-                          </FormLabel>
-                          <FormControl>
-                            <Input
-                              type="number"
-                              step="any"
-                              value={field.value ?? ''}
-                              onChange={(e) =>
-                                field.onChange(e.target.value === '' ? '' : Number(e.target.value))
-                              }
+                            <FormField
+                              control={form.control}
+                              name={`dados_detalhados.${r.id}.v2` as any}
+                              render={({ field }) => (
+                                <FormItem>
+                                  <FormControl>
+                                    <Input
+                                      type="number"
+                                      step="any"
+                                      placeholder="Valor 2"
+                                      className="h-8 text-xs"
+                                      value={field.value ?? ''}
+                                      onChange={(e) =>
+                                        field.onChange(
+                                          e.target.value === '' ? '' : Number(e.target.value),
+                                        )
+                                      }
+                                    />
+                                  </FormControl>
+                                  <FormMessage className="text-[10px]" />
+                                </FormItem>
+                              )}
                             />
-                          </FormControl>
-                          <FormMessage className="text-[10px]" />
-                        </FormItem>
-                      )}
-                    />
-                    <FormField
-                      control={form.control}
-                      name="dados_detalhados.fase_c"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel className="text-xs">
-                            Fase C <span className="text-destructive">*</span>
-                          </FormLabel>
-                          <FormControl>
-                            <Input
-                              type="number"
-                              step="any"
-                              value={field.value ?? ''}
-                              onChange={(e) =>
-                                field.onChange(e.target.value === '' ? '' : Number(e.target.value))
-                              }
-                            />
-                          </FormControl>
-                          <FormMessage className="text-[10px]" />
-                        </FormItem>
-                      )}
-                    />
-                    <FormField
-                      control={form.control}
-                      name="dados_detalhados.reserva"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel className="text-xs">Reserva</FormLabel>
-                          <FormControl>
-                            <Input
-                              type="number"
-                              step="any"
-                              placeholder="Preencher apenas se houver condutor reserva"
-                              value={field.value ?? ''}
-                              onChange={(e) =>
-                                field.onChange(e.target.value === '' ? '' : Number(e.target.value))
-                              }
-                            />
-                          </FormControl>
-                          <FormMessage className="text-[10px]" />
-                        </FormItem>
-                      )}
-                    />
+                            <div className="h-8 flex items-center px-3 border rounded-md bg-background text-xs text-muted-foreground">
+                              {hasValues ? res : 'Resultado'}
+                            </div>
+                          </div>
+                        </div>
+                      )
+                    })}
                   </div>
                 </div>
               ) : (

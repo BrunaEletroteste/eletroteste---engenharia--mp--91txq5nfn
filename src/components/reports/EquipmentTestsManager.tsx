@@ -124,11 +124,24 @@ export function EquipmentTestsManager({
     if (t.tipo_teste === 'Resistências dos Isolamentos') {
       if (tipoEquipamento === 'Condutor Elétrico') {
         const d = t.dados_detalhados || {}
-        const a = d.fase_a ?? '-'
-        const b = d.fase_b ?? '-'
-        const c = d.fase_c ?? '-'
-        const r = d.reserva ? ` | R: ${d.reserva}` : ''
-        return `A: ${a} | B: ${b} | C: ${c}${r}`
+
+        const calcRes = (fase: any) => {
+          if (fase === undefined || fase === null) return '-'
+          if (typeof fase !== 'object') return fase
+          if (fase.resultado !== undefined) return fase.resultado
+          const v1 = Number(fase.v1)
+          const v2 = Number(fase.v2)
+          if (!isNaN(v1) && !isNaN(v2)) return v1 * v2
+          return '-'
+        }
+
+        const a = calcRes(d.fase_a)
+        const b = calcRes(d.fase_b)
+        const c = calcRes(d.fase_c)
+        const rVal = calcRes(d.reserva)
+        const r = rVal !== '-' ? ` | R: ${rVal}` : ''
+
+        return `A: ${a} | B: ${b} | C: ${c}${r} (MΩ)`
       } else {
         const d = t.dados_detalhados || {}
         const ab = (Number(d.ab?.v1) || 0) * (Number(d.ab?.v2) || 0)
