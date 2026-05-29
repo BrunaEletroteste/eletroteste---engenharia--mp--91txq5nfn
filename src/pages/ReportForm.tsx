@@ -318,21 +318,39 @@ export default function ReportForm() {
             }
             if (t.tipo_teste === 'Resistências dos Isolamentos') {
               const d = t.dados_detalhados || {}
-              const rows = ['ab', 'bc', 'ac', 'abc_massa']
-              for (const r of rows) {
+              if (eq.tipo_equipamento === 'Condutor Elétrico') {
                 if (
-                  !d[r] ||
-                  d[r].v1 === undefined ||
-                  d[r].v2 === undefined ||
-                  String(d[r].v1) === '' ||
-                  String(d[r].v2) === ''
+                  d.fase_a === undefined ||
+                  d.fase_b === undefined ||
+                  d.fase_c === undefined ||
+                  String(d.fase_a) === '' ||
+                  String(d.fase_b) === '' ||
+                  String(d.fase_c) === ''
                 ) {
                   toast({
                     title: 'Erro de Validação',
-                    description: `Os valores no teste de Resistências dos Isolamentos são obrigatórios. (Equipamento: ${eq.tipo_equipamento})`,
+                    description: `Os valores das Fases no teste de Resistências dos Isolamentos são obrigatórios para Condutor Elétrico.`,
                     variant: 'destructive',
                   })
                   return false
+                }
+              } else {
+                const rows = ['ab', 'bc', 'ac', 'abc_massa']
+                for (const r of rows) {
+                  if (
+                    !d[r] ||
+                    d[r].v1 === undefined ||
+                    d[r].v2 === undefined ||
+                    String(d[r].v1) === '' ||
+                    String(d[r].v2) === ''
+                  ) {
+                    toast({
+                      title: 'Erro de Validação',
+                      description: `Os valores no teste de Resistências dos Isolamentos são obrigatórios. (Equipamento: ${eq.tipo_equipamento})`,
+                      variant: 'destructive',
+                    })
+                    return false
+                  }
                 }
               }
             }

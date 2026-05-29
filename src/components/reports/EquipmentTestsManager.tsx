@@ -120,6 +120,31 @@ export function EquipmentTestsManager({
     })
   }
 
+  const formatTestValue = (t: any, tipoEquipamento: string) => {
+    if (t.tipo_teste === 'Resistências dos Isolamentos') {
+      if (tipoEquipamento === 'Condutor Elétrico') {
+        const d = t.dados_detalhados || {}
+        const a = d.fase_a ?? '-'
+        const b = d.fase_b ?? '-'
+        const c = d.fase_c ?? '-'
+        const r = d.reserva ? ` | R: ${d.reserva}` : ''
+        return `A: ${a} | B: ${b} | C: ${c}${r}`
+      } else {
+        const d = t.dados_detalhados || {}
+        const ab = (Number(d.ab?.v1) || 0) * (Number(d.ab?.v2) || 0)
+        const bc = (Number(d.bc?.v1) || 0) * (Number(d.bc?.v2) || 0)
+        const ac = (Number(d.ac?.v1) || 0) * (Number(d.ac?.v2) || 0)
+        const abcm = (Number(d.abc_massa?.v1) || 0) * (Number(d.abc_massa?.v2) || 0)
+        return `AB: ${ab} | BC: ${bc} | AC: ${ac} | ABC-M: ${abcm}`
+      }
+    }
+    if (t.tipo_teste === 'Resistências dos Contatos') {
+      const d = t.dados_detalhados || {}
+      return `A: ${d.fase_a ?? '-'} | B: ${d.fase_b ?? '-'} | C: ${d.fase_c ?? '-'}`
+    }
+    return t.valor_teste
+  }
+
   return (
     <div className="space-y-8 animate-fade-in">
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
@@ -154,8 +179,7 @@ export function EquipmentTestsManager({
               <Table>
                 <TableHeader>
                   <TableRow>
-                    <TableHead>Tipo de Teste</TableHead>
-                    <TableHead>Equipamento(s)</TableHead>
+                    <TableHead>Teste / Equipamento</TableHead>
                     <TableHead>Valor</TableHead>
                     <TableHead>Unidade</TableHead>
                     <TableHead>Data</TableHead>
@@ -165,20 +189,16 @@ export function EquipmentTestsManager({
                 <TableBody>
                   {currentTests.map((t, idx) => (
                     <TableRow key={idx}>
-                      <TableCell>{t.tipo_teste}</TableCell>
-                      <TableCell
-                        className="max-w-[200px] text-xs text-muted-foreground truncate"
-                        title={t.equipamento_utilizado}
-                      >
-                        {t.equipamento_utilizado}
-                      </TableCell>
                       <TableCell>
-                        {t.tipo_teste === 'Resistência dos Contatos'
-                          ? `A: ${t.dados_detalhados?.fase_a ?? '-'} | B: ${t.dados_detalhados?.fase_b ?? '-'} | C: ${t.dados_detalhados?.fase_c ?? '-'}`
-                          : t.tipo_teste === 'Isolamento'
-                            ? 'Múltiplas Medições'
-                            : t.valor_teste}
+                        <div className="font-medium text-sm">{t.tipo_teste}</div>
+                        <div
+                          className="text-xs text-muted-foreground truncate max-w-[200px]"
+                          title={t.equipamento_utilizado}
+                        >
+                          {t.equipamento_utilizado}
+                        </div>
                       </TableCell>
+                      <TableCell>{formatTestValue(t, equipment.tipo_equipamento)}</TableCell>
                       <TableCell>{t.unidade}</TableCell>
                       <TableCell>{format(parseISO(t.data_teste), 'dd/MM/yyyy')}</TableCell>
                       {!isView && (
@@ -241,8 +261,7 @@ export function EquipmentTestsManager({
                 <Table>
                   <TableHeader>
                     <TableRow>
-                      <TableHead>Tipo</TableHead>
-                      <TableHead>Equipamento(s)</TableHead>
+                      <TableHead>Teste / Equipamento</TableHead>
                       <TableHead>Valor</TableHead>
                       <TableHead>Unidade</TableHead>
                       <TableHead>Ano</TableHead>
@@ -251,14 +270,18 @@ export function EquipmentTestsManager({
                   <TableBody>
                     {historicalTests.map((ht) => (
                       <TableRow key={ht.id}>
-                        <TableCell className="py-2 text-sm">{ht.tipo_teste}</TableCell>
-                        <TableCell
-                          className="py-2 text-xs text-muted-foreground max-w-[150px] truncate"
-                          title={ht.equipamento_utilizado}
-                        >
-                          {ht.equipamento_utilizado}
+                        <TableCell className="py-2">
+                          <div className="font-medium text-sm">{ht.tipo_teste}</div>
+                          <div
+                            className="text-xs text-muted-foreground truncate max-w-[150px]"
+                            title={ht.equipamento_utilizado}
+                          >
+                            {ht.equipamento_utilizado}
+                          </div>
                         </TableCell>
-                        <TableCell className="py-2 text-sm">{ht.valor_teste}</TableCell>
+                        <TableCell className="py-2 text-sm">
+                          {formatTestValue(ht, equipment.tipo_equipamento)}
+                        </TableCell>
                         <TableCell className="py-2 text-sm">{ht.unidade}</TableCell>
                         <TableCell className="py-2 text-sm">
                           {new Date(ht.data_teste).getFullYear()}
@@ -360,6 +383,7 @@ export function EquipmentTestsManager({
         onOpenChange={setModalOpen}
         onSave={handleSaveTest}
         initialData={editingTest?.test}
+        equipmentType={equipment.tipo_equipamento}
       />
     </div>
   )
