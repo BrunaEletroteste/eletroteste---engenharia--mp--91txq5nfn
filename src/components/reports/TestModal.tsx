@@ -147,6 +147,26 @@ const testSchema = z
             })
           }
         })
+      } else if (data.tipo_equipamento_ref === 'Transformador de Potencial') {
+        const rows = ['A', 'B', 'C']
+        rows.forEach((r) => {
+          const v1 = data.dados_detalhados?.fases?.[r]?.valor1
+          const v2 = data.dados_detalhados?.fases?.[r]?.valor2
+          if (v1 === undefined || v1 === null || String(v1) === '') {
+            ctx.addIssue({
+              code: z.ZodIssueCode.custom,
+              path: [`dados_detalhados.fases.${r}.valor1`],
+              message: 'Obrigatório',
+            })
+          }
+          if (v2 === undefined || v2 === null || String(v2) === '') {
+            ctx.addIssue({
+              code: z.ZodIssueCode.custom,
+              path: [`dados_detalhados.fases.${r}.valor2`],
+              message: 'Obrigatório',
+            })
+          }
+        })
       } else {
         const rows = ['ab', 'bc', 'ac', 'abc_massa']
         rows.forEach((r) => {
@@ -346,6 +366,27 @@ export function TestModal({
                     payload.dados_detalhados[p].resultado = v1 * v2
                   }
                 })
+              } else if (
+                payload.tipo_teste === 'Resistências dos Isolamentos' &&
+                equipmentType === 'Transformador de Potencial' &&
+                payload.dados_detalhados?.fases
+              ) {
+                const phases = ['A', 'B', 'C']
+                let total = 0
+                let count = 0
+                phases.forEach((p) => {
+                  if (payload.dados_detalhados.fases[p]) {
+                    const v1 = Number(payload.dados_detalhados.fases[p].valor1) || 0
+                    const v2 = Number(payload.dados_detalhados.fases[p].valor2) || 0
+                    const res = v1 * v2
+                    payload.dados_detalhados.fases[p].resultado = res
+                    total += res
+                    count++
+                  }
+                })
+                if (count > 0) {
+                  payload.valor_teste = total / count
+                }
               }
 
               delete payload.tipo_equipamento_ref
@@ -673,9 +714,86 @@ export function TestModal({
                     })}
                   </div>
                 </div>
+              ) : equipmentType === 'Transformador de Potencial' ? (
+                <div className="space-y-4 border rounded-md p-4 bg-muted/20">
+                  <h4 className="text-sm font-medium">Medições de Isolamento</h4>
+                  <div className="flex flex-col gap-4">
+                    {[
+                      { id: 'A', label: 'Fase A' },
+                      { id: 'B', label: 'Fase B' },
+                      { id: 'C', label: 'Fase C' },
+                    ].map((r) => {
+                      const v1 = form.watch(`dados_detalhados.fases.${r.id}.valor1` as any)
+                      const v2 = form.watch(`dados_detalhados.fases.${r.id}.valor2` as any)
+                      const res = (Number(v1) || 0) * (Number(v2) || 0)
+                      const hasValues =
+                        v1 !== undefined && v2 !== undefined && v1 !== '' && v2 !== ''
+
+                      return (
+                        <div key={r.id} className="space-y-2">
+                          <FormLabel className="text-xs font-semibold">
+                            {r.label} <span className="text-destructive">*</span>
+                          </FormLabel>
+                          <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 items-start">
+                            <FormField
+                              control={form.control}
+                              name={`dados_detalhados.fases.${r.id}.valor1` as any}
+                              render={({ field }) => (
+                                <FormItem>
+                                  <FormControl>
+                                    <Input
+                                      type="number"
+                                      step="any"
+                                      placeholder="Valor 1"
+                                      className="h-8 text-xs"
+                                      value={field.value ?? ''}
+                                      onChange={(e) =>
+                                        field.onChange(
+                                          e.target.value === '' ? '' : Number(e.target.value),
+                                        )
+                                      }
+                                    />
+                                  </FormControl>
+                                  <FormMessage className="text-[10px]" />
+                                </FormItem>
+                              )}
+                            />
+                            <FormField
+                              control={form.control}
+                              name={`dados_detalhados.fases.${r.id}.valor2` as any}
+                              render={({ field }) => (
+                                <FormItem>
+                                  <FormControl>
+                                    <Input
+                                      type="number"
+                                      step="any"
+                                      placeholder="Valor 2"
+                                      className="h-8 text-xs"
+                                      value={field.value ?? ''}
+                                      onChange={(e) =>
+                                        field.onChange(
+                                          e.target.value === '' ? '' : Number(e.target.value),
+                                        )
+                                      }
+                                    />
+                                  </FormControl>
+                                  <FormMessage className="text-[10px]" />
+                                </FormItem>
+                              )}
+                            />
+                            <div className="h-8 flex items-center px-3 border rounded-md bg-background text-xs text-muted-foreground">
+                              {hasValues ? new Intl.NumberFormat('pt-BR').format(res) : 'Resultado'}
+                            </div>
+                          </div>
+                        </div>
+                      )
+                    })}
+                  </div>
+                </div>
               ) : (
                 <div className="space-y-4 border rounded-md p-4 bg-muted/20">
                   <Table>
+                    {' '}
                     <TableHeader>
                       <TableRow>
                         <TableHead className="w-[120px] p-2">Medição</TableHead>

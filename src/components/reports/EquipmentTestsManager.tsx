@@ -148,6 +148,23 @@ export function EquipmentTestsManager({
         const r = rVal !== '-' ? ` | R: ${rVal}` : ''
 
         return `A: ${a} | B: ${b} | C: ${c}${r}${unidadeStr}`
+      } else if (tipoEquipamento === 'Transformador de Potencial') {
+        const d = t.dados_detalhados?.fases || {}
+
+        const calcRes = (fase: any) => {
+          if (fase === undefined || fase === null) return '-'
+          if (typeof fase !== 'object') return formatNum(fase)
+          if (fase.resultado !== undefined) return formatNum(fase.resultado)
+          const v1 = Number(fase.valor1)
+          const v2 = Number(fase.valor2)
+          if (!isNaN(v1) && !isNaN(v2)) return formatNum(v1 * v2)
+          return '-'
+        }
+
+        const a = calcRes(d.A)
+        const b = calcRes(d.B)
+        const c = calcRes(d.C)
+        return `A: ${a} | B: ${b} | C: ${c}${unidadeStr}`
       } else {
         const d = t.dados_detalhados || {}
         const ab = formatNum((Number(d.ab?.v1) || 0) * (Number(d.ab?.v2) || 0))
