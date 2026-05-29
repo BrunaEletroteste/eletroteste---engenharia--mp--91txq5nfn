@@ -835,7 +835,10 @@ export function EquipmentTestsManager({
             {testTypes.map((type) => (
               <Tooltip key={type} delayDuration={300}>
                 <TooltipTrigger asChild>
-                  <TabsTrigger value={type} className="flex-1 min-w-[150px]">
+                  <TabsTrigger
+                    value={type}
+                    className="flex-1 min-w-[150px] data-[state=active]:bg-slate-300 dark:data-[state=active]:bg-slate-700 data-[state=active]:text-slate-900 dark:data-[state=active]:text-slate-50"
+                  >
                     {type}
                   </TabsTrigger>
                 </TooltipTrigger>
@@ -858,7 +861,10 @@ export function EquipmentTestsManager({
                     <TabsList className="w-full flex h-auto bg-muted/40 p-1 rounded-md justify-start gap-1">
                       <Tooltip delayDuration={300}>
                         <TooltipTrigger asChild>
-                          <TabsTrigger value="Fechado" className="flex-1 min-w-[120px]">
+                          <TabsTrigger
+                            value="Fechado"
+                            className="flex-1 min-w-[120px] data-[state=active]:bg-slate-300 dark:data-[state=active]:bg-slate-700 data-[state=active]:text-slate-900 dark:data-[state=active]:text-slate-50"
+                          >
                             Contatos Fechados
                           </TabsTrigger>
                         </TooltipTrigger>
@@ -868,7 +874,10 @@ export function EquipmentTestsManager({
                       </Tooltip>
                       <Tooltip delayDuration={300}>
                         <TooltipTrigger asChild>
-                          <TabsTrigger value="Aberto" className="flex-1 min-w-[120px]">
+                          <TabsTrigger
+                            value="Aberto"
+                            className="flex-1 min-w-[120px] data-[state=active]:bg-slate-300 dark:data-[state=active]:bg-slate-700 data-[state=active]:text-slate-900 dark:data-[state=active]:text-slate-50"
+                          >
                             Contatos Abertos
                           </TabsTrigger>
                         </TooltipTrigger>
@@ -889,7 +898,10 @@ export function EquipmentTestsManager({
                     <TabsList className="w-full flex h-auto bg-muted/40 p-1 rounded-md justify-start gap-1">
                       <Tooltip delayDuration={300}>
                         <TooltipTrigger asChild>
-                          <TabsTrigger value="ETS" className="flex-1 min-w-[120px]">
+                          <TabsTrigger
+                            value="ETS"
+                            className="flex-1 min-w-[120px] data-[state=active]:bg-slate-300 dark:data-[state=active]:bg-slate-700 data-[state=active]:text-slate-900 dark:data-[state=active]:text-slate-50"
+                          >
                             ETS (Alta Tensão)
                           </TabsTrigger>
                         </TooltipTrigger>
@@ -899,7 +911,10 @@ export function EquipmentTestsManager({
                       </Tooltip>
                       <Tooltip delayDuration={300}>
                         <TooltipTrigger asChild>
-                          <TabsTrigger value="ETI" className="flex-1 min-w-[120px]">
+                          <TabsTrigger
+                            value="ETI"
+                            className="flex-1 min-w-[120px] data-[state=active]:bg-slate-300 dark:data-[state=active]:bg-slate-700 data-[state=active]:text-slate-900 dark:data-[state=active]:text-slate-50"
+                          >
                             ETI (Baixa Tensão)
                           </TabsTrigger>
                         </TooltipTrigger>
