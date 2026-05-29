@@ -37,7 +37,7 @@ interface Props {
   reportDate?: string
 }
 
-const extractPhases = (t: any, tipoEquipamento: string) => {
+const extractPhasesData = (t: any, tipoEquipamento: string, subType?: string) => {
   if (!t) return []
 
   const extractNumeric = (val: any) => {
@@ -74,22 +74,29 @@ const extractPhases = (t: any, tipoEquipamento: string) => {
         { name: 'Fase C', value: calcRes(d.C, true) },
       ].filter((p) => p.value !== undefined)
     } else if (tipoEquipamento === 'Disjuntor') {
-      const df = t.dados_detalhados?.fechado || {}
-      const da = t.dados_detalhados?.aberto || {}
-      return [
-        { name: 'Fechado A-B', value: calcRes(df.ab) },
-        { name: 'Fechado B-C', value: calcRes(df.bc) },
-        { name: 'Fechado C-A', value: calcRes(df.ac) },
-        { name: 'Aberto A-A', value: calcRes(da.aa) },
-        { name: 'Aberto B-B', value: calcRes(da.bb) },
-        { name: 'Aberto C-C', value: calcRes(da.cc) },
-      ].filter((p) => p.value !== undefined)
+      if (subType === 'Aberto') {
+        const da = t.dados_detalhados?.aberto || {}
+        return [
+          { name: 'A-A', value: calcRes(da.aa) },
+          { name: 'B-B', value: calcRes(da.bb) },
+          { name: 'C-C', value: calcRes(da.cc) },
+        ].filter((p) => p.value !== undefined)
+      } else {
+        const df = t.dados_detalhados?.fechado || {}
+        return [
+          { name: 'A-B', value: calcRes(df.ab) },
+          { name: 'B-C', value: calcRes(df.bc) },
+          { name: 'C-A', value: calcRes(df.ac) },
+          { name: 'Massa', value: calcRes(df.abc_massa) },
+        ].filter((p) => p.value !== undefined)
+      }
     } else {
       const d = t.dados_detalhados || {}
       return [
         { name: 'A-B', value: calcRes(d.ab) },
         { name: 'B-C', value: calcRes(d.bc) },
         { name: 'C-A', value: calcRes(d.ac) },
+        { name: 'Massa', value: calcRes(d.abc_massa) },
       ].filter((p) => p.value !== undefined)
     }
   }
@@ -187,33 +194,161 @@ export function EquipmentTestsManager({
       const pTest = pTests.length > 0 ? pTests[0] : null
 
       const pYear = pTest ? new Date(pTest.data_teste).getFullYear() : currentYear - 1
+      const unidade = cTest?.unidade || pTest?.unidade || ''
 
-      const cPhases = extractPhases(cTest, equipment.tipo_equipamento)
-      const pPhases = extractPhases(pTest, equipment.tipo_equipamento)
+      if (type === 'Resistências dos Isolamentos' && equipment.tipo_equipamento === 'Disjuntor') {
+        acc[type] = { isDisjuntorIsolamento: true, subTypes: {} as any }
+        ;['Fechado', 'Aberto'].forEach((sub) => {
+          const cPhases = extractPhasesData(cTest, equipment.tipo_equipamento, sub)
+          const pPhases = extractPhasesData(pTest, equipment.tipo_equipamento, sub)
 
-      const phaseNames = Array.from(
-        new Set([...cPhases.map((p) => p.name), ...pPhases.map((p) => p.name)]),
-      )
+          const phaseNames = Array.from(
+            new Set([...cPhases.map((p) => p.name), ...pPhases.map((p) => p.name)]),
+          )
 
-      const data = phaseNames.map((name) => {
-        const cVal = cPhases.find((p) => p.name === name)?.value
-        const pVal = pPhases.find((p) => p.name === name)?.value
-        return {
-          phase: name,
-          ano_atual: cVal !== undefined ? cVal : null,
-          ano_anterior: pVal !== undefined ? pVal : null,
+          const data = phaseNames.map((name) => {
+            const cVal = cPhases.find((p) => p.name === name)?.value
+            const pVal = pPhases.find((p) => p.name === name)?.value
+            return {
+              phase: name,
+              ano_atual: cVal !== undefined ? cVal : null,
+              ano_anterior: pVal !== undefined ? pVal : null,
+            }
+          })
+
+          acc[type].subTypes[sub] = { data, unidade, pYear }
+        })
+      } else {
+        const cPhases = extractPhasesData(cTest, equipment.tipo_equipamento)
+        const pPhases = extractPhasesData(pTest, equipment.tipo_equipamento)
+
+        const phaseNames = Array.from(
+          new Set([...cPhases.map((p) => p.name), ...pPhases.map((p) => p.name)]),
+        )
+
+        const data = phaseNames.map((name) => {
+          const cVal = cPhases.find((p) => p.name === name)?.value
+          const pVal = pPhases.find((p) => p.name === name)?.value
+          return {
+            phase: name,
+            ano_atual: cVal !== undefined ? cVal : null,
+            ano_anterior: pVal !== undefined ? pVal : null,
+          }
+        })
+
+        acc[type] = {
+          isDisjuntorIsolamento: false,
+          data,
+          unidade,
+          pYear,
         }
-      })
-
-      acc[type] = {
-        data,
-        unidade: cTest?.unidade || pTest?.unidade || '',
-        pYear,
       }
       return acc
     },
-    {} as Record<string, { data: any[]; unidade: string; pYear: number }>,
+    {} as Record<string, any>,
   )
+
+  const renderChart = (data: any[], unidade: string, pYear: number, typeName: string) => {
+    const hasData = data.some((d) => d.ano_atual !== null || d.ano_anterior !== null)
+
+    if (!hasData) {
+      return (
+        <div className="text-center py-10 bg-muted/20 border border-dashed rounded-md text-sm text-muted-foreground h-[250px] flex items-center justify-center">
+          Sem dados suficientes para {typeName}.
+        </div>
+      )
+    }
+
+    if (isMobile) {
+      return (
+        <div className="rounded-md border overflow-x-auto">
+          <Table>
+            <TableHeader>
+              <TableRow>
+                <TableHead>Fase</TableHead>
+                <TableHead>{pYear}</TableHead>
+                <TableHead>{currentYear}</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {data.map((d, idx) => (
+                <TableRow key={idx}>
+                  <TableCell className="py-2 text-sm">{d.phase}</TableCell>
+                  <TableCell className="py-2 text-sm text-muted-foreground">
+                    {d.ano_anterior ?? '-'} {d.ano_anterior !== null ? unidade : ''}
+                  </TableCell>
+                  <TableCell className="py-2 text-sm font-medium">
+                    {d.ano_atual ?? '-'} {d.ano_atual !== null ? unidade : ''}
+                  </TableCell>
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
+        </div>
+      )
+    }
+
+    return (
+      <div className="h-[300px] w-full border rounded-md p-4 bg-background flex flex-col">
+        <div className="text-xs text-muted-foreground mb-2 text-right font-medium">
+          Unidade: {unidade || '-'}
+        </div>
+        <div className="flex-1 min-h-0">
+          <ChartContainer
+            config={{
+              ano_anterior: {
+                label: pYear.toString(),
+                color: 'hsl(var(--muted-foreground))',
+              },
+              ano_atual: {
+                label: currentYear.toString(),
+                color: 'hsl(var(--primary))',
+              },
+            }}
+            className="h-full w-full"
+          >
+            <ResponsiveContainer width="100%" height="100%">
+              <BarChart data={data} margin={{ top: 10, right: 10, left: 10, bottom: 0 }}>
+                <CartesianGrid strokeDasharray="3 3" vertical={false} />
+                <XAxis
+                  dataKey="phase"
+                  tickLine={false}
+                  axisLine={false}
+                  tickMargin={10}
+                  fontSize={12}
+                />
+                <YAxis
+                  tickLine={false}
+                  axisLine={false}
+                  tickMargin={10}
+                  fontSize={12}
+                  tickFormatter={(val) => `${val} ${unidade}`}
+                  width={unidade ? 60 : 40}
+                />
+                <ChartTooltip
+                  cursor={{ fill: 'hsl(var(--muted))', opacity: 0.4 }}
+                  content={<ChartTooltipContent />}
+                />
+                <ChartLegend content={<ChartLegendContent />} />
+                <Bar
+                  dataKey="ano_anterior"
+                  name={pYear.toString()}
+                  fill="var(--color-ano_anterior)"
+                  radius={[4, 4, 0, 0]}
+                />
+                <Bar
+                  dataKey="ano_atual"
+                  name={currentYear.toString()}
+                  fill="var(--color-ano_atual)"
+                  radius={[4, 4, 0, 0]}
+                />
+              </BarChart>
+            </ResponsiveContainer>
+          </ChartContainer>
+        </div>
+      </div>
+    )
+  }
 
   const handleSaveTest = (test: TestItem) => {
     setEquipments((prev) => {
@@ -503,101 +638,37 @@ export function EquipmentTestsManager({
                   ))}
                 </TabsList>
                 {testTypes.map((type) => {
-                  const { data, unidade, pYear } = chartDataByType[type]
-                  const hasData = data.some((d) => d.ano_atual !== null || d.ano_anterior !== null)
+                  const typeData = chartDataByType[type]
 
+                  if (typeData.isDisjuntorIsolamento) {
+                    return (
+                      <TabsContent key={type} value={type} className="mt-0">
+                        <Tabs defaultValue="Fechado" className="w-full">
+                          <TabsList className="w-full flex h-auto mb-4 bg-muted/40 p-1 rounded-md justify-start gap-1">
+                            <TabsTrigger value="Fechado" className="flex-1 min-w-[120px]">
+                              Contatos Fechados
+                            </TabsTrigger>
+                            <TabsTrigger value="Aberto" className="flex-1 min-w-[120px]">
+                              Contatos Abertos
+                            </TabsTrigger>
+                          </TabsList>
+                          {['Fechado', 'Aberto'].map((sub) => {
+                            const { data, unidade, pYear } = typeData.subTypes[sub]
+                            return (
+                              <TabsContent key={sub} value={sub} className="mt-0">
+                                {renderChart(data, unidade, pYear, `${type} - ${sub}`)}
+                              </TabsContent>
+                            )
+                          })}
+                        </Tabs>
+                      </TabsContent>
+                    )
+                  }
+
+                  const { data, unidade, pYear } = typeData
                   return (
                     <TabsContent key={type} value={type} className="mt-0">
-                      {!hasData ? (
-                        <div className="text-center py-10 bg-muted/20 border border-dashed rounded-md text-sm text-muted-foreground h-[250px] flex items-center justify-center">
-                          Sem dados suficientes para {type}.
-                        </div>
-                      ) : isMobile ? (
-                        <div className="rounded-md border overflow-x-auto">
-                          <Table>
-                            <TableHeader>
-                              <TableRow>
-                                <TableHead>Fase</TableHead>
-                                <TableHead>{pYear}</TableHead>
-                                <TableHead>{currentYear}</TableHead>
-                              </TableRow>
-                            </TableHeader>
-                            <TableBody>
-                              {data.map((d, idx) => (
-                                <TableRow key={idx}>
-                                  <TableCell className="py-2 text-sm">{d.phase}</TableCell>
-                                  <TableCell className="py-2 text-sm text-muted-foreground">
-                                    {d.ano_anterior ?? '-'} {d.ano_anterior !== null ? unidade : ''}
-                                  </TableCell>
-                                  <TableCell className="py-2 text-sm font-medium">
-                                    {d.ano_atual ?? '-'} {d.ano_atual !== null ? unidade : ''}
-                                  </TableCell>
-                                </TableRow>
-                              ))}
-                            </TableBody>
-                          </Table>
-                        </div>
-                      ) : (
-                        <div className="h-[300px] w-full border rounded-md p-4 bg-background flex flex-col">
-                          <div className="text-xs text-muted-foreground mb-2 text-right font-medium">
-                            Unidade: {unidade || '-'}
-                          </div>
-                          <div className="flex-1 min-h-0">
-                            <ChartContainer
-                              config={{
-                                ano_anterior: {
-                                  label: pYear.toString(),
-                                  color: 'hsl(var(--muted-foreground))',
-                                },
-                                ano_atual: {
-                                  label: currentYear.toString(),
-                                  color: 'hsl(var(--primary))',
-                                },
-                              }}
-                              className="h-full w-full"
-                            >
-                              <ResponsiveContainer width="100%" height="100%">
-                                <BarChart
-                                  data={data}
-                                  margin={{ top: 10, right: 10, left: -20, bottom: 0 }}
-                                >
-                                  <CartesianGrid strokeDasharray="3 3" vertical={false} />
-                                  <XAxis
-                                    dataKey="phase"
-                                    tickLine={false}
-                                    axisLine={false}
-                                    tickMargin={10}
-                                    fontSize={12}
-                                  />
-                                  <YAxis
-                                    tickLine={false}
-                                    axisLine={false}
-                                    tickMargin={10}
-                                    fontSize={12}
-                                  />
-                                  <ChartTooltip
-                                    cursor={{ fill: 'hsl(var(--muted))', opacity: 0.4 }}
-                                    content={<ChartTooltipContent />}
-                                  />
-                                  <ChartLegend content={<ChartLegendContent />} />
-                                  <Bar
-                                    dataKey="ano_anterior"
-                                    name={pYear.toString()}
-                                    fill="var(--color-ano_anterior)"
-                                    radius={[4, 4, 0, 0]}
-                                  />
-                                  <Bar
-                                    dataKey="ano_atual"
-                                    name={currentYear.toString()}
-                                    fill="var(--color-ano_atual)"
-                                    radius={[4, 4, 0, 0]}
-                                  />
-                                </BarChart>
-                              </ResponsiveContainer>
-                            </ChartContainer>
-                          </div>
-                        </div>
-                      )}
+                      {renderChart(data, unidade, pYear, type)}
                     </TabsContent>
                   )
                 })}
