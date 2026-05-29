@@ -148,7 +148,10 @@ export function EquipmentTestsManager({
         const r = rVal !== '-' ? ` | R: ${rVal}` : ''
 
         return `A: ${a} | B: ${b} | C: ${c}${r}${unidadeStr}`
-      } else if (tipoEquipamento === 'Transformador de Potencial') {
+      } else if (
+        tipoEquipamento === 'Transformador de Potencial' ||
+        tipoEquipamento === 'Transformador de Corrente'
+      ) {
         const d = t.dados_detalhados?.fases || {}
 
         const calcRes = (fase: any) => {
@@ -164,7 +167,7 @@ export function EquipmentTestsManager({
         const a = calcRes(d.A)
         const b = calcRes(d.B)
         const c = calcRes(d.C)
-        return `A: ${a} | B: ${b} | C: ${c}${unidadeStr}`
+        return `A: ${a} | B: ${b} | C: ${c}`
       } else {
         const d = t.dados_detalhados || {}
         const ab = formatNum((Number(d.ab?.v1) || 0) * (Number(d.ab?.v2) || 0))

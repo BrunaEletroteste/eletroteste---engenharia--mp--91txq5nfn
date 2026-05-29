@@ -791,7 +791,7 @@ export function TestModal({
                             />
                             <div className="h-8 flex items-center px-3 border rounded-md bg-background text-xs text-muted-foreground whitespace-nowrap">
                               {hasValues
-                                ? `${new Intl.NumberFormat('pt-BR').format(res)} ${watchUnidade || 'MΩ'}`
+                                ? `${new Intl.NumberFormat('pt-BR').format(res)}`
                                 : 'Resultado'}
                             </div>
                           </div>
