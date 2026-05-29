@@ -167,7 +167,6 @@ export function EquipmentTestsManager({
         const b = calcRes(d.B)
         const c = calcRes(d.C)
         return `A: ${a} | B: ${b} | C: ${c}`
-      } else {
       } else if (tipoEquipamento === 'Disjuntor') {
         const df = t.dados_detalhados?.fechado || {}
         const da = t.dados_detalhados?.aberto || {}
