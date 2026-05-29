@@ -553,8 +553,11 @@ export function EquipmentTestsManager({
       const ets = t.dados_detalhados?.ets || {}
       const eti = t.dados_detalhados?.eti || {}
 
-      const f_ets = `H1-H3: ${formatNum(ets.h1_h3) ?? '-'} | H2-H1: ${formatNum(ets.h2_h1) ?? '-'} | H3-H2: ${formatNum(ets.h3_h2) ?? '-'}`
-      const f_eti = `X1-X3: ${formatNum(eti.x1_x3) ?? '-'} | X2-X1: ${formatNum(eti.x2_x1) ?? '-'} | X3-X2: ${formatNum(eti.x3_x2) ?? '-'}`
+      const formatField = (val: any, unit: string) =>
+        val !== undefined && val !== null && val !== '' ? `${formatNum(val)} ${unit}` : '-'
+
+      const f_ets = `H1-H3: ${formatField(ets.h1_h3, 'Ω')} | H2-H1: ${formatField(ets.h2_h1, 'Ω')} | H3-H2: ${formatField(ets.h3_h2, 'Ω')}`
+      const f_eti = `X1-X3: ${formatField(eti.x1_x3, 'mΩ')} | X2-X1: ${formatField(eti.x2_x1, 'mΩ')} | X3-X2: ${formatField(eti.x3_x2, 'mΩ')}`
 
       if (subType === 'ETS') return f_ets
       if (subType === 'ETI') return f_eti
@@ -568,6 +571,7 @@ export function EquipmentTestsManager({
   }
 
   const renderTabContent = (type: string, subType?: string) => {
+    const isEnrolamentos = type === 'Resistências dos Enrolamentos'
     const cTests = currentTests.filter((t) => t.tipo_teste === type)
     const hTests = filteredHistorical.filter((t) => t.tipo_teste === type)
 
@@ -605,7 +609,7 @@ export function EquipmentTestsManager({
                   <TableRow>
                     <TableHead>Equipamento Utilizado</TableHead>
                     <TableHead>Valor</TableHead>
-                    <TableHead>Unidade</TableHead>
+                    {!isEnrolamentos && <TableHead>Unidade</TableHead>}
                     <TableHead>Data</TableHead>
                     {!isView && <TableHead className="w-[100px]">Ações</TableHead>}
                   </TableRow>
@@ -624,9 +628,11 @@ export function EquipmentTestsManager({
                       <TableCell>
                         {formatTestValue(t, equipment.tipo_equipamento, subType)}
                       </TableCell>
-                      <TableCell className="text-sm text-muted-foreground">
-                        {t.unidade || '-'}
-                      </TableCell>
+                      {!isEnrolamentos && (
+                        <TableCell className="text-sm text-muted-foreground">
+                          {t.unidade || '-'}
+                        </TableCell>
+                      )}
                       <TableCell>{format(parseISO(t.data_teste), 'dd/MM/yyyy')}</TableCell>
                       {!isView && (
                         <TableCell>
@@ -690,7 +696,7 @@ export function EquipmentTestsManager({
                     <TableRow>
                       <TableHead>Equipamento Utilizado</TableHead>
                       <TableHead>Valor</TableHead>
-                      <TableHead>Unidade</TableHead>
+                      {!isEnrolamentos && <TableHead>Unidade</TableHead>}
                       <TableHead>Ano</TableHead>
                     </TableRow>
                   </TableHeader>
@@ -708,9 +714,11 @@ export function EquipmentTestsManager({
                         <TableCell className="py-2 text-sm">
                           {formatTestValue(ht, equipment.tipo_equipamento, subType)}
                         </TableCell>
-                        <TableCell className="py-2 text-sm text-muted-foreground">
-                          {ht.unidade || '-'}
-                        </TableCell>
+                        {!isEnrolamentos && (
+                          <TableCell className="py-2 text-sm text-muted-foreground">
+                            {ht.unidade || '-'}
+                          </TableCell>
+                        )}
                         <TableCell className="py-2 text-sm">
                           {new Date(ht.data_teste).getFullYear()}
                         </TableCell>

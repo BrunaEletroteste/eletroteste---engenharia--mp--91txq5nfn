@@ -691,7 +691,7 @@ export function TestModal({
               <div className="space-y-4 border rounded-md p-4 bg-muted/20">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   <div className="space-y-4">
-                    <h4 className="text-sm font-medium border-b pb-2">ETS (Alta Tensão) - Ω</h4>
+                    <h4 className="text-sm font-medium border-b pb-2">ETS (Alta Tensão)</h4>
                     <div className="space-y-3">
                       {[
                         { id: 'h1_h3', label: 'H1 - H3' },
@@ -707,12 +707,12 @@ export function TestModal({
                               <FormLabel className="text-xs w-16 text-right font-semibold">
                                 {r.label} <span className="text-destructive">*</span>
                               </FormLabel>
-                              <div className="flex-1">
+                              <div className="flex-1 relative">
                                 <FormControl>
                                   <Input
                                     type="number"
                                     step="any"
-                                    className="h-8 text-xs"
+                                    className="h-8 text-xs pr-8"
                                     value={field.value ?? ''}
                                     onChange={(e) =>
                                       field.onChange(
@@ -721,6 +721,9 @@ export function TestModal({
                                     }
                                   />
                                 </FormControl>
+                                <span className="absolute right-3 top-1/2 -translate-y-1/2 text-xs text-muted-foreground pointer-events-none select-none">
+                                  Ω
+                                </span>
                                 <FormMessage className="text-[10px]" />
                               </div>
                             </FormItem>
@@ -730,7 +733,7 @@ export function TestModal({
                     </div>
                   </div>
                   <div className="space-y-4">
-                    <h4 className="text-sm font-medium border-b pb-2">ETI (Baixa Tensão) - mΩ</h4>
+                    <h4 className="text-sm font-medium border-b pb-2">ETI (Baixa Tensão)</h4>
                     <div className="space-y-3">
                       {[
                         { id: 'x1_x3', label: 'X1 - X3' },
@@ -746,12 +749,12 @@ export function TestModal({
                               <FormLabel className="text-xs w-16 text-right font-semibold">
                                 {r.label} <span className="text-destructive">*</span>
                               </FormLabel>
-                              <div className="flex-1">
+                              <div className="flex-1 relative">
                                 <FormControl>
                                   <Input
                                     type="number"
                                     step="any"
-                                    className="h-8 text-xs"
+                                    className="h-8 text-xs pr-10"
                                     value={field.value ?? ''}
                                     onChange={(e) =>
                                       field.onChange(
@@ -760,6 +763,9 @@ export function TestModal({
                                     }
                                   />
                                 </FormControl>
+                                <span className="absolute right-3 top-1/2 -translate-y-1/2 text-xs text-muted-foreground pointer-events-none select-none">
+                                  mΩ
+                                </span>
                                 <FormMessage className="text-[10px]" />
                               </div>
                             </FormItem>
@@ -1352,47 +1358,46 @@ export function TestModal({
                     )}
                   />
                 )}
-              <FormField
-                control={form.control}
-                name="unidade"
-                render={({ field }) => (
-                  <FormItem
-                    className={
-                      watchTipo === 'Resistências dos Contatos' ||
-                      watchTipo === 'Resistências dos Isolamentos' ||
-                      watchTipo === 'Resistências dos Enrolamentos'
-                        ? 'col-span-2'
-                        : ''
-                    }
-                  >
-                    <FormLabel>
-                      Unidade <span className="text-destructive">*</span>
-                    </FormLabel>
-                    <FormControl>
-                      <Input
-                        placeholder="Ex: MΩ, V"
-                        {...field}
-                        value={field.value ?? ''}
-                        readOnly={
-                          watchTipo === 'Resistências dos Contatos' ||
-                          watchTipo === 'Resistências dos Isolamentos' ||
-                          watchTipo === 'Relação de Tensões' ||
-                          watchTipo === 'Resistências dos Enrolamentos'
-                        }
-                        className={
-                          watchTipo === 'Resistências dos Contatos' ||
-                          watchTipo === 'Resistências dos Isolamentos' ||
-                          watchTipo === 'Relação de Tensões' ||
-                          watchTipo === 'Resistências dos Enrolamentos'
-                            ? 'bg-muted cursor-not-allowed'
-                            : ''
-                        }
-                      />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
+              {watchTipo !== 'Resistências dos Enrolamentos' && (
+                <FormField
+                  control={form.control}
+                  name="unidade"
+                  render={({ field }) => (
+                    <FormItem
+                      className={
+                        watchTipo === 'Resistências dos Contatos' ||
+                        watchTipo === 'Resistências dos Isolamentos'
+                          ? 'col-span-2'
+                          : ''
+                      }
+                    >
+                      <FormLabel>
+                        Unidade <span className="text-destructive">*</span>
+                      </FormLabel>
+                      <FormControl>
+                        <Input
+                          placeholder="Ex: MΩ, V"
+                          {...field}
+                          value={field.value ?? ''}
+                          readOnly={
+                            watchTipo === 'Resistências dos Contatos' ||
+                            watchTipo === 'Resistências dos Isolamentos' ||
+                            watchTipo === 'Relação de Tensões'
+                          }
+                          className={
+                            watchTipo === 'Resistências dos Contatos' ||
+                            watchTipo === 'Resistências dos Isolamentos' ||
+                            watchTipo === 'Relação de Tensões'
+                              ? 'bg-muted cursor-not-allowed'
+                              : ''
+                          }
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              )}
             </div>
             <FormField
               control={form.control}
