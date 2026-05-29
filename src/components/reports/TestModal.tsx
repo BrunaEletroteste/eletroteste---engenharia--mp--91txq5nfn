@@ -374,6 +374,155 @@ const CATEGORY_MAP: Record<string, string> = {
   'Resistências dos Contatos': 'equipamento_contatos',
 }
 
+const FATOR_CORRECAO_75: Record<number, number> = {
+  0: 181,
+  1: 169,
+  2: 158,
+  3: 147,
+  4: 137,
+  5: 128,
+  6: 119,
+  7: 111,
+  8: 104,
+  9: 97,
+  10: 91,
+  11: 84,
+  12: 79,
+  13: 74,
+  14: 69,
+  15: 64,
+  16: 60,
+  17: 56,
+  18: 52,
+  19: 48.5,
+  20: 45.3,
+  21: 42.2,
+  22: 39.4,
+  23: 36.8,
+  24: 34.3,
+  25: 32,
+  26: 29.9,
+  27: 27.9,
+  28: 26,
+  29: 24.3,
+  30: 22.6,
+  31: 21.1,
+  32: 19.7,
+  33: 18.4,
+  34: 17.2,
+  35: 16,
+  36: 14.9,
+  37: 13.9,
+  38: 13,
+  39: 12.1,
+  40: 11.3,
+  41: 10.6,
+  42: 9.9,
+  43: 9.2,
+  44: 8.6,
+  45: 8,
+  46: 7.5,
+  47: 7,
+  48: 6.5,
+  49: 6.1,
+  50: 5.7,
+  51: 5.3,
+  52: 4.92,
+  53: 4.59,
+  54: 4.29,
+  55: 4,
+  56: 3.73,
+  57: 3.48,
+  58: 3.25,
+  59: 3.03,
+  60: 2.83,
+  61: 2.64,
+  62: 2.46,
+  63: 2.3,
+  64: 2.14,
+  65: 2,
+  66: 1.87,
+  67: 1.74,
+  68: 1.62,
+  69: 1.52,
+  70: 1.41,
+  71: 1.32,
+  72: 1.25,
+  73: 1.15,
+  74: 1.07,
+  75: 1,
+  76: 0.93,
+  77: 0.87,
+  78: 0.81,
+  79: 0.76,
+  80: 0.71,
+  81: 0.66,
+  82: 0.61,
+}
+
+const FATOR_CORRECAO_105: Record<number, number> = {
+  41: 84,
+  42: 79,
+  43: 74,
+  44: 69,
+  45: 64,
+  46: 60,
+  47: 56,
+  48: 52,
+  49: 48.5,
+  50: 45.3,
+  51: 42.2,
+  52: 39.4,
+  53: 36.8,
+  54: 34.3,
+  55: 32,
+  56: 29.9,
+  57: 27.9,
+  58: 26,
+  59: 24.3,
+  60: 22.6,
+  61: 21.1,
+  62: 19.7,
+  63: 18.4,
+  64: 17.2,
+  65: 16,
+  66: 14.9,
+  67: 13.9,
+  68: 13,
+  69: 12.1,
+  70: 11.3,
+  71: 10.6,
+  72: 9.9,
+  73: 9.2,
+  74: 8.6,
+  75: 8,
+  76: 7.5,
+  77: 7,
+  78: 6.5,
+  79: 6.1,
+  80: 5.7,
+  81: 5.3,
+  82: 4.92,
+  83: 4.59,
+  84: 4.29,
+  85: 4,
+  86: 3.73,
+  87: 3.48,
+  88: 3.25,
+  89: 3.03,
+  90: 2.83,
+  91: 2.64,
+  92: 2.46,
+  93: 2.3,
+  94: 2.14,
+  95: 2,
+  96: 1.87,
+  97: 1.74,
+  98: 1.62,
+  99: 1.52,
+  100: 1.41,
+}
+
 export function TestModal({
   open,
   onOpenChange,
@@ -436,39 +585,6 @@ export function TestModal({
   const tempMedidaSource =
     isoTest?.dados_detalhados?.temperatura_medida ?? isoTest?.dados_detalhados?.temperatura
 
-  const [fatorCorrecao75, setFatorCorrecao75] = useState<Record<number, number>>({})
-  const [fatorCorrecao105, setFatorCorrecao105] = useState<Record<number, number>>({})
-
-  useEffect(() => {
-    if (open) {
-      getOpcoesPadronizadas('fator_correcao_75')
-        .then((res) => {
-          const map: Record<number, number> = {}
-          res.forEach((item) => {
-            const parts = item.valor.split(':')
-            if (parts.length === 2) {
-              map[Number(parts[0])] = Number(parts[1])
-            }
-          })
-          setFatorCorrecao75(map)
-        })
-        .catch(console.error)
-
-      getOpcoesPadronizadas('fator_correcao_105')
-        .then((res) => {
-          const map: Record<number, number> = {}
-          res.forEach((item) => {
-            const parts = item.valor.split(':')
-            if (parts.length === 2) {
-              map[Number(parts[0])] = Number(parts[1])
-            }
-          })
-          setFatorCorrecao105(map)
-        })
-        .catch(console.error)
-    }
-  }, [open])
-
   const form = useForm<TestFormValues>({
     resolver: zodResolver(testSchema),
     defaultValues: {
@@ -491,25 +607,18 @@ export function TestModal({
         const temp = Math.round(Number(watchTemperatura))
         let factor = undefined
         if (meioIsolante === 'Óleo Mineral') {
-          factor = fatorCorrecao75[temp]
+          factor = FATOR_CORRECAO_75[temp]
         } else {
-          factor = fatorCorrecao105[temp]
+          factor = FATOR_CORRECAO_105[temp]
         }
         if (factor !== undefined) {
           form.setValue('dados_detalhados.fator_correcao', factor, { shouldValidate: true })
+        } else {
+          form.setValue('dados_detalhados.fator_correcao', '', { shouldValidate: true })
         }
       }
     }
-  }, [
-    watchTemperatura,
-    meioIsolante,
-    fatorCorrecao75,
-    fatorCorrecao105,
-    watchTipo,
-    equipmentType,
-    open,
-    form,
-  ])
+  }, [watchTemperatura, meioIsolante, watchTipo, equipmentType, open, form])
 
   useEffect(() => {
     if (open) {
@@ -793,7 +902,7 @@ export function TestModal({
                     const v1 = Number(payload.dados_detalhados.medicoes[p].v1) || 0
                     const v2 = Number(payload.dados_detalhados.medicoes[p].v2) || 0
                     const res = v1 * v2
-                    const corrigido = fc > 0 ? res / fc : res
+                    const corrigido = res * fc
 
                     payload.dados_detalhados.medicoes[p].resultado = res
                     payload.dados_detalhados.medicoes[p].corrigido = corrigido
@@ -1558,9 +1667,10 @@ export function TestModal({
                             <Input
                               type="number"
                               step="any"
-                              className="h-8 text-xs"
+                              className="h-8 text-xs bg-muted cursor-not-allowed"
                               {...field}
                               value={field.value ?? ''}
+                              readOnly
                               onChange={(e) =>
                                 field.onChange(e.target.value === '' ? '' : Number(e.target.value))
                               }
@@ -1569,7 +1679,7 @@ export function TestModal({
                           <FormMessage className="text-[10px]" />
                         </FormItem>
                       )}
-                    />
+                    />{' '}
                   </div>
                   <h4 className="text-sm font-medium">Medições de Isolamento (à 01 minuto)</h4>
                   <div className="grid grid-cols-1 gap-4">
@@ -1584,7 +1694,7 @@ export function TestModal({
                       const res = (Number(v1) || 0) * (Number(v2) || 0)
 
                       const numFc = Number(fc) || 1
-                      const corrigido = numFc > 0 ? res / numFc : res
+                      const corrigido = res * numFc
                       const limite = meioIsolante !== 'Óleo Mineral' ? r.limOutro : r.limOleo
                       const hasValues =
                         v1 !== undefined && v2 !== undefined && v1 !== '' && v2 !== ''
@@ -1652,7 +1762,7 @@ export function TestModal({
 
                           <div
                             className={cn(
-                              'bg-muted/40 p-3 rounded-md grid grid-cols-1 sm:grid-cols-4 gap-4 text-xs border border-border/50',
+                              'bg-muted/40 p-3 rounded-md grid grid-cols-1 sm:grid-cols-3 gap-4 text-xs border border-border/50',
                               hasValues &&
                                 fc &&
                                 corrigido < limite &&
@@ -1669,15 +1779,7 @@ export function TestModal({
                             </div>
                             <div>
                               <span className="text-muted-foreground block mb-1 font-medium">
-                                Fator Corr.
-                              </span>
-                              <span className="font-medium text-foreground text-sm">
-                                {fc ? Number(fc) : '-'}
-                              </span>
-                            </div>
-                            <div>
-                              <span className="text-muted-foreground block mb-1 font-medium">
-                                Valor à {meioIsolante !== 'Óleo Mineral' ? '105' : '75'}ºC
+                                Valor Corrigido ({meioIsolante !== 'Óleo Mineral' ? '105' : '75'}ºC)
                               </span>
                               <span
                                 className={cn(
