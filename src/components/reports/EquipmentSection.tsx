@@ -369,7 +369,7 @@ export function EquipmentSection({ equipments, setEquipments, isView }: Props) {
                             <Trash2 className="h-4 w-4" />
                           </Button>
                         </TooltipTrigger>
-                        <TooltipContent>Remover</TooltipContent>
+                        <TooltipContent>Excluir</TooltipContent>
                       </Tooltip>
                     </div>
                   )}

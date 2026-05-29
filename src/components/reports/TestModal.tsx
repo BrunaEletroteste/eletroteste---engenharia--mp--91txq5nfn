@@ -902,7 +902,7 @@ export function TestModal({
                     const v1 = Number(payload.dados_detalhados.medicoes[p].v1) || 0
                     const v2 = Number(payload.dados_detalhados.medicoes[p].v2) || 0
                     const res = v1 * v2
-                    const corrigido = res * fc
+                    const corrigido = res / fc
 
                     payload.dados_detalhados.medicoes[p].resultado = res
                     payload.dados_detalhados.medicoes[p].corrigido = corrigido
@@ -1694,7 +1694,7 @@ export function TestModal({
                       const res = (Number(v1) || 0) * (Number(v2) || 0)
 
                       const numFc = Number(fc) || 1
-                      const corrigido = res * numFc
+                      const corrigido = res / numFc
                       const limite = meioIsolante !== 'Óleo Mineral' ? r.limOutro : r.limOleo
                       const hasValues =
                         v1 !== undefined && v2 !== undefined && v1 !== '' && v2 !== ''

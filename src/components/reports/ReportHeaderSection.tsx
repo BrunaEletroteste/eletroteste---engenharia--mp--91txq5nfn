@@ -107,10 +107,10 @@ export function ReportHeaderSection({ isView }: { isView: boolean }) {
                           <Input
                             disabled
                             value={selectedClient?.nome_empresa || ''}
-                            className="bg-muted text-ellipsis overflow-hidden whitespace-nowrap w-full"
+                            className="bg-muted truncate w-full"
                           />
                         ) : (
-                          <div className="w-full overflow-hidden *:max-w-full [&_button]:text-ellipsis [&_button]:overflow-hidden [&_button]:whitespace-nowrap">
+                          <div className="w-full overflow-hidden *:max-w-full [&_button]:truncate">
                             <Combobox
                               options={comboOptions}
                               value={field.value}
