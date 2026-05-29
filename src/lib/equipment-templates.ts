@@ -131,7 +131,7 @@ export const getEquipmentFields = (type: string): FieldDef[] => {
         { name: 'buchas', label: 'Buchas de AT e BT', type: 'select', options: ['Sim', 'Não'] },
         { name: 'desl_angular', label: 'Desl. Angular', type: 'text' },
         { name: 'ligado_em', label: 'Ligado em (V)', type: 'text' },
-        { name: 'diagrama', label: 'Diagrama', type: 'text' },
+        { name: 'diagrama', label: 'Diagrama', type: 'combobox' },
       ]
     case 'Disjuntor':
       return [

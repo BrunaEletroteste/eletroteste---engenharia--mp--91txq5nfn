@@ -67,7 +67,8 @@ function ComboboxField({
       const isAlphabeticalOnly =
         categoryToMatch === 'tipo/modelo do relé de proteção' ||
         categoryToMatch === 'fabricante' ||
-        categoryToMatch.includes('fabricante')
+        categoryToMatch.includes('fabricante') ||
+        categoryToMatch === 'diagrama'
 
       if (isAlphabeticalOnly) {
         return a.valor.localeCompare(b.valor, undefined, { numeric: true, sensitivity: 'base' })
@@ -699,7 +700,8 @@ export function EquipmentModal({ open, onOpenChange, onSave, initialData }: Prop
                       const isAlphabeticalOnly =
                         targetCategory === 'tipo/modelo do relé de proteção' ||
                         targetCategory === 'fabricante' ||
-                        targetCategory.includes('fabricante')
+                        targetCategory.includes('fabricante') ||
+                        targetCategory === 'diagrama'
 
                       if (isAlphabeticalOnly) {
                         return a.valor.localeCompare(b.valor, undefined, {
