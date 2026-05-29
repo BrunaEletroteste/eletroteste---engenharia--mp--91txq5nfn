@@ -114,7 +114,9 @@ function ComboboxField({
               ? 'Selecione o fabricante'
               : field.name === 'subestacao'
                 ? 'Selecione a subestação'
-                : 'Selecione...'}
+                : field.name === 'fusivel_corrente_nominal' || field.name === 'corrente_nominal'
+                  ? 'Selecione a corrente...'
+                  : 'Selecione...'}
           <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
         </Button>
       </PopoverTrigger>
@@ -529,9 +531,10 @@ export function EquipmentModal({ open, onOpenChange, onSave, initialData }: Prop
     if (
       targetCategory === 'corrente_nominal' ||
       targetCategory === 'corrente_nominal_fusiveis' ||
+      targetCategory === 'fusivel_corrente_nominal' ||
       targetCategory === 'corrente_primaria' ||
       targetCategory === 'corrente_secundaria' ||
-      field.label.toLowerCase().includes('corrente nominal dos fusíveis')
+      field.label.toLowerCase().includes('corrente nominal')
     )
       targetCategory = 'corrente nominal'
     if (
@@ -638,7 +641,12 @@ export function EquipmentModal({ open, onOpenChange, onSave, initialData }: Prop
                         field.name,
                       )
                     ? 'Tensão'
-                    : ['corrente_primaria', 'corrente_secundaria'].includes(field.name)
+                    : [
+                          'corrente_primaria',
+                          'corrente_secundaria',
+                          'fusivel_corrente_nominal',
+                          'corrente_nominal',
+                        ].includes(field.name)
                       ? 'Corrente Nominal'
                       : field.name === 'exatidao'
                         ? 'Exatidão'

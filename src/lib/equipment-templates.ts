@@ -74,7 +74,7 @@ export const getEquipmentFields = (type: string): FieldDef[] => {
         ...common,
         { name: 'circuito', label: 'Circuito', type: 'text' },
         { name: 'tipo', label: 'Tipo', type: 'text' },
-        { name: 'corrente_nominal', label: 'Corrente Nominal (A)', type: 'text' },
+        { name: 'corrente_nominal', label: 'Corrente Nominal (A)', type: 'combobox' },
         { name: 'classe_isolamento', label: 'Classe de Isolamento (kV)', type: 'text' },
         { name: 'fabricante', label: 'Fabricante', type: 'combobox' },
         { name: 'possui_fusivel', label: 'Contém Fusível?', type: 'boolean' },
@@ -87,7 +87,7 @@ export const getEquipmentFields = (type: string): FieldDef[] => {
         {
           name: 'fusivel_corrente_nominal',
           label: 'Corrente Nominal (A)',
-          type: 'number',
+          type: 'combobox',
           dependsOn: { field: 'possui_fusivel', value: true },
         },
         {
@@ -138,7 +138,7 @@ export const getEquipmentFields = (type: string): FieldDef[] => {
         ...common,
         { name: 'tipo', label: 'Tipo', type: 'text' },
         { name: 'fabricante', label: 'Fabricante', type: 'combobox' },
-        { name: 'corrente_nominal', label: 'Corrente Nominal (A)', type: 'text' },
+        { name: 'corrente_nominal', label: 'Corrente Nominal (A)', type: 'combobox' },
         { name: 'classe_isolamento', label: 'Classe de Isolamento (kV)', type: 'text' },
         { name: 'potencia_simetrica', label: 'Potência Simétrica (MVA)', type: 'text' },
         { name: 'capacidade_ruptura', label: 'Capacidade de Ruptura (kA)', type: 'text' },
