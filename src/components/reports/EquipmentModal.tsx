@@ -254,6 +254,20 @@ export function EquipmentModal({ open, onOpenChange, onSave, initialData }: Prop
   }, [open, initialData])
 
   useEffect(() => {
+    if (open && tipo === 'Transformador' && dados.meio_isolante === 'Epóxi') {
+      setDados((prev) => {
+        if (prev.volume_oleo !== undefined || prev.buchas !== undefined) {
+          const next = { ...prev }
+          delete next.volume_oleo
+          delete next.buchas
+          return next
+        }
+        return prev
+      })
+    }
+  }, [tipo, dados.meio_isolante, open])
+
+  useEffect(() => {
     if (open) {
       const parseVal = (v: any) => {
         if (v === undefined || v === null || v === '') return undefined
@@ -511,6 +525,12 @@ export function EquipmentModal({ open, onOpenChange, onSave, initialData }: Prop
   const renderField = (field: FieldDef) => {
     if (field.dependsOn && dados[field.dependsOn.field] !== field.dependsOn.value) {
       return null
+    }
+
+    if (tipo === 'Transformador' && dados.meio_isolante === 'Epóxi') {
+      if (field.name === 'volume_oleo' || field.name === 'buchas') {
+        return null
+      }
     }
 
     const isCombobox =
