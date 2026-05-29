@@ -14,6 +14,7 @@ import {
 import { useToast } from '@/hooks/use-toast'
 import { cn } from '@/lib/utils'
 import { EquipmentItem, ParecerItem } from '@/types/reports'
+import { getEquipmentFields, FieldDef } from '@/lib/equipment-templates'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { Input } from '@/components/ui/input'
@@ -374,16 +375,42 @@ export function EquipmentSection({ equipments, setEquipments, isView }: Props) {
                     </TabsList>
 
                     <TabsContent value="dados" className="p-4 focus-visible:outline-none">
-                      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-y-3 gap-x-4 text-[13px] p-2 bg-muted/10 rounded-md border border-dashed">
-                        {Object.entries(eq.dados_tecnicos).map(([key, val]) => {
+                      {(() => {
+                        const fields = getEquipmentFields(eq.tipo_equipamento)
+
+                        const isFuseField = (f: FieldDef) => {
+                          const name = f.name.toLowerCase()
+                          const label = f.label.toLowerCase()
+                          return (
+                            name.includes('fusivel') ||
+                            name.includes('fusiveis') ||
+                            label.includes('fusível') ||
+                            label.includes('fusíveis')
+                          )
+                        }
+
+                        const fieldsWithoutSectionAndFuse = fields.filter(
+                          (f) => !f.section && !isFuseField(f),
+                        )
+                        const fuseFields = fields.filter((f) => isFuseField(f))
+                        const sections = Array.from(
+                          new Set(fields.filter((f) => f.section).map((f) => f.section)),
+                        )
+
+                        const renderField = (f: FieldDef) => {
+                          if (
+                            f.dependsOn &&
+                            eq.dados_tecnicos[f.dependsOn.field] !== f.dependsOn.value
+                          ) {
+                            return null
+                          }
+                          const val = eq.dados_tecnicos[f.name]
                           if (val === undefined || val === null || val === '') return null
                           let displayVal = val
                           if (typeof val === 'boolean') displayVal = val ? 'Sim' : 'Não'
                           return (
-                            <div key={key} className="flex flex-col">
-                              <span className="font-semibold text-muted-foreground capitalize">
-                                {key.replace(/_/g, ' ')}
-                              </span>
+                            <div key={f.name} className="flex flex-col">
+                              <span className="font-semibold text-muted-foreground">{f.label}</span>
                               <span
                                 className="truncate font-medium text-foreground"
                                 title={String(displayVal)}
@@ -392,8 +419,89 @@ export function EquipmentSection({ equipments, setEquipments, isView }: Props) {
                               </span>
                             </div>
                           )
-                        })}
-                      </div>
+                        }
+
+                        return (
+                          <div className="space-y-4">
+                            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-y-3 gap-x-4 text-[13px] p-3 bg-muted/10 rounded-md border border-dashed">
+                              {fieldsWithoutSectionAndFuse.map(renderField)}
+                            </div>
+
+                            {sections.length > 0 && (
+                              <div className="space-y-3">
+                                {sections.map((section) => {
+                                  const sectionFields = fields.filter((f) => f.section === section)
+                                  const leftFields = sectionFields.filter(
+                                    (f) => f.column === 'left',
+                                  )
+                                  const rightFields = sectionFields.filter(
+                                    (f) => f.column === 'right',
+                                  )
+
+                                  return (
+                                    <div
+                                      key={section!}
+                                      className="rounded-lg border border-border bg-card p-4 shadow-sm"
+                                    >
+                                      <h3 className="mb-3 text-xs font-semibold text-muted-foreground uppercase tracking-wider">
+                                        {section}
+                                      </h3>
+                                      {leftFields.length > 0 || rightFields.length > 0 ? (
+                                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-8 gap-y-4">
+                                          <div className="space-y-2">
+                                            {section === 'Ajustes de Corrente' && (
+                                              <h4 className="text-[11px] font-bold uppercase text-primary border-b pb-1 mb-2">
+                                                Fase
+                                              </h4>
+                                            )}
+                                            <div className="grid grid-cols-2 gap-y-3 gap-x-4 text-[13px]">
+                                              {leftFields.map(renderField)}
+                                            </div>
+                                          </div>
+                                          <div className="space-y-2">
+                                            {section === 'Ajustes de Corrente' && (
+                                              <h4 className="text-[11px] font-bold uppercase text-primary border-b pb-1 mb-2">
+                                                Neutro
+                                              </h4>
+                                            )}
+                                            <div className="grid grid-cols-2 gap-y-3 gap-x-4 text-[13px]">
+                                              {rightFields.map(renderField)}
+                                            </div>
+                                          </div>
+                                        </div>
+                                      ) : (
+                                        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-y-3 gap-x-4 text-[13px]">
+                                          {sectionFields.map(renderField)}
+                                        </div>
+                                      )}
+                                    </div>
+                                  )
+                                })}
+                              </div>
+                            )}
+
+                            {fuseFields.length > 0 &&
+                              fuseFields.some((f) => {
+                                if (
+                                  f.dependsOn &&
+                                  eq.dados_tecnicos[f.dependsOn.field] !== f.dependsOn.value
+                                )
+                                  return false
+                                const val = eq.dados_tecnicos[f.name]
+                                return val !== undefined && val !== null && val !== ''
+                              }) && (
+                                <div className="rounded-lg border border-border bg-card p-4 shadow-sm">
+                                  <h3 className="mb-3 text-xs font-semibold text-muted-foreground uppercase tracking-wider">
+                                    Informações dos Fusíveis
+                                  </h3>
+                                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-y-3 gap-x-4 text-[13px]">
+                                    {fuseFields.map(renderField)}
+                                  </div>
+                                </div>
+                              )}
+                          </div>
+                        )
+                      })()}
                     </TabsContent>
 
                     <TabsContent value="testes" className="p-4 focus-visible:outline-none">
