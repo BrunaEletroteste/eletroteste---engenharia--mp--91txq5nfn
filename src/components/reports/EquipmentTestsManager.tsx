@@ -132,13 +132,33 @@ export function EquipmentTestsManager({
   const { toast } = useToast()
   const isMobile = useIsMobile()
 
+  const eqIdObj = equipment.dados_tecnicos || {}
+  const mySubestacao = eqIdObj.subestacao?.toString().trim()
+  const myNumero = eqIdObj.numero?.toString().trim()
+  const myCircuito = eqIdObj.circuito?.toString().trim()
+
   const loadHistory = useCallback(async () => {
     if (!clienteId || !equipment.tipo_equipamento) return
     setIsLoadingHistory(true)
     setHistoryError(false)
     try {
+      let filterStr = `equipamento_id.relatorio_id.cliente_id='${clienteId}' && equipamento_id.tipo_equipamento='${equipment.tipo_equipamento}'`
+
+      if (mySubestacao) {
+        const safeSub = mySubestacao.replace(/'/g, "\\'")
+        filterStr += ` && equipamento_id.dados_tecnicos ~ '${safeSub}'`
+      }
+      if (myNumero) {
+        const safeNum = myNumero.replace(/'/g, "\\'")
+        filterStr += ` && equipamento_id.dados_tecnicos ~ '${safeNum}'`
+      }
+      if (myCircuito) {
+        const safeCirc = myCircuito.replace(/'/g, "\\'")
+        filterStr += ` && equipamento_id.dados_tecnicos ~ '${safeCirc}'`
+      }
+
       const res = await pb.collection('testes_equipamento').getFullList({
-        filter: `equipamento_id.relatorio_id.cliente_id='${clienteId}' && equipamento_id.tipo_equipamento='${equipment.tipo_equipamento}'`,
+        filter: filterStr,
         sort: '-data_teste',
         expand: 'equipamento_id',
       })
@@ -148,7 +168,7 @@ export function EquipmentTestsManager({
     } finally {
       setIsLoadingHistory(false)
     }
-  }, [clienteId, equipment.tipo_equipamento])
+  }, [clienteId, equipment.tipo_equipamento, mySubestacao, myNumero, myCircuito])
 
   useEffect(() => {
     loadHistory()
@@ -166,14 +186,20 @@ export function EquipmentTestsManager({
   const currentReportDate = reportDate ? new Date(reportDate) : new Date()
   const currentYear = currentReportDate.getFullYear()
 
-  // Filter historical tests to only match the same specific equipment identifier
-  const eqIdObj = equipment.dados_tecnicos || {}
-  const myEqId = eqIdObj.numero || eqIdObj.circuito || eqIdObj.identificacao
-
+  // Filter historical tests to strictly match the combination of Subestação, Número, and Circuito
   const filteredHistorical = historicalTests.filter((t) => {
     const tEq = t.expand?.equipamento_id?.dados_tecnicos || {}
-    const tEqId = tEq.numero || tEq.circuito || tEq.identificacao
-    if (myEqId && tEqId && myEqId !== tEqId) return false
+
+    const tSubestacao = tEq.subestacao?.toString().trim()
+    const tNumero = tEq.numero?.toString().trim()
+    const tCircuito = tEq.circuito?.toString().trim()
+
+    if (mySubestacao && tSubestacao && mySubestacao.toLowerCase() !== tSubestacao.toLowerCase())
+      return false
+    if (myNumero && tNumero && myNumero.toLowerCase() !== tNumero.toLowerCase()) return false
+    if (myCircuito && tCircuito && myCircuito.toLowerCase() !== tCircuito.toLowerCase())
+      return false
+
     return true
   })
 
