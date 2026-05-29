@@ -173,7 +173,7 @@ export function EquipmentTestsManager({
         const bc = formatNum((Number(d.bc?.v1) || 0) * (Number(d.bc?.v2) || 0))
         const ac = formatNum((Number(d.ac?.v1) || 0) * (Number(d.ac?.v2) || 0))
         const abcm = formatNum((Number(d.abc_massa?.v1) || 0) * (Number(d.abc_massa?.v2) || 0))
-        return `AB: ${ab} | BC: ${bc} | AC: ${ac} | ABC-M: ${abcm}`
+        return `AB: ${ab} | BC: ${bc} | CA: ${ac} | ABC-M: ${abcm}`
       }
     }
     if (t.tipo_teste === 'Resistências dos Contatos') {

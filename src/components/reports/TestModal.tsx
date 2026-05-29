@@ -228,7 +228,7 @@ interface TestModalProps {
 const isoRows = [
   { id: 'ab', label: 'A x B' },
   { id: 'bc', label: 'B x C' },
-  { id: 'ac', label: 'A x C' },
+  { id: 'ac', label: 'C x A' },
   { id: 'abc_massa', label: 'A, B, C x Massa' },
 ]
 
