@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-05-29T22:57:19.261Z",
+  "generatedAt": "2026-05-29T23:11:19.948Z",
   "collections": [
     {
       "name": "users",
@@ -230,6 +230,12 @@
         {
           "name": "fotos_estrutura",
           "type": "file",
+          "required": false,
+          "system": false
+        },
+        {
+          "name": "data_fim",
+          "type": "date",
           "required": false,
           "system": false
         }

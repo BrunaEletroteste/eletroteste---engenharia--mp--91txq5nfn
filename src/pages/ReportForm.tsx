@@ -93,6 +93,7 @@ export default function ReportForm() {
             numero_proposta: res.numero_proposta || '',
             cliente_id: res.cliente_id,
             data_execucao: res.data_execucao ? res.data_execucao.substring(0, 10) : '',
+            data_fim: res.data_fim ? res.data_fim.substring(0, 10) : '',
             acompanhante: res.acompanhante || '',
             proxima_manutencao: res.proxima_manutencao
               ? res.proxima_manutencao.substring(0, 10)
@@ -159,6 +160,7 @@ export default function ReportForm() {
             status: 'rascunho',
             cliente_id: '',
             data_execucao: '',
+            data_fim: '',
             acompanhante: '',
             proxima_manutencao: '',
             observacoes: '',
@@ -485,6 +487,7 @@ export default function ReportForm() {
         numero_proposta: data.numero_proposta || '',
         cliente_id: data.cliente_id,
         data_execucao: data.data_execucao ? `${data.data_execucao} 12:00:00Z` : '',
+        data_fim: data.data_fim ? `${data.data_fim} 12:00:00Z` : '',
         status: data.status,
       }
       if (!isEditRoute || !id) {

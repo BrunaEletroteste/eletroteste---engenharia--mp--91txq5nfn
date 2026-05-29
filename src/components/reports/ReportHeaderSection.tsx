@@ -8,9 +8,10 @@ import { FormField, FormItem, FormLabel, FormControl, FormMessage } from '@/comp
 import { Input } from '@/components/ui/input'
 import { Textarea } from '@/components/ui/textarea'
 import { Combobox } from '@/components/ui/combobox'
+import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip'
 
 export function ReportHeaderSection({ isView }: { isView: boolean }) {
-  const { control, setValue } = useFormContext<FormValues>()
+  const { control, setValue, getValues } = useFormContext<FormValues>()
   const { user } = useAuth()
   const [clientes, setClientes] = useState<any[]>([])
 
@@ -88,60 +89,115 @@ export function ReportHeaderSection({ isView }: { isView: boolean }) {
         <FormField
           control={control}
           name="cliente_id"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>
-                Cliente <span className="text-destructive">*</span>
-              </FormLabel>
-              <FormControl>
-                {isView ? (
-                  <Input
-                    disabled
-                    value={clientes.find((c) => c.id === field.value)?.nome_empresa || ''}
-                    className="bg-muted"
-                  />
-                ) : (
-                  <Combobox
-                    options={comboOptions}
-                    value={field.value}
-                    onChange={field.onChange}
-                    placeholder="Selecione um cliente"
-                  />
-                )}
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          )}
+          render={({ field }) => {
+            const selectedClient = clientes.find((c) => c.id === field.value)
+            const clientName = selectedClient
+              ? `${selectedClient.nome_empresa} (${selectedClient.cnpj})`
+              : ''
+            return (
+              <FormItem className="flex flex-col">
+                <FormLabel>
+                  Cliente <span className="text-destructive">*</span>
+                </FormLabel>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <div className="w-full overflow-hidden">
+                      <FormControl>
+                        {isView ? (
+                          <Input
+                            disabled
+                            value={selectedClient?.nome_empresa || ''}
+                            className="bg-muted text-ellipsis overflow-hidden whitespace-nowrap w-full"
+                          />
+                        ) : (
+                          <div className="w-full overflow-hidden *:max-w-full [&_button]:text-ellipsis [&_button]:overflow-hidden [&_button]:whitespace-nowrap">
+                            <Combobox
+                              options={comboOptions}
+                              value={field.value}
+                              onChange={field.onChange}
+                              placeholder="Selecione um cliente"
+                            />
+                          </div>
+                        )}
+                      </FormControl>
+                    </div>
+                  </TooltipTrigger>
+                  {clientName && <TooltipContent>{clientName}</TooltipContent>}
+                </Tooltip>
+                <FormMessage />
+              </FormItem>
+            )
+          }}
         />
 
-        <FormField
-          control={control}
-          name="data_execucao"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>
-                Data de Execução <span className="text-destructive">*</span>
-              </FormLabel>
-              <FormControl>
-                <Input
-                  type="date"
-                  disabled={isView}
-                  {...field}
-                  onChange={(e) => {
-                    field.onChange(e)
-                    if (e.target.value && !isView) {
-                      const nextYear = addYears(new Date(`${e.target.value}T12:00:00`), 1)
-                      setValue('proxima_manutencao', format(nextYear, 'yyyy-MM-dd'), {
-                        shouldValidate: true,
-                      })
-                    }
-                  }}
-                />
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
+        <div className="grid grid-cols-2 gap-4">
+          <FormField
+            control={control}
+            name="data_execucao"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>
+                  Data de Início <span className="text-destructive">*</span>
+                </FormLabel>
+                <FormControl>
+                  <Input
+                    type="date"
+                    disabled={isView}
+                    {...field}
+                    onChange={(e) => {
+                      field.onChange(e)
+                      if (!isView) {
+                        const start = e.target.value
+                        const end = getValues('data_fim')
+                        const baseDateStr = end || start
+                        if (baseDateStr) {
+                          const nextYear = addYears(new Date(`${baseDateStr}T12:00:00`), 1)
+                          setValue('proxima_manutencao', format(nextYear, 'yyyy-MM-dd'), {
+                            shouldValidate: true,
+                          })
+                        }
+                      }
+                    }}
+                  />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+
+          <FormField
+            control={control}
+            name="data_fim"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Data de Término</FormLabel>
+                <FormControl>
+                  <Input
+                    type="date"
+                    disabled={isView}
+                    {...field}
+                    value={field.value || ''}
+                    onChange={(e) => {
+                      field.onChange(e)
+                      if (!isView) {
+                        const start = getValues('data_execucao')
+                        const end = e.target.value
+                        const baseDateStr = end || start
+                        if (baseDateStr) {
+                          const nextYear = addYears(new Date(`${baseDateStr}T12:00:00`), 1)
+                          setValue('proxima_manutencao', format(nextYear, 'yyyy-MM-dd'), {
+                            shouldValidate: true,
+                          })
+                        }
+                      }
+                    }}
+                  />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+        </div>
 
         <FormField
           control={control}

@@ -40,6 +40,7 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog'
+import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip'
 
 interface Props {
   equipments: EquipmentItem[]
@@ -255,8 +256,15 @@ export function EquipmentSection({ equipments, setEquipments, isView }: Props) {
                 value={i.toString()}
                 className="border-l-4 border-l-primary/60 border rounded-md shadow-sm overflow-hidden bg-card transition-all duration-300"
               >
-                <div className="flex items-center justify-between pr-4 bg-muted/20">
-                  <AccordionTrigger className="hover:no-underline px-4 py-3 flex-1 justify-start gap-3 text-left">
+                <div className="flex items-center justify-between pr-3 bg-muted/10 hover:bg-muted/20 transition-colors">
+                  <AccordionTrigger className="hover:no-underline px-3 py-3 flex-1 justify-start gap-3 text-left [&>svg:last-child]:hidden group">
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <ChevronDown className="h-4 w-4 shrink-0 text-muted-foreground transition-transform duration-200 group-data-[state=open]:rotate-180" />
+                      </TooltipTrigger>
+                      <TooltipContent>Expandir/Recolher</TooltipContent>
+                    </Tooltip>
+
                     <Badge
                       variant="outline"
                       className="bg-primary/5 border-primary/20 text-primary px-2 py-0.5 text-xs font-mono shrink-0"
@@ -282,7 +290,7 @@ export function EquipmentSection({ equipments, setEquipments, isView }: Props) {
                               ? 'secondary'
                               : 'destructive'
                         }
-                        className={cn('ml-auto mr-4', {
+                        className={cn('ml-auto mr-2', {
                           'bg-emerald-100 text-emerald-800 hover:bg-emerald-100':
                             eq.parecer.parecer === 'Conforme',
                           'bg-[#FEF3C7] text-yellow-800 hover:bg-[#FEF3C7]':
@@ -296,52 +304,73 @@ export function EquipmentSection({ equipments, setEquipments, isView }: Props) {
                     )}
                   </AccordionTrigger>
                   {!isView && (
-                    <div className="flex gap-1 items-center ml-2 border-l pl-2 border-border/50">
-                      <div className="flex gap-0.5 mr-1 pr-1 border-r border-border/50">
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          className="h-8 w-8 text-muted-foreground hover:text-primary z-10 relative disabled:opacity-30"
-                          disabled={!!searchQuery || seq === 1}
-                          onClick={(e) => handleMoveUp(e, index)}
-                          title="Mover para cima"
-                        >
-                          <ArrowUp className="h-4 w-4" />
-                        </Button>
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          className="h-8 w-8 text-muted-foreground hover:text-primary z-10 relative disabled:opacity-30"
-                          disabled={!!searchQuery || seq === activeEquipmentsCount}
-                          onClick={(e) => handleMoveDown(e, index)}
-                          title="Mover para baixo"
-                        >
-                          <ArrowDown className="h-4 w-4" />
-                        </Button>
-                      </div>
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        className="h-8 w-8 text-muted-foreground hover:text-primary z-10 relative"
-                        onClick={(e) => {
-                          e.stopPropagation()
-                          setEditingIndex(index)
-                          setModalOpen(true)
-                        }}
-                      >
-                        <Edit className="h-4 w-4" />
-                      </Button>
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        className="h-8 w-8 text-muted-foreground hover:text-destructive z-10 relative"
-                        onClick={(e) => {
-                          e.stopPropagation()
-                          setDeleteDialog({ open: true, index })
-                        }}
-                      >
-                        <Trash2 className="h-4 w-4" />
-                      </Button>
+                    <div className="flex items-center gap-1 ml-2 bg-background/50 shadow-sm p-1 rounded-md border border-border/60">
+                      <Tooltip>
+                        <TooltipTrigger asChild>
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            className="h-8 w-8 text-muted-foreground hover:text-primary z-10 relative disabled:opacity-30"
+                            disabled={!!searchQuery || seq === 1}
+                            onClick={(e) => handleMoveUp(e, index)}
+                          >
+                            <ArrowUp className="h-4 w-4" />
+                          </Button>
+                        </TooltipTrigger>
+                        <TooltipContent>Mover para cima</TooltipContent>
+                      </Tooltip>
+
+                      <Tooltip>
+                        <TooltipTrigger asChild>
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            className="h-8 w-8 text-muted-foreground hover:text-primary z-10 relative disabled:opacity-30"
+                            disabled={!!searchQuery || seq === activeEquipmentsCount}
+                            onClick={(e) => handleMoveDown(e, index)}
+                          >
+                            <ArrowDown className="h-4 w-4" />
+                          </Button>
+                        </TooltipTrigger>
+                        <TooltipContent>Mover para baixo</TooltipContent>
+                      </Tooltip>
+
+                      <div className="w-[1px] h-6 bg-border/60 mx-1"></div>
+
+                      <Tooltip>
+                        <TooltipTrigger asChild>
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            className="h-8 w-8 text-muted-foreground hover:text-primary z-10 relative"
+                            onClick={(e) => {
+                              e.stopPropagation()
+                              setEditingIndex(index)
+                              setModalOpen(true)
+                            }}
+                          >
+                            <Edit className="h-4 w-4" />
+                          </Button>
+                        </TooltipTrigger>
+                        <TooltipContent>Editar</TooltipContent>
+                      </Tooltip>
+
+                      <Tooltip>
+                        <TooltipTrigger asChild>
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            className="h-8 w-8 text-muted-foreground hover:text-destructive hover:bg-destructive/10 z-10 relative"
+                            onClick={(e) => {
+                              e.stopPropagation()
+                              setDeleteDialog({ open: true, index })
+                            }}
+                          >
+                            <Trash2 className="h-4 w-4" />
+                          </Button>
+                        </TooltipTrigger>
+                        <TooltipContent>Remover</TooltipContent>
+                      </Tooltip>
                     </div>
                   )}
                 </div>
