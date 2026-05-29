@@ -162,19 +162,19 @@ const testSchema = z
       if (data.tipo_equipamento_ref === 'Transformador') {
         const rows = ['alta_baixa', 'alta_massa', 'baixa_massa']
         rows.forEach((r) => {
-          const v1 = data.dados_detalhados?.[r]?.v1
-          const v2 = data.dados_detalhados?.[r]?.v2
+          const v1 = data.dados_detalhados?.medicoes?.[r]?.v1
+          const v2 = data.dados_detalhados?.medicoes?.[r]?.v2
           if (v1 === undefined || v1 === null || String(v1) === '') {
             ctx.addIssue({
               code: z.ZodIssueCode.custom,
-              path: [`dados_detalhados.${r}.v1`],
+              path: [`dados_detalhados.medicoes.${r}.v1`],
               message: 'Obrigatório',
             })
           }
           if (v2 === undefined || v2 === null || String(v2) === '') {
             ctx.addIssue({
               code: z.ZodIssueCode.custom,
-              path: [`dados_detalhados.${r}.v2`],
+              path: [`dados_detalhados.medicoes.${r}.v2`],
               message: 'Obrigatório',
             })
           }
@@ -433,7 +433,8 @@ export function TestModal({
   const isoTest = allTests?.find(
     (t) => t.tipo_teste === 'Resistências dos Isolamentos' && !t._delete,
   )
-  const tempMedidaSource = isoTest?.dados_detalhados?.temperatura
+  const tempMedidaSource =
+    isoTest?.dados_detalhados?.temperatura_medida ?? isoTest?.dados_detalhados?.temperatura
 
   const form = useForm<TestFormValues>({
     resolver: zodResolver(testSchema),
@@ -462,7 +463,21 @@ export function TestModal({
           valor_teste: initialData.valor_teste,
           unidade: initialData.unidade,
           data_teste: initialData.data_teste,
-          dados_detalhados: initialData.dados_detalhados || {},
+          dados_detalhados:
+            initialData.tipo_teste === 'Resistências dos Isolamentos' &&
+            equipmentType === 'Transformador' &&
+            initialData.dados_detalhados &&
+            !initialData.dados_detalhados.medicoes
+              ? {
+                  temperatura_medida: initialData.dados_detalhados.temperatura,
+                  fator_correcao: initialData.dados_detalhados.fator_correcao,
+                  medicoes: {
+                    alta_baixa: initialData.dados_detalhados.alta_baixa || {},
+                    alta_massa: initialData.dados_detalhados.alta_massa || {},
+                    baixa_massa: initialData.dados_detalhados.baixa_massa || {},
+                  },
+                }
+              : initialData.dados_detalhados || {},
           observacoes: initialData.observacoes || '',
         })
       } else {
@@ -703,14 +718,28 @@ export function TestModal({
                 payload.dados_detalhados
               ) {
                 let minVal = Infinity
+                payload.dados_detalhados.meio_isolante = meioIsolante
+
+                const isOleo = meioIsolante === 'Óleo Mineral'
+                const limites = isOleo
+                  ? { alta_baixa: 22.5, alta_massa: 22.5, baixa_massa: 1.8 }
+                  : { alta_baixa: 51.7, alta_massa: 51.7, baixa_massa: 22.5 }
+
+                const fc = Number(payload.dados_detalhados.fator_correcao) || 1
+
                 const rows = ['alta_baixa', 'alta_massa', 'baixa_massa']
                 rows.forEach((p) => {
-                  if (payload.dados_detalhados[p]) {
-                    const v1 = Number(payload.dados_detalhados[p].v1) || 0
-                    const v2 = Number(payload.dados_detalhados[p].v2) || 0
+                  if (payload.dados_detalhados.medicoes && payload.dados_detalhados.medicoes[p]) {
+                    const v1 = Number(payload.dados_detalhados.medicoes[p].v1) || 0
+                    const v2 = Number(payload.dados_detalhados.medicoes[p].v2) || 0
                     const res = v1 * v2
-                    payload.dados_detalhados[p].resultado = res
-                    if (res > 0 && res < minVal) minVal = res
+                    const corrigido = fc > 0 ? res / fc : res
+
+                    payload.dados_detalhados.medicoes[p].resultado = res
+                    payload.dados_detalhados.medicoes[p].corrigido = corrigido
+                    payload.dados_detalhados.medicoes[p].limite = limites[p as keyof typeof limites]
+
+                    if (corrigido > 0 && corrigido < minVal) minVal = corrigido
                   }
                 })
                 if (minVal !== Infinity) {
@@ -1431,11 +1460,11 @@ export function TestModal({
                   <div className="flex flex-col md:flex-row gap-4 mb-4 border-b pb-4 border-border">
                     <FormField
                       control={form.control}
-                      name="dados_detalhados.temperatura"
+                      name="dados_detalhados.temperatura_medida"
                       render={({ field }) => (
                         <FormItem className="flex-1 max-w-[250px]">
                           <FormLabel className="text-xs">
-                            {meioIsolante === 'Epóxi'
+                            {meioIsolante !== 'Óleo Mineral'
                               ? 'Temperatura do Enrolamento (°C)'
                               : 'Temperatura do Óleo (°C)'}
                           </FormLabel>
@@ -1461,7 +1490,7 @@ export function TestModal({
                       render={({ field }) => (
                         <FormItem className="flex-1 max-w-[250px]">
                           <FormLabel className="text-xs">
-                            {meioIsolante === 'Epóxi'
+                            {meioIsolante !== 'Óleo Mineral'
                               ? 'Fator de Correção 105ºC'
                               : 'Fator de Correção 75ºC'}
                           </FormLabel>
@@ -1482,7 +1511,7 @@ export function TestModal({
                       )}
                     />
                   </div>
-                  <h4 className="text-sm font-medium">Medições de Isolamento</h4>
+                  <h4 className="text-sm font-medium">Medições de Isolamento (à 01 minuto)</h4>
                   <Table>
                     <TableHeader>
                       <TableRow>
@@ -1494,17 +1523,26 @@ export function TestModal({
                           Valor 2 <span className="text-destructive">*</span>
                         </TableHead>
                         <TableHead className="text-right p-2">Resultado</TableHead>
+                        <TableHead className="text-right p-2 whitespace-nowrap">
+                          Valor à {meioIsolante !== 'Óleo Mineral' ? '105' : '75'}ºC
+                        </TableHead>
+                        <TableHead className="text-right p-2">Valor Limite</TableHead>
                       </TableRow>
                     </TableHeader>
                     <TableBody>
                       {[
-                        { id: 'alta_baixa', label: 'Alta/Baixa' },
-                        { id: 'alta_massa', label: 'Alta/Massa' },
-                        { id: 'baixa_massa', label: 'Baixa/Massa' },
+                        { id: 'alta_baixa', label: 'Alta/Baixa', limOleo: 22.5, limOutro: 51.7 },
+                        { id: 'alta_massa', label: 'Alta/Massa', limOleo: 22.5, limOutro: 51.7 },
+                        { id: 'baixa_massa', label: 'Baixa/Massa', limOleo: 1.8, limOutro: 22.5 },
                       ].map((r) => {
-                        const v1 = form.watch(`dados_detalhados.${r.id}.v1` as any)
-                        const v2 = form.watch(`dados_detalhados.${r.id}.v2` as any)
+                        const v1 = form.watch(`dados_detalhados.medicoes.${r.id}.v1` as any)
+                        const v2 = form.watch(`dados_detalhados.medicoes.${r.id}.v2` as any)
+                        const fc = form.watch('dados_detalhados.fator_correcao') as any
                         const res = (Number(v1) || 0) * (Number(v2) || 0)
+
+                        const numFc = Number(fc) || 1
+                        const corrigido = numFc > 0 ? res / numFc : res
+                        const limite = meioIsolante !== 'Óleo Mineral' ? r.limOutro : r.limOleo
 
                         return (
                           <TableRow key={r.id}>
@@ -1512,14 +1550,14 @@ export function TestModal({
                             <TableCell className="p-2 align-top">
                               <FormField
                                 control={form.control}
-                                name={`dados_detalhados.${r.id}.v1` as any}
+                                name={`dados_detalhados.medicoes.${r.id}.v1` as any}
                                 render={({ field }) => (
                                   <FormItem className="space-y-1">
                                     <FormControl>
                                       <Input
                                         type="number"
                                         step="any"
-                                        className="h-8 text-xs"
+                                        className="h-8 text-xs w-20"
                                         value={field.value ?? ''}
                                         onChange={(e) =>
                                           field.onChange(
@@ -1536,14 +1574,14 @@ export function TestModal({
                             <TableCell className="p-2 align-top">
                               <FormField
                                 control={form.control}
-                                name={`dados_detalhados.${r.id}.v2` as any}
+                                name={`dados_detalhados.medicoes.${r.id}.v2` as any}
                                 render={({ field }) => (
                                   <FormItem className="space-y-1">
                                     <FormControl>
                                       <Input
                                         type="number"
                                         step="any"
-                                        className="h-8 text-xs"
+                                        className="h-8 text-xs w-20"
                                         value={field.value ?? ''}
                                         onChange={(e) =>
                                           field.onChange(
@@ -1561,6 +1599,17 @@ export function TestModal({
                               {v1 !== undefined && v2 !== undefined && v1 !== '' && v2 !== ''
                                 ? `${new Intl.NumberFormat('pt-BR').format(res)}`
                                 : '-'}
+                            </TableCell>
+                            <TableCell className="text-right p-2 text-xs font-medium text-foreground pt-4 whitespace-nowrap">
+                              {v1 !== undefined && v2 !== undefined && v1 !== '' && v2 !== '' && fc
+                                ? `${new Intl.NumberFormat('pt-BR', { maximumFractionDigits: 2 }).format(corrigido)}`
+                                : '-'}
+                            </TableCell>
+                            <TableCell className="text-right p-2 text-xs font-semibold text-primary pt-4 whitespace-nowrap">
+                              {new Intl.NumberFormat('pt-BR', {
+                                minimumFractionDigits: 2,
+                                maximumFractionDigits: 2,
+                              }).format(limite)}
                             </TableCell>
                           </TableRow>
                         )
