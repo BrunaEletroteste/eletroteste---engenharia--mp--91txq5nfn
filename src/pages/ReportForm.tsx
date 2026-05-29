@@ -120,6 +120,7 @@ export default function ReportForm() {
                 .map((t) => ({
                   id: t.id,
                   tipo_teste: t.tipo_teste,
+                  equipamento_utilizado: t.equipamento_utilizado || '',
                   valor_teste: t.valor_teste,
                   unidade: t.unidade,
                   data_teste: t.data_teste.substring(0, 10),
@@ -334,6 +335,65 @@ export default function ReportForm() {
                   })
                   return false
                 }
+              } else if (
+                eq.tipo_equipamento === 'Transformador de Potencial' ||
+                eq.tipo_equipamento === 'Transformador de Corrente'
+              ) {
+                const rows = ['A', 'B', 'C']
+                for (const r of rows) {
+                  if (
+                    !d.fases ||
+                    !d.fases[r] ||
+                    d.fases[r].valor1 === undefined ||
+                    d.fases[r].valor2 === undefined ||
+                    String(d.fases[r].valor1) === '' ||
+                    String(d.fases[r].valor2) === ''
+                  ) {
+                    toast({
+                      title: 'Erro de Validação',
+                      description: `Os valores no teste de Resistências dos Isolamentos são obrigatórios. (Equipamento: ${eq.tipo_equipamento})`,
+                      variant: 'destructive',
+                    })
+                    return false
+                  }
+                }
+              } else if (eq.tipo_equipamento === 'Disjuntor') {
+                const rowsFechado = ['ab', 'bc', 'ac', 'abc_massa']
+                const rowsAberto = ['aa', 'bb', 'cc']
+                for (const r of rowsFechado) {
+                  if (
+                    !d.fechado ||
+                    !d.fechado[r] ||
+                    d.fechado[r].v1 === undefined ||
+                    d.fechado[r].v2 === undefined ||
+                    String(d.fechado[r].v1) === '' ||
+                    String(d.fechado[r].v2) === ''
+                  ) {
+                    toast({
+                      title: 'Erro de Validação',
+                      description: `Os valores no teste de Resistências dos Isolamentos (Fechado) são obrigatórios. (Equipamento: ${eq.tipo_equipamento})`,
+                      variant: 'destructive',
+                    })
+                    return false
+                  }
+                }
+                for (const r of rowsAberto) {
+                  if (
+                    !d.aberto ||
+                    !d.aberto[r] ||
+                    d.aberto[r].v1 === undefined ||
+                    d.aberto[r].v2 === undefined ||
+                    String(d.aberto[r].v1) === '' ||
+                    String(d.aberto[r].v2) === ''
+                  ) {
+                    toast({
+                      title: 'Erro de Validação',
+                      description: `Os valores no teste de Resistências dos Isolamentos (Aberto) são obrigatórios. (Equipamento: ${eq.tipo_equipamento})`,
+                      variant: 'destructive',
+                    })
+                    return false
+                  }
+                }
               } else {
                 const rows = ['ab', 'bc', 'ac', 'abc_massa']
                 for (const r of rows) {
@@ -469,6 +529,7 @@ export default function ReportForm() {
                   data_teste: t.data_teste ? `${t.data_teste} 12:00:00Z` : '',
                   dados_detalhados: t.dados_detalhados || null,
                   observacoes: t.observacoes || '',
+                  equipamento_utilizado: t.equipamento_utilizado || '',
                 }
                 if (t.id) {
                   await pb.collection('testes_equipamento').update(t.id, tPayload)
@@ -527,6 +588,14 @@ export default function ReportForm() {
           methods.setError(field as any, { type: 'manual', message: msg })
           if (field === 'anexos') {
             errMsg += ` Erro em anexos: ${msg}`
+          } else if (field === 'equipamento_utilizado') {
+            errMsg += ` Equipamento Utilizado: ${msg}`
+          } else if (field === 'valor_teste') {
+            errMsg += ` Valor do Teste: ${msg}`
+          } else if (field === 'tipo_teste') {
+            errMsg += ` Tipo de Teste: ${msg}`
+          } else if (field === 'unidade') {
+            errMsg += ` Unidade: ${msg}`
           }
         })
       }
