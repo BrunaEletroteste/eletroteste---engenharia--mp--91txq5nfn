@@ -563,6 +563,7 @@ export function EquipmentTestsManager({
       const eti = t.dados_detalhados?.eti || {}
       const ets_corr = t.dados_detalhados?.ets_corr
       const eti_corr = t.dados_detalhados?.eti_corr
+      const calc = t.dados_detalhados?.resultados_calculados
       const tRef = t.dados_detalhados?.temperatura_referencia || 75
 
       const formatField = (val: any, unit: string) =>
@@ -571,11 +572,23 @@ export function EquipmentTestsManager({
       let f_ets = `H1-H3: ${formatField(ets.h1_h3, 'Ω')} | H2-H1: ${formatField(ets.h2_h1, 'Ω')} | H3-H2: ${formatField(ets.h3_h2, 'Ω')}`
       let f_eti = `X1-X3: ${formatField(eti.x1_x3, 'mΩ')} | X2-X1: ${formatField(eti.x2_x1, 'mΩ')} | X3-X2: ${formatField(eti.x3_x2, 'mΩ')}`
 
-      if (ets_corr) {
-        f_ets += ` (Corr. ${tRef}ºC: H1-H3: ${formatField(ets_corr.h1_h3, 'Ω')} | H2-H1: ${formatField(ets_corr.h2_h1, 'Ω')} | H3-H2: ${formatField(ets_corr.h3_h2, 'Ω')})`
-      }
-      if (eti_corr) {
-        f_eti += ` (Corr. ${tRef}ºC: X1-X3: ${formatField(eti_corr.x1_x3, 'mΩ')} | X2-X1: ${formatField(eti_corr.x2_x1, 'mΩ')} | X3-X2: ${formatField(eti_corr.x3_x2, 'mΩ')})`
+      if (calc) {
+        if (calc.ets_75 !== null && calc.ets_75 !== undefined)
+          f_ets += ` | Média 75ºC: ${formatField(calc.ets_75, 'Ω')}`
+        else if (calc.ets_105 !== null && calc.ets_105 !== undefined)
+          f_ets += ` | Média 105ºC: ${formatField(calc.ets_105, 'Ω')}`
+
+        if (calc.eti_75 !== null && calc.eti_75 !== undefined)
+          f_eti += ` | Média 75ºC: ${formatField(calc.eti_75, 'mΩ')}`
+        else if (calc.eti_105 !== null && calc.eti_105 !== undefined)
+          f_eti += ` | Média 105ºC: ${formatField(calc.eti_105, 'mΩ')}`
+      } else if (ets_corr || eti_corr) {
+        if (ets_corr) {
+          f_ets += ` (Corr. ${tRef}ºC: H1-H3: ${formatField(ets_corr.h1_h3, 'Ω')} | H2-H1: ${formatField(ets_corr.h2_h1, 'Ω')} | H3-H2: ${formatField(ets_corr.h3_h2, 'Ω')})`
+        }
+        if (eti_corr) {
+          f_eti += ` (Corr. ${tRef}ºC: X1-X3: ${formatField(eti_corr.x1_x3, 'mΩ')} | X2-X1: ${formatField(eti_corr.x2_x1, 'mΩ')} | X3-X2: ${formatField(eti_corr.x3_x2, 'mΩ')})`
+        }
       }
 
       if (subType === 'ETS') return f_ets

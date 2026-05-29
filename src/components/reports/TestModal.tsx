@@ -473,13 +473,13 @@ export function TestModal({
   }, [watchTipo, open, tempMedidaSource, initialData, equipmentType, form])
 
   const tempMedida = form.watch('dados_detalhados.temperatura_medida')
-  const isEpoxy = meioIsolante === 'Epóxi'
+  const isOleo = meioIsolante === 'Óleo Mineral'
   const ets = form.watch('dados_detalhados.ets')
   const eti = form.watch('dados_detalhados.eti')
 
   const hasTemp = tempMedida !== undefined && tempMedida !== null && tempMedida !== ''
   const tMedidaVal = hasTemp ? Number(tempMedida) : null
-  const tempRef = tMedidaVal !== null ? (isEpoxy ? Math.max(tMedidaVal, 41) : tMedidaVal) : null
+  const tempRef = tMedidaVal !== null ? (!isOleo ? Math.max(tMedidaVal, 41) : tMedidaVal) : null
 
   const hasEts =
     ets?.h1_h3 !== undefined &&
@@ -698,11 +698,11 @@ export function TestModal({
                   const tMedidaRaw = payload.dados_detalhados.temperatura_medida
                   const tMedida =
                     tMedidaRaw !== undefined && tMedidaRaw !== '' ? Number(tMedidaRaw) : NaN
-                  const isEpoxi = meioIsolante === 'Epóxi'
+                  const isOleoMineral = meioIsolante === 'Óleo Mineral'
 
                   if (!isNaN(tMedida)) {
                     payload.dados_detalhados.temperatura_medida = tMedida
-                    const tRef = isEpoxi ? Math.max(tMedida, 41) : tMedida
+                    const tRef = !isOleoMineral ? Math.max(tMedida, 41) : tMedida
                     payload.dados_detalhados.temperatura_referencia = tRef
 
                     const eEts = payload.dados_detalhados.ets
@@ -735,10 +735,22 @@ export function TestModal({
                     }
 
                     payload.dados_detalhados.resultados_calculados = {
-                      ets_75: sAvgEts !== null ? sAvgEts * ((234.5 + 75) / (234.5 + tRef)) : null,
-                      eti_75: sAvgEti !== null ? sAvgEti * ((234.5 + 75) / (234.5 + tRef)) : null,
-                      ets_105: sAvgEts !== null ? sAvgEts * ((255 + 105) / (255 + tRef)) : null,
-                      eti_105: sAvgEti !== null ? sAvgEti * ((255 + 105) / (255 + tRef)) : null,
+                      ets_75:
+                        isOleoMineral && sAvgEts !== null
+                          ? sAvgEts * ((234.5 + 75) / (234.5 + tRef))
+                          : null,
+                      eti_75:
+                        isOleoMineral && sAvgEti !== null
+                          ? sAvgEti * ((234.5 + 75) / (234.5 + tRef))
+                          : null,
+                      ets_105:
+                        !isOleoMineral && sAvgEts !== null
+                          ? sAvgEts * ((255 + 105) / (255 + tRef))
+                          : null,
+                      eti_105:
+                        !isOleoMineral && sAvgEti !== null
+                          ? sAvgEti * ((255 + 105) / (255 + tRef))
+                          : null,
                     }
                   }
                 }
@@ -927,6 +939,16 @@ export function TestModal({
                         </FormItem>
                       )}
                     />
+                    <div className="space-y-2 flex-1 max-w-[250px]">
+                      <FormLabel className="text-xs text-muted-foreground block font-medium">
+                        {meioIsolante === 'Óleo Mineral'
+                          ? 'Fator de Correção 75ºC'
+                          : 'Fator de Correção 105ºC'}
+                      </FormLabel>
+                      <div className="h-8 flex items-center px-3 border rounded-md bg-muted text-xs text-muted-foreground">
+                        {tempRef !== null ? tempRef : '-'}
+                      </div>
+                    </div>
                   </div>
                 )}
 
@@ -1023,38 +1045,45 @@ export function TestModal({
 
                 {equipmentType === 'Transformador' && (
                   <div className="mt-4 pt-4 border-t grid grid-cols-1 sm:grid-cols-2 gap-4">
-                    <div className="space-y-2">
-                      <FormLabel className="text-xs text-muted-foreground block font-medium">
-                        ETS à 75ºC
-                      </FormLabel>
-                      <div className="h-8 flex items-center px-3 border rounded-md bg-muted text-xs text-muted-foreground">
-                        {ets75 !== null ? ets75.toFixed(4) + ' Ω' : '-'}
-                      </div>
-                    </div>
-                    <div className="space-y-2">
-                      <FormLabel className="text-xs text-muted-foreground block font-medium">
-                        ETI à 75ºC
-                      </FormLabel>
-                      <div className="h-8 flex items-center px-3 border rounded-md bg-muted text-xs text-muted-foreground">
-                        {eti75 !== null ? eti75.toFixed(4) + ' mΩ' : '-'}
-                      </div>
-                    </div>
-                    <div className="space-y-2">
-                      <FormLabel className="text-xs text-muted-foreground block font-medium">
-                        ETS à 105ºC
-                      </FormLabel>
-                      <div className="h-8 flex items-center px-3 border rounded-md bg-muted text-xs text-muted-foreground">
-                        {ets105 !== null ? ets105.toFixed(4) + ' Ω' : '-'}
-                      </div>
-                    </div>
-                    <div className="space-y-2">
-                      <FormLabel className="text-xs text-muted-foreground block font-medium">
-                        ETI à 105ºC
-                      </FormLabel>
-                      <div className="h-8 flex items-center px-3 border rounded-md bg-muted text-xs text-muted-foreground">
-                        {eti105 !== null ? eti105.toFixed(4) + ' mΩ' : '-'}
-                      </div>
-                    </div>
+                    {meioIsolante === 'Óleo Mineral' ? (
+                      <>
+                        <div className="space-y-2">
+                          <FormLabel className="text-xs text-muted-foreground block font-medium">
+                            ETS à 75ºC (Média)
+                          </FormLabel>
+                          <div className="h-8 flex items-center px-3 border rounded-md bg-muted text-xs font-medium text-foreground">
+                            {ets75 !== null ? ets75.toFixed(4) + ' Ω' : '-'}
+                          </div>
+                        </div>
+                        <div className="space-y-2">
+                          <FormLabel className="text-xs text-muted-foreground block font-medium">
+                            ETI à 75ºC (Média)
+                          </FormLabel>
+                          <div className="h-8 flex items-center px-3 border rounded-md bg-muted text-xs font-medium text-foreground">
+                            {eti75 !== null ? eti75.toFixed(4) + ' mΩ' : '-'}
+                          </div>
+                        </div>
+                      </>
+                    ) : (
+                      <>
+                        <div className="space-y-2">
+                          <FormLabel className="text-xs text-muted-foreground block font-medium">
+                            ETS à 105ºC (Média)
+                          </FormLabel>
+                          <div className="h-8 flex items-center px-3 border rounded-md bg-muted text-xs font-medium text-foreground">
+                            {ets105 !== null ? ets105.toFixed(4) + ' Ω' : '-'}
+                          </div>
+                        </div>
+                        <div className="space-y-2">
+                          <FormLabel className="text-xs text-muted-foreground block font-medium">
+                            ETI à 105ºC (Média)
+                          </FormLabel>
+                          <div className="h-8 flex items-center px-3 border rounded-md bg-muted text-xs font-medium text-foreground">
+                            {eti105 !== null ? eti105.toFixed(4) + ' mΩ' : '-'}
+                          </div>
+                        </div>
+                      </>
+                    )}
                   </div>
                 )}
               </div>
