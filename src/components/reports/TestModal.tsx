@@ -232,9 +232,37 @@ const testSchema = z
       }
     }
 
+    if (data.tipo_teste === 'Resistências dos Enrolamentos') {
+      const ets = data.dados_detalhados?.ets || {}
+      const eti = data.dados_detalhados?.eti || {}
+
+      const reqFieldsETS = ['h1_h3', 'h2_h1', 'h3_h2']
+      reqFieldsETS.forEach((f) => {
+        if (ets[f] === undefined || ets[f] === null || String(ets[f]) === '') {
+          ctx.addIssue({
+            code: z.ZodIssueCode.custom,
+            path: [`dados_detalhados.ets.${f}`],
+            message: 'Obrigatório',
+          })
+        }
+      })
+
+      const reqFieldsETI = ['x1_x3', 'x2_x1', 'x3_x2']
+      reqFieldsETI.forEach((f) => {
+        if (eti[f] === undefined || eti[f] === null || String(eti[f]) === '') {
+          ctx.addIssue({
+            code: z.ZodIssueCode.custom,
+            path: [`dados_detalhados.eti.${f}`],
+            message: 'Obrigatório',
+          })
+        }
+      })
+    }
+
     if (
       data.tipo_teste !== 'Resistências dos Contatos' &&
-      data.tipo_teste !== 'Resistências dos Isolamentos'
+      data.tipo_teste !== 'Resistências dos Isolamentos' &&
+      data.tipo_teste !== 'Resistências dos Enrolamentos'
     ) {
       if (data.valor_teste === undefined || data.valor_teste === null || data.valor_teste === '') {
         ctx.addIssue({
@@ -376,6 +404,15 @@ export function TestModal({
       form.setValue('valor_teste', 0, { shouldValidate: true })
     } else if (watchTipo === 'Relação de Tensões') {
       form.setValue('unidade', 'V/V', { shouldValidate: true })
+    } else if (watchTipo === 'Resistências dos Enrolamentos') {
+      form.setValue('unidade', 'Ω / mΩ', { shouldValidate: true })
+      form.setValue('valor_teste', 0, { shouldValidate: true })
+      const currentObs = form.getValues('observacoes')
+      if (!currentObs) {
+        form.setValue('observacoes', 'Nota: Os enrolamentos apresentam boa condução elétrica.', {
+          shouldValidate: true,
+        })
+      }
     }
   }, [watchTipo, form, open])
 
@@ -506,6 +543,11 @@ export function TestModal({
                   payload.valor_teste = minVal
                 }
               } else if (
+                payload.tipo_teste === 'Resistências dos Enrolamentos' &&
+                payload.dados_detalhados
+              ) {
+                payload.valor_teste = 0
+              } else if (
                 payload.tipo_teste === 'Resistências dos Contatos' &&
                 payload.dados_detalhados
               ) {
@@ -549,9 +591,12 @@ export function TestModal({
                         Resistências dos Isolamentos
                       </SelectItem>
                       <SelectItem value="Relação de Tensões">Relação de Tensões</SelectItem>
-                      <SelectItem value="Resistências dos Enrolamentos">
-                        Resistências dos Enrolamentos
-                      </SelectItem>
+                      {(equipmentType === 'Transformador' ||
+                        field.value === 'Resistências dos Enrolamentos') && (
+                        <SelectItem value="Resistências dos Enrolamentos">
+                          Resistências dos Enrolamentos
+                        </SelectItem>
+                      )}
                       <SelectItem value="Resistências dos Contatos">
                         Resistências dos Contatos
                       </SelectItem>
@@ -641,6 +686,91 @@ export function TestModal({
                 </FormItem>
               )}
             />
+
+            {watchTipo === 'Resistências dos Enrolamentos' && (
+              <div className="space-y-4 border rounded-md p-4 bg-muted/20">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  <div className="space-y-4">
+                    <h4 className="text-sm font-medium border-b pb-2">ETS (Alta Tensão) - Ω</h4>
+                    <div className="space-y-3">
+                      {[
+                        { id: 'h1_h3', label: 'H1 - H3' },
+                        { id: 'h2_h1', label: 'H2 - H1' },
+                        { id: 'h3_h2', label: 'H3 - H2' },
+                      ].map((r) => (
+                        <FormField
+                          key={r.id}
+                          control={form.control}
+                          name={`dados_detalhados.ets.${r.id}` as any}
+                          render={({ field }) => (
+                            <FormItem className="flex items-center gap-4 space-y-0">
+                              <FormLabel className="text-xs w-16 text-right font-semibold">
+                                {r.label} <span className="text-destructive">*</span>
+                              </FormLabel>
+                              <div className="flex-1">
+                                <FormControl>
+                                  <Input
+                                    type="number"
+                                    step="any"
+                                    className="h-8 text-xs"
+                                    value={field.value ?? ''}
+                                    onChange={(e) =>
+                                      field.onChange(
+                                        e.target.value === '' ? '' : Number(e.target.value),
+                                      )
+                                    }
+                                  />
+                                </FormControl>
+                                <FormMessage className="text-[10px]" />
+                              </div>
+                            </FormItem>
+                          )}
+                        />
+                      ))}
+                    </div>
+                  </div>
+                  <div className="space-y-4">
+                    <h4 className="text-sm font-medium border-b pb-2">ETI (Baixa Tensão) - mΩ</h4>
+                    <div className="space-y-3">
+                      {[
+                        { id: 'x1_x3', label: 'X1 - X3' },
+                        { id: 'x2_x1', label: 'X2 - X1' },
+                        { id: 'x3_x2', label: 'X3 - X2' },
+                      ].map((r) => (
+                        <FormField
+                          key={r.id}
+                          control={form.control}
+                          name={`dados_detalhados.eti.${r.id}` as any}
+                          render={({ field }) => (
+                            <FormItem className="flex items-center gap-4 space-y-0">
+                              <FormLabel className="text-xs w-16 text-right font-semibold">
+                                {r.label} <span className="text-destructive">*</span>
+                              </FormLabel>
+                              <div className="flex-1">
+                                <FormControl>
+                                  <Input
+                                    type="number"
+                                    step="any"
+                                    className="h-8 text-xs"
+                                    value={field.value ?? ''}
+                                    onChange={(e) =>
+                                      field.onChange(
+                                        e.target.value === '' ? '' : Number(e.target.value),
+                                      )
+                                    }
+                                  />
+                                </FormControl>
+                                <FormMessage className="text-[10px]" />
+                              </div>
+                            </FormItem>
+                          )}
+                        />
+                      ))}
+                    </div>
+                  </div>
+                </div>
+              </div>
+            )}
 
             {watchTipo === 'Resistências dos Contatos' && (
               <div className="space-y-4 border rounded-md p-4 bg-muted/20">
@@ -1193,7 +1323,8 @@ export function TestModal({
 
             <div className="grid grid-cols-2 gap-4">
               {watchTipo !== 'Resistências dos Contatos' &&
-                watchTipo !== 'Resistências dos Isolamentos' && (
+                watchTipo !== 'Resistências dos Isolamentos' &&
+                watchTipo !== 'Resistências dos Enrolamentos' && (
                   <FormField
                     control={form.control}
                     name="valor_teste"
@@ -1228,7 +1359,8 @@ export function TestModal({
                   <FormItem
                     className={
                       watchTipo === 'Resistências dos Contatos' ||
-                      watchTipo === 'Resistências dos Isolamentos'
+                      watchTipo === 'Resistências dos Isolamentos' ||
+                      watchTipo === 'Resistências dos Enrolamentos'
                         ? 'col-span-2'
                         : ''
                     }
@@ -1244,12 +1376,14 @@ export function TestModal({
                         readOnly={
                           watchTipo === 'Resistências dos Contatos' ||
                           watchTipo === 'Resistências dos Isolamentos' ||
-                          watchTipo === 'Relação de Tensões'
+                          watchTipo === 'Relação de Tensões' ||
+                          watchTipo === 'Resistências dos Enrolamentos'
                         }
                         className={
                           watchTipo === 'Resistências dos Contatos' ||
                           watchTipo === 'Resistências dos Isolamentos' ||
-                          watchTipo === 'Relação de Tensões'
+                          watchTipo === 'Relação de Tensões' ||
+                          watchTipo === 'Resistências dos Enrolamentos'
                             ? 'bg-muted cursor-not-allowed'
                             : ''
                         }

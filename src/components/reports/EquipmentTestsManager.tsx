@@ -101,6 +101,24 @@ const extractPhasesData = (t: any, tipoEquipamento: string, subType?: string) =>
     }
   }
 
+  if (t.tipo_teste === 'Resistências dos Enrolamentos') {
+    if (subType === 'ETS') {
+      const ets = t.dados_detalhados?.ets || {}
+      return [
+        { name: 'H1 - H3', value: extractNumeric(ets.h1_h3) },
+        { name: 'H2 - H1', value: extractNumeric(ets.h2_h1) },
+        { name: 'H3 - H2', value: extractNumeric(ets.h3_h2) },
+      ].filter((p) => p.value !== undefined)
+    } else if (subType === 'ETI') {
+      const eti = t.dados_detalhados?.eti || {}
+      return [
+        { name: 'X1 - X3', value: extractNumeric(eti.x1_x3) },
+        { name: 'X2 - X1', value: extractNumeric(eti.x2_x1) },
+        { name: 'X3 - X2', value: extractNumeric(eti.x3_x2) },
+      ].filter((p) => p.value !== undefined)
+    }
+  }
+
   if (t.tipo_teste === 'Resistências dos Contatos') {
     const d = t.dados_detalhados || {}
     return [
@@ -258,6 +276,29 @@ export function EquipmentTestsManager({
           })
 
           acc[type].subTypes[sub] = { data, unidade, pYear }
+        })
+      } else if (type === 'Resistências dos Enrolamentos') {
+        acc[type] = { isEnrolamentos: true, subTypes: {} as any }
+        ;['ETS', 'ETI'].forEach((sub) => {
+          const cPhases = extractPhasesData(cTest, equipment.tipo_equipamento, sub)
+          const pPhases = extractPhasesData(pTest, equipment.tipo_equipamento, sub)
+
+          const phaseNames = Array.from(
+            new Set([...cPhases.map((p) => p.name), ...pPhases.map((p) => p.name)]),
+          )
+
+          const data = phaseNames.map((name) => {
+            const cVal = cPhases.find((p) => p.name === name)?.value
+            const pVal = pPhases.find((p) => p.name === name)?.value
+            return {
+              phase: name,
+              ano_atual: cVal !== undefined ? cVal : null,
+              ano_anterior: pVal !== undefined ? pVal : null,
+            }
+          })
+
+          const un = sub === 'ETS' ? 'Ω' : 'mΩ'
+          acc[type].subTypes[sub] = { data, unidade: un, pYear }
         })
       } else {
         const cPhases = extractPhasesData(cTest, equipment.tipo_equipamento)
@@ -508,6 +549,17 @@ export function EquipmentTestsManager({
         return `AB: ${ab} | BC: ${bc} | CA: ${ac} | ABC-M: ${abcm}`
       }
     }
+    if (t.tipo_teste === 'Resistências dos Enrolamentos') {
+      const ets = t.dados_detalhados?.ets || {}
+      const eti = t.dados_detalhados?.eti || {}
+
+      const f_ets = `H1-H3: ${formatNum(ets.h1_h3) ?? '-'} | H2-H1: ${formatNum(ets.h2_h1) ?? '-'} | H3-H2: ${formatNum(ets.h3_h2) ?? '-'}`
+      const f_eti = `X1-X3: ${formatNum(eti.x1_x3) ?? '-'} | X2-X1: ${formatNum(eti.x2_x1) ?? '-'} | X3-X2: ${formatNum(eti.x3_x2) ?? '-'}`
+
+      if (subType === 'ETS') return f_ets
+      if (subType === 'ETI') return f_eti
+      return `ETS (${f_ets}) | ETI (${f_eti})`
+    }
     if (t.tipo_teste === 'Resistências dos Contatos') {
       const d = t.dados_detalhados || {}
       return `A: ${formatNum(d.fase_a) ?? '-'} | B: ${formatNum(d.fase_b) ?? '-'} | C: ${formatNum(d.fase_c) ?? '-'}`
@@ -525,7 +577,7 @@ export function EquipmentTestsManager({
     let pYear = currentYear - 1
 
     if (typeData) {
-      if (typeData.isDisjuntorIsolamento && subType) {
+      if ((typeData.isDisjuntorIsolamento || typeData.isEnrolamentos) && subType) {
         chartData = typeData.subTypes[subType]?.data || []
         unidade = typeData.subTypes[subType]?.unidade || ''
         pYear = typeData.subTypes[subType]?.pYear || currentYear - 1
@@ -725,6 +777,7 @@ export function EquipmentTestsManager({
           {testTypes.map((type) => {
             const isDisjuntorIsolamento =
               type === 'Resistências dos Isolamentos' && equipment.tipo_equipamento === 'Disjuntor'
+            const isEnrolamentos = type === 'Resistências dos Enrolamentos'
 
             return (
               <TabsContent key={type} value={type} className="mt-0 outline-none">
@@ -743,6 +796,23 @@ export function EquipmentTestsManager({
                     </TabsContent>
                     <TabsContent value="Aberto" className="mt-0 outline-none">
                       {renderTabContent(type, 'Aberto')}
+                    </TabsContent>
+                  </Tabs>
+                ) : isEnrolamentos ? (
+                  <Tabs defaultValue="ETS" className="w-full space-y-4">
+                    <TabsList className="w-full flex h-auto bg-muted/40 p-1 rounded-md justify-start gap-1">
+                      <TabsTrigger value="ETS" className="flex-1 min-w-[120px]">
+                        ETS (Alta Tensão)
+                      </TabsTrigger>
+                      <TabsTrigger value="ETI" className="flex-1 min-w-[120px]">
+                        ETI (Baixa Tensão)
+                      </TabsTrigger>
+                    </TabsList>
+                    <TabsContent value="ETS" className="mt-0 outline-none">
+                      {renderTabContent(type, 'ETS')}
+                    </TabsContent>
+                    <TabsContent value="ETI" className="mt-0 outline-none">
+                      {renderTabContent(type, 'ETI')}
                     </TabsContent>
                   </Tabs>
                 ) : (
