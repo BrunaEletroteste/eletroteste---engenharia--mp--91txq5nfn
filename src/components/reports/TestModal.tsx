@@ -147,6 +147,45 @@ const testSchema = z
             })
           }
         })
+      } else if (data.tipo_equipamento_ref === 'Disjuntor') {
+        const rowsFechado = ['ab', 'bc', 'ac', 'abc_massa']
+        const rowsAberto = ['aa', 'bb', 'cc']
+        rowsFechado.forEach((r) => {
+          const v1 = data.dados_detalhados?.fechado?.[r]?.v1
+          const v2 = data.dados_detalhados?.fechado?.[r]?.v2
+          if (v1 === undefined || v1 === null || String(v1) === '') {
+            ctx.addIssue({
+              code: z.ZodIssueCode.custom,
+              path: [`dados_detalhados.fechado.${r}.v1`],
+              message: 'Obrigatório',
+            })
+          }
+          if (v2 === undefined || v2 === null || String(v2) === '') {
+            ctx.addIssue({
+              code: z.ZodIssueCode.custom,
+              path: [`dados_detalhados.fechado.${r}.v2`],
+              message: 'Obrigatório',
+            })
+          }
+        })
+        rowsAberto.forEach((r) => {
+          const v1 = data.dados_detalhados?.aberto?.[r]?.v1
+          const v2 = data.dados_detalhados?.aberto?.[r]?.v2
+          if (v1 === undefined || v1 === null || String(v1) === '') {
+            ctx.addIssue({
+              code: z.ZodIssueCode.custom,
+              path: [`dados_detalhados.aberto.${r}.v1`],
+              message: 'Obrigatório',
+            })
+          }
+          if (v2 === undefined || v2 === null || String(v2) === '') {
+            ctx.addIssue({
+              code: z.ZodIssueCode.custom,
+              path: [`dados_detalhados.aberto.${r}.v2`],
+              message: 'Obrigatório',
+            })
+          }
+        })
       } else if (
         data.tipo_equipamento_ref === 'Transformador de Potencial' ||
         data.tipo_equipamento_ref === 'Transformador de Corrente'
@@ -230,6 +269,19 @@ const isoRows = [
   { id: 'bc', label: 'B x C' },
   { id: 'ac', label: 'C x A' },
   { id: 'abc_massa', label: 'A, B, C x Massa' },
+]
+
+const disjuntorFechadoRows = [
+  { id: 'ab', label: 'A x B' },
+  { id: 'bc', label: 'B x C' },
+  { id: 'ac', label: 'C x A' },
+  { id: 'abc_massa', label: 'A, B, C x Massa' },
+]
+
+const disjuntorAbertoRows = [
+  { id: 'aa', label: 'A x A' },
+  { id: 'bb', label: 'B x B' },
+  { id: 'cc', label: 'C x C' },
 ]
 
 const CATEGORY_MAP: Record<string, string> = {
@@ -391,6 +443,29 @@ export function TestModal({
                 })
                 if (count > 0) {
                   payload.valor_teste = total / count
+                }
+              } else if (
+                payload.tipo_teste === 'Resistências dos Isolamentos' &&
+                equipmentType === 'Disjuntor' &&
+                payload.dados_detalhados
+              ) {
+                if (payload.dados_detalhados.fechado) {
+                  ;['ab', 'bc', 'ac', 'abc_massa'].forEach((p) => {
+                    if (payload.dados_detalhados.fechado[p]) {
+                      const v1 = Number(payload.dados_detalhados.fechado[p].v1) || 0
+                      const v2 = Number(payload.dados_detalhados.fechado[p].v2) || 0
+                      payload.dados_detalhados.fechado[p].resultado = v1 * v2
+                    }
+                  })
+                }
+                if (payload.dados_detalhados.aberto) {
+                  ;['aa', 'bb', 'cc'].forEach((p) => {
+                    if (payload.dados_detalhados.aberto[p]) {
+                      const v1 = Number(payload.dados_detalhados.aberto[p].v1) || 0
+                      const v2 = Number(payload.dados_detalhados.aberto[p].v2) || 0
+                      payload.dados_detalhados.aberto[p].resultado = v1 * v2
+                    }
+                  })
                 }
               }
 
@@ -798,6 +873,180 @@ export function TestModal({
                         </div>
                       )
                     })}
+                  </div>
+                </div>
+              ) : equipmentType === 'Disjuntor' ? (
+                <div className="space-y-6 border rounded-md p-4 bg-muted/20">
+                  <div className="space-y-4">
+                    <h4 className="text-sm font-medium text-primary border-b pb-2">
+                      Disjuntor Ligado / Fechado
+                    </h4>
+                    <Table>
+                      <TableHeader>
+                        <TableRow>
+                          <TableHead className="w-[120px] p-2">Medição</TableHead>
+                          <TableHead className="p-2">
+                            Valor 1 <span className="text-destructive">*</span>
+                          </TableHead>
+                          <TableHead className="p-2">
+                            Valor 2 <span className="text-destructive">*</span>
+                          </TableHead>
+                          <TableHead className="text-right p-2">Resultado</TableHead>
+                        </TableRow>
+                      </TableHeader>
+                      <TableBody>
+                        {disjuntorFechadoRows.map((r) => {
+                          const v1 = form.watch(`dados_detalhados.fechado.${r.id}.v1` as any)
+                          const v2 = form.watch(`dados_detalhados.fechado.${r.id}.v2` as any)
+                          const res = (Number(v1) || 0) * (Number(v2) || 0)
+
+                          return (
+                            <TableRow key={r.id}>
+                              <TableCell className="font-medium text-xs p-2">{r.label}</TableCell>
+                              <TableCell className="p-2 align-top">
+                                <FormField
+                                  control={form.control}
+                                  name={`dados_detalhados.fechado.${r.id}.v1` as any}
+                                  render={({ field }) => (
+                                    <FormItem className="space-y-1">
+                                      <FormControl>
+                                        <Input
+                                          type="number"
+                                          step="any"
+                                          className="h-8 text-xs"
+                                          value={field.value ?? ''}
+                                          onChange={(e) =>
+                                            field.onChange(
+                                              e.target.value === '' ? '' : Number(e.target.value),
+                                            )
+                                          }
+                                        />
+                                      </FormControl>
+                                      <FormMessage className="text-[10px]" />
+                                    </FormItem>
+                                  )}
+                                />
+                              </TableCell>
+                              <TableCell className="p-2 align-top">
+                                <FormField
+                                  control={form.control}
+                                  name={`dados_detalhados.fechado.${r.id}.v2` as any}
+                                  render={({ field }) => (
+                                    <FormItem className="space-y-1">
+                                      <FormControl>
+                                        <Input
+                                          type="number"
+                                          step="any"
+                                          className="h-8 text-xs"
+                                          value={field.value ?? ''}
+                                          onChange={(e) =>
+                                            field.onChange(
+                                              e.target.value === '' ? '' : Number(e.target.value),
+                                            )
+                                          }
+                                        />
+                                      </FormControl>
+                                      <FormMessage className="text-[10px]" />
+                                    </FormItem>
+                                  )}
+                                />
+                              </TableCell>
+                              <TableCell className="text-right p-2 text-xs font-medium text-muted-foreground pt-4 whitespace-nowrap">
+                                {v1 !== undefined && v2 !== undefined && v1 !== '' && v2 !== ''
+                                  ? `${new Intl.NumberFormat('pt-BR').format(res)}`
+                                  : '-'}
+                              </TableCell>
+                            </TableRow>
+                          )
+                        })}
+                      </TableBody>
+                    </Table>
+                  </div>
+
+                  <div className="space-y-4">
+                    <h4 className="text-sm font-medium text-primary border-b pb-2">
+                      Disjuntor Desligado / Aberto
+                    </h4>
+                    <Table>
+                      <TableHeader>
+                        <TableRow>
+                          <TableHead className="w-[120px] p-2">Medição</TableHead>
+                          <TableHead className="p-2">
+                            Valor 1 <span className="text-destructive">*</span>
+                          </TableHead>
+                          <TableHead className="p-2">
+                            Valor 2 <span className="text-destructive">*</span>
+                          </TableHead>
+                          <TableHead className="text-right p-2">Resultado</TableHead>
+                        </TableRow>
+                      </TableHeader>
+                      <TableBody>
+                        {disjuntorAbertoRows.map((r) => {
+                          const v1 = form.watch(`dados_detalhados.aberto.${r.id}.v1` as any)
+                          const v2 = form.watch(`dados_detalhados.aberto.${r.id}.v2` as any)
+                          const res = (Number(v1) || 0) * (Number(v2) || 0)
+
+                          return (
+                            <TableRow key={r.id}>
+                              <TableCell className="font-medium text-xs p-2">{r.label}</TableCell>
+                              <TableCell className="p-2 align-top">
+                                <FormField
+                                  control={form.control}
+                                  name={`dados_detalhados.aberto.${r.id}.v1` as any}
+                                  render={({ field }) => (
+                                    <FormItem className="space-y-1">
+                                      <FormControl>
+                                        <Input
+                                          type="number"
+                                          step="any"
+                                          className="h-8 text-xs"
+                                          value={field.value ?? ''}
+                                          onChange={(e) =>
+                                            field.onChange(
+                                              e.target.value === '' ? '' : Number(e.target.value),
+                                            )
+                                          }
+                                        />
+                                      </FormControl>
+                                      <FormMessage className="text-[10px]" />
+                                    </FormItem>
+                                  )}
+                                />
+                              </TableCell>
+                              <TableCell className="p-2 align-top">
+                                <FormField
+                                  control={form.control}
+                                  name={`dados_detalhados.aberto.${r.id}.v2` as any}
+                                  render={({ field }) => (
+                                    <FormItem className="space-y-1">
+                                      <FormControl>
+                                        <Input
+                                          type="number"
+                                          step="any"
+                                          className="h-8 text-xs"
+                                          value={field.value ?? ''}
+                                          onChange={(e) =>
+                                            field.onChange(
+                                              e.target.value === '' ? '' : Number(e.target.value),
+                                            )
+                                          }
+                                        />
+                                      </FormControl>
+                                      <FormMessage className="text-[10px]" />
+                                    </FormItem>
+                                  )}
+                                />
+                              </TableCell>
+                              <TableCell className="text-right p-2 text-xs font-medium text-muted-foreground pt-4 whitespace-nowrap">
+                                {v1 !== undefined && v2 !== undefined && v1 !== '' && v2 !== ''
+                                  ? `${new Intl.NumberFormat('pt-BR').format(res)}`
+                                  : '-'}
+                              </TableCell>
+                            </TableRow>
+                          )
+                        })}
+                      </TableBody>
+                    </Table>
                   </div>
                 </div>
               ) : (

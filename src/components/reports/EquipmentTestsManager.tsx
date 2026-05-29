@@ -168,6 +168,30 @@ export function EquipmentTestsManager({
         const c = calcRes(d.C)
         return `A: ${a} | B: ${b} | C: ${c}`
       } else {
+      } else if (tipoEquipamento === 'Disjuntor') {
+        const df = t.dados_detalhados?.fechado || {}
+        const da = t.dados_detalhados?.aberto || {}
+
+        const formatRes = (row: any) => {
+          if (!row) return '-'
+          if (row.resultado !== undefined) return formatNum(row.resultado)
+          const v1 = Number(row.v1)
+          const v2 = Number(row.v2)
+          if (!isNaN(v1) && !isNaN(v2)) return formatNum(v1 * v2)
+          return '-'
+        }
+
+        const f_ab = formatRes(df.ab)
+        const f_bc = formatRes(df.bc)
+        const f_ca = formatRes(df.ac)
+        const f_massa = formatRes(df.abc_massa)
+
+        const a_aa = formatRes(da.aa)
+        const a_bb = formatRes(da.bb)
+        const a_cc = formatRes(da.cc)
+
+        return `Fechado (A x B: ${f_ab} | B x C: ${f_bc} | C x A: ${f_ca} | Massa: ${f_massa}) | Aberto (A x A: ${a_aa} | B x B: ${a_bb} | C x C: ${a_cc})`
+      } else {
         const d = t.dados_detalhados || {}
         const ab = formatNum((Number(d.ab?.v1) || 0) * (Number(d.ab?.v2) || 0))
         const bc = formatNum((Number(d.bc?.v1) || 0) * (Number(d.bc?.v2) || 0))
