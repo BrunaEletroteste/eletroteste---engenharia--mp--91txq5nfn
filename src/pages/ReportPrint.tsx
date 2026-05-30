@@ -90,6 +90,7 @@ const labelMap: Record<string, string> = {
   ajuste_t_v_maior: 'T.V>',
   ajuste_v_menor: 'V<',
   ajuste_t_v_menor: 'T.V<',
+  padrao: 'Padrão',
 }
 
 const getLabel = (key: string) => {
@@ -173,69 +174,37 @@ export default function ReportPrint() {
   const renderDetalhes = (detalhes: any) => {
     if (!detalhes) return null
 
-    const isFlat = Object.values(detalhes).every((v) => typeof v !== 'object' || v === null)
-
-    if (isFlat) {
-      return (
-        <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 w-full">
-          {Object.entries(detalhes).map(([k, v]) => (
-            <div
-              key={k}
-              className="flex flex-col border border-slate-200 rounded p-1.5 bg-white shadow-sm"
-            >
-              <span className="text-[10px] font-semibold text-slate-500 uppercase tracking-wider">
-                {getLabel(k)}
-              </span>
-              <span className="text-sm font-medium text-slate-900">{String(v)}</span>
-            </div>
-          ))}
-        </div>
-      )
+    const flatDetails: Array<{ label: string; value: string }> = []
+    const flatten = (obj: any) => {
+      Object.entries(obj).forEach(([k, v]) => {
+        if (typeof v === 'object' && v !== null) {
+          flatten(v)
+        } else {
+          flatDetails.push({ label: getLabel(k), value: String(v) })
+        }
+      })
     }
+    flatten(detalhes)
 
     return (
-      <div className="flex flex-col gap-4 w-full">
-        {Object.entries(detalhes).map(([k, v]) => {
-          if (typeof v === 'object' && v !== null) {
-            return (
-              <div key={k} className="w-full">
-                <span className="font-semibold text-slate-700 text-xs uppercase block mb-1.5">
-                  {getLabel(k)}
-                </span>
-                <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
-                  {Object.entries(v).map(([sk, sv]) => (
-                    <div
-                      key={sk}
-                      className="flex flex-col border border-slate-200 rounded p-1.5 bg-white shadow-sm"
-                    >
-                      <span className="text-[10px] font-semibold text-slate-500 uppercase tracking-wider">
-                        {getLabel(sk)}
-                      </span>
-                      <span className="text-sm font-medium text-slate-900">{String(sv)}</span>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            )
-          }
-          return (
-            <div
-              key={k}
-              className="flex flex-col border border-slate-200 rounded p-1.5 bg-white shadow-sm w-fit min-w-[120px]"
-            >
-              <span className="text-[10px] font-semibold text-slate-500 uppercase tracking-wider">
-                {getLabel(k)}
-              </span>
-              <span className="text-sm font-medium text-slate-900">{String(v)}</span>
-            </div>
-          )
-        })}
+      <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 w-full">
+        {flatDetails.map((item, idx) => (
+          <div
+            key={idx}
+            className="flex flex-col border border-slate-200 rounded p-1.5 bg-white shadow-sm"
+          >
+            <span className="text-[10px] font-semibold text-slate-500 uppercase tracking-wider">
+              {item.label}
+            </span>
+            <span className="text-sm font-medium text-slate-900">{item.value}</span>
+          </div>
+        ))}
       </div>
     )
   }
 
   return (
-    <div className="bg-white min-h-screen text-black">
+    <div className="bg-white print:bg-transparent min-h-screen text-black">
       {/* Action Bar - Hidden on print */}
       <div className="no-print bg-slate-100 p-4 flex justify-between items-center fixed top-0 w-full shadow-sm z-50 border-b">
         <Button variant="outline" onClick={() => navigate(-1)}>
@@ -247,7 +216,7 @@ export default function ReportPrint() {
       </div>
 
       {/* Document Container */}
-      <div className="pt-24 px-8 pb-8 max-w-[210mm] mx-auto text-sm print:pt-0 print:px-0 print:pb-0 font-sans">
+      <div className="pt-24 px-8 pb-8 max-w-[210mm] mx-auto text-sm print:max-w-none print:pt-0 print:px-0 print:pb-0 font-sans">
         {/* Header */}
         <div className="border-b-2 border-slate-800 pb-4 mb-6 flex flex-col sm:flex-row justify-between sm:items-end gap-4 avoid-break">
           <div>
@@ -375,7 +344,7 @@ export default function ReportPrint() {
 
         {/* Equipments Body */}
         {equipments.map((eq: any, i: number) => (
-          <div key={eq.id} className="mb-10 avoid-break border border-slate-400">
+          <div key={eq.id} className="mb-10 break-before-page border border-slate-400 bg-white">
             <div className="bg-slate-200 text-slate-900 p-3 font-bold text-base border-b border-slate-400">
               {i + 1}. EQUIPAMENTO: {eq.tipo_equipamento.toUpperCase()}
             </div>
@@ -526,7 +495,7 @@ export default function ReportPrint() {
 
         {/* General Photos (Estrutura) */}
         {report.fotos_estrutura && report.fotos_estrutura.length > 0 && (
-          <div className="mb-10 page-break avoid-break">
+          <div className="mb-10 break-before-page avoid-break">
             <div className="bg-slate-800 text-white p-2 font-bold mb-4 uppercase text-xs tracking-wider">
               Fotos Gerais / Estrutura
             </div>

@@ -115,4 +115,17 @@
   .animate-fade-in-up {
     animation: fade-in-up 0.5s ease-out;
   }
+  @media print {
+    @page {
+      size: A4;
+      margin: 15mm;
+    }
+    body {
+      -webkit-print-color-adjust: exact;
+      print-color-adjust: exact;
+    }
+    .avoid-break {
+      break-inside: avoid;
+    }
+  }
 }
