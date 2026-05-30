@@ -3,6 +3,7 @@ import { Toaster } from '@/components/ui/toaster'
 import { Toaster as Sonner } from '@/components/ui/sonner'
 import { TooltipProvider } from '@/components/ui/tooltip'
 import { AuthProvider, useAuth } from '@/hooks/use-auth'
+import { Loader2 } from 'lucide-react'
 
 import Layout from './components/Layout'
 import Index from './pages/Index'
@@ -15,7 +16,15 @@ import Login from './pages/Login'
 
 const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
   const { isAuthenticated, loading } = useAuth()
-  if (loading) return null
+
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-slate-50">
+        <Loader2 className="h-8 w-8 animate-spin text-amber-500" />
+      </div>
+    )
+  }
+
   if (!isAuthenticated) return <Navigate to="/login" replace />
   return <>{children}</>
 }
