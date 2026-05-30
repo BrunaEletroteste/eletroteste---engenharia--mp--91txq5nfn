@@ -594,13 +594,11 @@ export default function ReportForm() {
             }
           }
 
-          const existingTestes = await pb
-            .collection('testes_equipamento')
-            .getFullList({
-              filter: `equipamento_id.relatorio_id='${currentId}'`,
-              fields: 'id',
-              requestKey: null,
-            })
+          const existingTestes = await pb.collection('testes_equipamento').getFullList({
+            filter: `equipamento_id.relatorio_id='${currentId}'`,
+            fields: 'id',
+            requestKey: null,
+          })
           const existingTesteIds = new Set(existingTestes.map((t) => t.id))
           for (const eq of equipments) {
             for (const t of eq.testes || []) {
@@ -613,13 +611,11 @@ export default function ReportForm() {
             }
           }
 
-          const existingPareceres = await pb
-            .collection('parecer_tecnico')
-            .getFullList({
-              filter: `equipamento_id.relatorio_id='${currentId}'`,
-              fields: 'id',
-              requestKey: null,
-            })
+          const existingPareceres = await pb.collection('parecer_tecnico').getFullList({
+            filter: `equipamento_id.relatorio_id='${currentId}'`,
+            fields: 'id',
+            requestKey: null,
+          })
           const existingParecerIds = new Set(existingPareceres.map((p) => p.id))
           for (const eq of equipments) {
             if (
@@ -780,10 +776,12 @@ export default function ReportForm() {
 
         let errMsg = getErrorMessage(error)
         if (error?.status === 404 || error?.isCustom404) {
-          errMsg = "Erro ao salvar - the requested resource wasn't found"
+          errMsg = 'Registro não encontrado. Outro usuário pode ter excluído ou você está offline.'
           setHas404Error(true)
         } else if (error?.status === 403) {
           errMsg = 'Você não tem permissão para realizar esta operação.'
+        } else if (error?.status === 0) {
+          errMsg = 'Erro de conexão. Verifique sua internet.'
         } else if (error?.status === 400 && hasFieldErrors) {
           errMsg = 'Verifique os campos do formulário.'
         }
@@ -813,6 +811,17 @@ export default function ReportForm() {
       } else {
         if (error?.status === 404 || error?.isCustom404) {
           setHas404Error(true)
+          toast({
+            title: 'Erro no salvamento automático',
+            description: 'Registro não encontrado. Pode ter sido excluído.',
+            variant: 'destructive',
+          })
+        } else if (error?.status === 0) {
+          toast({
+            title: 'Erro no salvamento automático',
+            description: 'Erro de conexão. Verifique sua internet.',
+            variant: 'destructive',
+          })
         }
         setAutoSaveStatus('error')
       }

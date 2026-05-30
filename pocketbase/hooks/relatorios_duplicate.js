@@ -63,6 +63,7 @@ routerAdd(
           newEq.set('relatorio_id', newReportId)
           newEq.set('tipo_equipamento', eq.get('tipo_equipamento'))
           newEq.set('dados_tecnicos', eq.get('dados_tecnicos'))
+          newEq.set('ordem', eq.get('ordem'))
 
           txApp.save(newEq)
           const newEqId = newEq.id
@@ -78,6 +79,7 @@ routerAdd(
             const newTest = new Record(txApp.findCollectionByNameOrId('testes_equipamento'))
             newTest.set('equipamento_id', newEqId)
             newTest.set('tipo_teste', t.get('tipo_teste'))
+            newTest.set('equipamento_utilizado', t.get('equipamento_utilizado'))
             newTest.set('valor_teste', 0)
             newTest.set('unidade', t.get('unidade'))
             newTest.set('data_teste', today)
