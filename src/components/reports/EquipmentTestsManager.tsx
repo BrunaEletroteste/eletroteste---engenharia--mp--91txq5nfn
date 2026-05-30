@@ -481,7 +481,7 @@ export function EquipmentTestsManager({
     })
   }
 
-  const formatTestValue = (t: any, tipoEquipamento: string, subType?: string) => {
+  const formatTestValue = (t: any, tipoEquipamento: string, subType?: string): string[] => {
     const formatNum = (val: any) => {
       if (typeof val === 'number' && !isNaN(val)) return new Intl.NumberFormat('pt-BR').format(val)
       return val
@@ -505,9 +505,10 @@ export function EquipmentTestsManager({
         const b = calcRes(d.fase_b)
         const c = calcRes(d.fase_c)
         const rVal = calcRes(d.reserva)
-        const r = rVal !== '-' ? ` | R: ${rVal}` : ''
 
-        return `A: ${a} | B: ${b} | C: ${c}${r}`
+        const items = [`A: ${a}`, `B: ${b}`, `C: ${c}`]
+        if (rVal !== '-') items.push(`R: ${rVal}`)
+        return items
       } else if (
         tipoEquipamento === 'Transformador de Potencial' ||
         tipoEquipamento === 'Transformador de Corrente'
@@ -527,7 +528,7 @@ export function EquipmentTestsManager({
         const a = calcRes(d.A)
         const b = calcRes(d.B)
         const c = calcRes(d.C)
-        return `A: ${a} | B: ${b} | C: ${c}`
+        return [`A: ${a}`, `B: ${b}`, `C: ${c}`]
       } else if (tipoEquipamento === 'Disjuntor') {
         const df = t.dados_detalhados?.fechado || {}
         const da = t.dados_detalhados?.aberto || {}
@@ -550,14 +551,27 @@ export function EquipmentTestsManager({
         const a_bb = formatRes(da.bb)
         const a_cc = formatRes(da.cc)
 
+        const fechadoItems = [
+          `A x B: ${f_ab}`,
+          `B x C: ${f_bc}`,
+          `C x A: ${f_ca}`,
+          `Massa: ${f_massa}`,
+        ]
+        const abertoItems = [`A x A: ${a_aa}`, `B x B: ${a_bb}`, `C x C: ${a_cc}`]
+
         if (subType === 'Fechado') {
-          return `A x B: ${f_ab} | B x C: ${f_bc} | C x A: ${f_ca} | Massa: ${f_massa}`
+          return fechadoItems
         }
         if (subType === 'Aberto') {
-          return `A x A: ${a_aa} | B x B: ${a_bb} | C x C: ${a_cc}`
+          return abertoItems
         }
 
-        return `Fechado (A x B: ${f_ab} | B x C: ${f_bc} | C x A: ${f_ca} | Massa: ${f_massa}) | Aberto (A x A: ${a_aa} | B x B: ${a_bb} | C x C: ${a_cc})`
+        return [
+          'Fechado:',
+          ...fechadoItems.map((i) => `  ${i}`),
+          'Aberto:',
+          ...abertoItems.map((i) => `  ${i}`),
+        ]
       } else if (tipoEquipamento === 'Transformador') {
         const d = t.dados_detalhados || {}
         const m = d.medicoes || d
@@ -569,14 +583,18 @@ export function EquipmentTestsManager({
           if (!isNaN(v1) && !isNaN(v2)) return formatNum(v1 * v2)
           return '-'
         }
-        return `A/B: ${calcRes(m.alta_baixa)} | A/M: ${calcRes(m.alta_massa)} | B/M: ${calcRes(m.baixa_massa)}`
+        return [
+          `A/B: ${calcRes(m.alta_baixa)}`,
+          `A/M: ${calcRes(m.alta_massa)}`,
+          `B/M: ${calcRes(m.baixa_massa)}`,
+        ]
       } else {
         const d = t.dados_detalhados || {}
         const ab = formatNum((Number(d.ab?.v1) || 0) * (Number(d.ab?.v2) || 0))
         const bc = formatNum((Number(d.bc?.v1) || 0) * (Number(d.bc?.v2) || 0))
         const ac = formatNum((Number(d.ac?.v1) || 0) * (Number(d.ac?.v2) || 0))
         const abcm = formatNum((Number(d.abc_massa?.v1) || 0) * (Number(d.abc_massa?.v2) || 0))
-        return `AB: ${ab} | BC: ${bc} | CA: ${ac} | ABC-M: ${abcm}`
+        return [`AB: ${ab}`, `BC: ${bc}`, `CA: ${ac}`, `ABC-M: ${abcm}`]
       }
     }
     if (t.tipo_teste === 'Resistências dos Enrolamentos') {
@@ -590,41 +608,64 @@ export function EquipmentTestsManager({
       const formatField = (val: any, unit: string) =>
         val !== undefined && val !== null && val !== '' ? `${formatNum(val)} ${unit}` : '-'
 
-      let f_ets = `H1-H3: ${formatField(ets.h1_h3, 'Ω')} | H2-H1: ${formatField(ets.h2_h1, 'Ω')} | H3-H2: ${formatField(ets.h3_h2, 'Ω')}`
-      let f_eti = `X1-X3: ${formatField(eti.x1_x3, 'mΩ')} | X2-X1: ${formatField(eti.x2_x1, 'mΩ')} | X3-X2: ${formatField(eti.x3_x2, 'mΩ')}`
+      const f_ets = [
+        `H1-H3: ${formatField(ets.h1_h3, 'Ω')}`,
+        `H2-H1: ${formatField(ets.h2_h1, 'Ω')}`,
+        `H3-H2: ${formatField(ets.h3_h2, 'Ω')}`,
+      ]
+      const f_eti = [
+        `X1-X3: ${formatField(eti.x1_x3, 'mΩ')}`,
+        `X2-X1: ${formatField(eti.x2_x1, 'mΩ')}`,
+        `X3-X2: ${formatField(eti.x3_x2, 'mΩ')}`,
+      ]
 
       if (calc) {
         if (calc.ets_75 !== null && calc.ets_75 !== undefined)
-          f_ets += ` | Média 75ºC: ${formatField(calc.ets_75, 'Ω')}`
+          f_ets.push(`Média 75ºC: ${formatField(calc.ets_75, 'Ω')}`)
         else if (calc.ets_105 !== null && calc.ets_105 !== undefined)
-          f_ets += ` | Média 105ºC: ${formatField(calc.ets_105, 'Ω')}`
+          f_ets.push(`Média 105ºC: ${formatField(calc.ets_105, 'Ω')}`)
 
         if (calc.eti_75 !== null && calc.eti_75 !== undefined)
-          f_eti += ` | Média 75ºC: ${formatField(calc.eti_75, 'mΩ')}`
+          f_eti.push(`Média 75ºC: ${formatField(calc.eti_75, 'mΩ')}`)
         else if (calc.eti_105 !== null && calc.eti_105 !== undefined)
-          f_eti += ` | Média 105ºC: ${formatField(calc.eti_105, 'mΩ')}`
+          f_eti.push(`Média 105ºC: ${formatField(calc.eti_105, 'mΩ')}`)
       } else if (ets_corr || eti_corr) {
         if (ets_corr) {
-          f_ets += ` (Corr. ${tRef}ºC: H1-H3: ${formatField(ets_corr.h1_h3, 'Ω')} | H2-H1: ${formatField(ets_corr.h2_h1, 'Ω')} | H3-H2: ${formatField(ets_corr.h3_h2, 'Ω')})`
+          f_ets.push(`Corr. ${tRef}ºC:`)
+          f_ets.push(`  H1-H3: ${formatField(ets_corr.h1_h3, 'Ω')}`)
+          f_ets.push(`  H2-H1: ${formatField(ets_corr.h2_h1, 'Ω')}`)
+          f_ets.push(`  H3-H2: ${formatField(ets_corr.h3_h2, 'Ω')}`)
         }
         if (eti_corr) {
-          f_eti += ` (Corr. ${tRef}ºC: X1-X3: ${formatField(eti_corr.x1_x3, 'mΩ')} | X2-X1: ${formatField(eti_corr.x2_x1, 'mΩ')} | X3-X2: ${formatField(eti_corr.x3_x2, 'mΩ')})`
+          f_eti.push(`Corr. ${tRef}ºC:`)
+          f_eti.push(`  X1-X3: ${formatField(eti_corr.x1_x3, 'mΩ')}`)
+          f_eti.push(`  X2-X1: ${formatField(eti_corr.x2_x1, 'mΩ')}`)
+          f_eti.push(`  X3-X2: ${formatField(eti_corr.x3_x2, 'mΩ')}`)
         }
       }
 
       if (subType === 'ETS') return f_ets
       if (subType === 'ETI') return f_eti
-      return `ETS (${f_ets}) | ETI (${f_eti})`
+      return ['ETS:', ...f_ets.map((i) => `  ${i}`), 'ETI:', ...f_eti.map((i) => `  ${i}`)]
     }
     if (t.tipo_teste === 'Resistências dos Contatos') {
       const d = t.dados_detalhados || {}
-      return `A: ${formatNum(d.fase_a) ?? '-'} | B: ${formatNum(d.fase_b) ?? '-'} | C: ${formatNum(d.fase_c) ?? '-'}`
+      return [
+        `A: ${formatNum(d.fase_a) ?? '-'}`,
+        `B: ${formatNum(d.fase_b) ?? '-'}`,
+        `C: ${formatNum(d.fase_c) ?? '-'}`,
+      ]
     }
     if (t.tipo_teste === 'Relação de Tensões' && tipoEquipamento === 'Transformador') {
       const d = t.dados_detalhados || {}
-      return `Posição: ${d.posicao || '-'} | H1H3/X0X1: ${formatNum(d.h1h3_x0x1) || '-'} | H2H1/X0X2: ${formatNum(d.h2h1_x0x2) || '-'} | H3H2/X0X3: ${formatNum(d.h3h2_x0x3) || '-'}`
+      return [
+        `Posição: ${d.posicao || '-'}`,
+        `H1H3/X0X1: ${formatNum(d.h1h3_x0x1) || '-'}`,
+        `H2H1/X0X2: ${formatNum(d.h2h1_x0x2) || '-'}`,
+        `H3H2/X0X3: ${formatNum(d.h3h2_x0x3) || '-'}`,
+      ]
     }
-    return `${formatNum(t.valor_teste)}`
+    return [`${formatNum(t.valor_teste)}`]
   }
 
   const renderTabContent = (type: string, subType?: string) => {
@@ -682,8 +723,16 @@ export function EquipmentTestsManager({
                           {t.equipamento_utilizado || '-'}
                         </div>
                       </TableCell>
-                      <TableCell>
-                        {formatTestValue(t, equipment.tipo_equipamento, subType)}
+                      <TableCell className="align-top py-3">
+                        <div className="flex flex-col gap-0.5 whitespace-pre-wrap">
+                          {formatTestValue(t, equipment.tipo_equipamento, subType).map(
+                            (line, lineIdx) => (
+                              <span key={lineIdx} className="block leading-tight">
+                                {line}
+                              </span>
+                            ),
+                          )}
+                        </div>
                       </TableCell>
                       {!isEnrolamentos && (
                         <TableCell className="text-sm text-muted-foreground">
@@ -768,8 +817,16 @@ export function EquipmentTestsManager({
                             {ht.equipamento_utilizado || '-'}
                           </div>
                         </TableCell>
-                        <TableCell className="py-2 text-sm">
-                          {formatTestValue(ht, equipment.tipo_equipamento, subType)}
+                        <TableCell className="py-3 text-sm align-top">
+                          <div className="flex flex-col gap-0.5 whitespace-pre-wrap">
+                            {formatTestValue(ht, equipment.tipo_equipamento, subType).map(
+                              (line, lineIdx) => (
+                                <span key={lineIdx} className="block leading-tight">
+                                  {line}
+                                </span>
+                              ),
+                            )}
+                          </div>
                         </TableCell>
                         {!isEnrolamentos && (
                           <TableCell className="py-2 text-sm text-muted-foreground">
