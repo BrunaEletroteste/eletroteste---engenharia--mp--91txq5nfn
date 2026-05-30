@@ -909,7 +909,7 @@ export function EquipmentTestsManager({
                 <TooltipTrigger asChild>
                   <TabsTrigger
                     value={type}
-                    className="flex-1 min-w-[150px] data-[state=active]:bg-slate-950 data-[state=active]:text-white data-[state=active]:shadow-md border-b-4 border-transparent data-[state=active]:border-b-primary data-[state=inactive]:hover:bg-slate-200 dark:data-[state=inactive]:hover:bg-slate-800 rounded-sm py-2 transition-colors duration-200"
+                    className="flex-1 min-w-[150px] data-[state=active]:bg-slate-400 data-[state=active]:text-slate-900 data-[state=active]:shadow-md border-b-4 border-transparent data-[state=active]:border-b-primary data-[state=inactive]:hover:bg-slate-200 dark:data-[state=inactive]:hover:bg-slate-800 rounded-sm py-2 transition-colors duration-200"
                   >
                     {type}
                   </TabsTrigger>
@@ -935,7 +935,7 @@ export function EquipmentTestsManager({
                         <TooltipTrigger asChild>
                           <TabsTrigger
                             value="Fechado"
-                            className="flex-1 min-w-[120px] data-[state=active]:bg-slate-950 data-[state=active]:text-white data-[state=active]:shadow-md border-b-4 border-transparent data-[state=active]:border-b-primary data-[state=inactive]:hover:bg-slate-200 dark:data-[state=inactive]:hover:bg-slate-800 rounded-sm py-2 transition-colors duration-200"
+                            className="flex-1 min-w-[120px] data-[state=active]:bg-slate-400 data-[state=active]:text-slate-900 data-[state=active]:shadow-md border-b-4 border-transparent data-[state=active]:border-b-primary data-[state=inactive]:hover:bg-slate-200 dark:data-[state=inactive]:hover:bg-slate-800 rounded-sm py-2 transition-colors duration-200"
                           >
                             Contatos Fechados
                           </TabsTrigger>
@@ -948,7 +948,7 @@ export function EquipmentTestsManager({
                         <TooltipTrigger asChild>
                           <TabsTrigger
                             value="Aberto"
-                            className="flex-1 min-w-[120px] data-[state=active]:bg-slate-950 data-[state=active]:text-white data-[state=active]:shadow-md border-b-4 border-transparent data-[state=active]:border-b-primary data-[state=inactive]:hover:bg-slate-200 dark:data-[state=inactive]:hover:bg-slate-800 rounded-sm py-2 transition-colors duration-200"
+                            className="flex-1 min-w-[120px] data-[state=active]:bg-slate-400 data-[state=active]:text-slate-900 data-[state=active]:shadow-md border-b-4 border-transparent data-[state=active]:border-b-primary data-[state=inactive]:hover:bg-slate-200 dark:data-[state=inactive]:hover:bg-slate-800 rounded-sm py-2 transition-colors duration-200"
                           >
                             Contatos Abertos
                           </TabsTrigger>
@@ -972,7 +972,7 @@ export function EquipmentTestsManager({
                         <TooltipTrigger asChild>
                           <TabsTrigger
                             value="ETS"
-                            className="flex-1 min-w-[120px] data-[state=active]:bg-slate-950 data-[state=active]:text-white data-[state=active]:shadow-md border-b-4 border-transparent data-[state=active]:border-b-primary data-[state=inactive]:hover:bg-slate-200 dark:data-[state=inactive]:hover:bg-slate-800 rounded-sm py-2 transition-colors duration-200"
+                            className="flex-1 min-w-[120px] data-[state=active]:bg-slate-400 data-[state=active]:text-slate-900 data-[state=active]:shadow-md border-b-4 border-transparent data-[state=active]:border-b-primary data-[state=inactive]:hover:bg-slate-200 dark:data-[state=inactive]:hover:bg-slate-800 rounded-sm py-2 transition-colors duration-200"
                           >
                             ETS (Alta Tensão)
                           </TabsTrigger>
@@ -985,7 +985,7 @@ export function EquipmentTestsManager({
                         <TooltipTrigger asChild>
                           <TabsTrigger
                             value="ETI"
-                            className="flex-1 min-w-[120px] data-[state=active]:bg-slate-950 data-[state=active]:text-white data-[state=active]:shadow-md border-b-4 border-transparent data-[state=active]:border-b-primary data-[state=inactive]:hover:bg-slate-200 dark:data-[state=inactive]:hover:bg-slate-800 rounded-sm py-2 transition-colors duration-200"
+                            className="flex-1 min-w-[120px] data-[state=active]:bg-slate-400 data-[state=active]:text-slate-900 data-[state=active]:shadow-md border-b-4 border-transparent data-[state=active]:border-b-primary data-[state=inactive]:hover:bg-slate-200 dark:data-[state=inactive]:hover:bg-slate-800 rounded-sm py-2 transition-colors duration-200"
                           >
                             ETI (Baixa Tensão)
                           </TabsTrigger>
