@@ -7,6 +7,7 @@ import { AuthProvider, useAuth } from '@/hooks/use-auth'
 import Layout from './components/Layout'
 import Index from './pages/Index'
 import ReportForm from './pages/ReportForm'
+import ReportPrint from './pages/ReportPrint'
 import ConfigOptions from './pages/ConfigOptions'
 import Clientes from './pages/Clientes'
 import NotFound from './pages/NotFound'
@@ -41,6 +42,14 @@ const App = () => (
             <Route path="/clientes" element={<Clientes />} />
             <Route path="/configuracoes/opcoes" element={<ConfigOptions />} />
           </Route>
+          <Route
+            path="/relatorio/imprimir/:id"
+            element={
+              <ProtectedRoute>
+                <ReportPrint />
+              </ProtectedRoute>
+            }
+          />
           <Route path="*" element={<NotFound />} />
         </Routes>
       </TooltipProvider>

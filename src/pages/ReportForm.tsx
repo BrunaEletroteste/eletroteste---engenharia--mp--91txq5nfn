@@ -11,7 +11,7 @@ import { Button } from '@/components/ui/button'
 import { Card, CardHeader, CardTitle, CardDescription, CardFooter } from '@/components/ui/card'
 import { Skeleton } from '@/components/ui/skeleton'
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert'
-import { ArrowLeft, Save, CheckCircle2 } from 'lucide-react'
+import { ArrowLeft, Save, CheckCircle2, FileText } from 'lucide-react'
 import { ReportHeaderSection } from '@/components/reports/ReportHeaderSection'
 import { ReportGeneralSection } from '@/components/reports/ReportGeneralSection'
 import { EquipmentSection } from '@/components/reports/EquipmentSection'
@@ -732,6 +732,19 @@ export default function ReportForm() {
               <ArrowLeft className="mr-2 h-4 w-4" />
               Voltar
             </Button>
+
+            {isReadOnly && isFinalized && (
+              <div className="flex flex-col sm:flex-row gap-3 w-full sm:w-auto">
+                <Button
+                  type="button"
+                  className="w-full sm:w-auto bg-primary hover:bg-primary/90 text-primary-foreground shadow-sm"
+                  onClick={() => window.open(`/relatorio/imprimir/${id}`, '_blank')}
+                >
+                  <FileText className="mr-2 h-4 w-4" />
+                  Gerar PDF
+                </Button>
+              </div>
+            )}
 
             {!isReadOnly && (
               <div className="flex flex-col sm:flex-row gap-3 w-full sm:w-auto">

@@ -10,6 +10,7 @@ import {
   Loader2,
   MoreHorizontal,
   Trash2,
+  FileText,
 } from 'lucide-react'
 import {
   DropdownMenu,
@@ -293,6 +294,14 @@ export default function Index() {
                                 Editar
                               </DropdownMenuItem>
                             )}
+                            <DropdownMenuItem
+                              onClick={() =>
+                                window.open(`/relatorio/imprimir/${report.id}`, '_blank')
+                              }
+                            >
+                              <FileText className="mr-2 h-4 w-4" />
+                              Exportar PDF
+                            </DropdownMenuItem>
                             {canCreate && (
                               <DropdownMenuItem
                                 onClick={() => handleDuplicate(report.id)}
@@ -372,6 +381,12 @@ export default function Index() {
                             Editar
                           </DropdownMenuItem>
                         )}
+                        <DropdownMenuItem
+                          onClick={() => window.open(`/relatorio/imprimir/${report.id}`, '_blank')}
+                        >
+                          <FileText className="mr-2 h-4 w-4" />
+                          Exportar PDF
+                        </DropdownMenuItem>
                         {canCreate && (
                           <DropdownMenuItem
                             onClick={() => handleDuplicate(report.id)}
