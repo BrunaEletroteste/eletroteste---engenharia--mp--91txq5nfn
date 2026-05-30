@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useState, Fragment } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 import { Printer, ArrowLeft, Loader2 } from 'lucide-react'
 import pb from '@/lib/pocketbase/client'
@@ -592,7 +592,7 @@ export default function ReportPrint() {
 
                               if (allData.length === 0) {
                                 return (
-                                  <div className="text-xs text-slate-500 italic col-span-3">
+                                  <div className="text-[11px] text-slate-500 italic col-span-3">
                                     Nenhuma característica preenchida.
                                   </div>
                                 )
@@ -601,12 +601,12 @@ export default function ReportPrint() {
                               return allData.map(({ key, label, value }) => (
                                 <div
                                   key={key}
-                                  className="flex items-end text-[11px] border-b border-slate-200 pb-0.5"
+                                  className="flex items-baseline text-[11px] border-b border-slate-200 pb-0.5"
                                 >
-                                  <span className="font-semibold text-slate-600 w-1/2 pr-1 leading-tight">
+                                  <span className="font-semibold text-slate-600 whitespace-nowrap pr-1 leading-tight">
                                     {label}:
                                   </span>
-                                  <span className="w-1/2 text-slate-900 break-words leading-tight">
+                                  <span className="text-slate-900 break-words leading-tight">
                                     {typeof value === 'boolean'
                                       ? value
                                         ? 'Sim'
@@ -626,72 +626,74 @@ export default function ReportPrint() {
                           <div className="font-bold text-slate-800 mb-2 border-b border-slate-200 pb-1 text-xs uppercase tracking-wider">
                             Resultados dos Testes
                           </div>
-                          <div className="space-y-4">
-                            {eq.testes.map((t: any) => (
-                              <div
-                                key={t.id}
-                                className="border border-slate-200 rounded overflow-hidden avoid-break"
-                              >
-                                <table className="w-full text-sm">
-                                  <thead>
-                                    <tr className="bg-slate-50 border-b border-slate-200">
-                                      <th className="p-2 text-left text-slate-700 font-semibold w-1/4">
-                                        Teste Realizado
-                                      </th>
-                                      <th className="p-2 text-left text-slate-700 font-semibold w-1/4">
-                                        Equipamento Utilizado
-                                      </th>
-                                      <th className="p-2 text-left text-slate-700 font-semibold w-1/6">
-                                        Data
-                                      </th>
-                                      <th className="p-2 text-left text-slate-700 font-semibold w-1/3">
-                                        Resultados
-                                      </th>
-                                    </tr>
-                                  </thead>
-                                  <tbody>
-                                    <tr>
-                                      <td className="p-2 font-medium">{t.tipo_teste}</td>
-                                      <td className="p-2">{t.equipamento_utilizado}</td>
-                                      <td className="p-2">{formatDate(t.data_teste)}</td>
-                                      <td className="p-2">
-                                        <div className="flex flex-col gap-0.5 text-sm font-bold text-blue-900 whitespace-pre-wrap">
-                                          {formatTestValue(t, eq.tipo_equipamento).map(
-                                            (line, lineIdx) => (
-                                              <span key={lineIdx} className="block leading-tight">
-                                                {line}
-                                              </span>
-                                            ),
-                                          )}
-                                        </div>
-                                        {t.tipo_teste !== 'Resistências dos Enrolamentos' &&
-                                          t.unidade && (
-                                            <div className="text-xs text-slate-500 mt-1 font-medium">
-                                              Unidade: {t.unidade}
-                                            </div>
-                                          )}
-                                      </td>
-                                    </tr>
-                                  </tbody>
-                                </table>
-                                {(() => {
+                          <div className="border border-slate-200 rounded overflow-hidden">
+                            <table className="w-full text-[11px] border-collapse">
+                              <thead className="bg-slate-50 border-b border-slate-200">
+                                <tr>
+                                  <th className="p-2 text-left text-slate-700 font-semibold w-1/3 border-r border-slate-200">
+                                    Data / Teste Realizado
+                                  </th>
+                                  <th className="p-2 text-left text-slate-700 font-semibold w-2/3">
+                                    Resultados
+                                  </th>
+                                </tr>
+                              </thead>
+                              <tbody>
+                                {eq.testes.map((t: any, index: number) => {
+                                  const resultsArray = formatTestValue(t, eq.tipo_equipamento)
+                                  const resultsStr =
+                                    resultsArray.map((s) => s.trim()).join(' | ') +
+                                    (t.tipo_teste !== 'Resistências dos Enrolamentos' && t.unidade
+                                      ? ` | Unidade: ${t.unidade}`
+                                      : '')
                                   const hasObservacao = !!t.observacoes
 
-                                  if (!hasObservacao) return null
-
                                   return (
-                                    <div className="p-2 bg-yellow-50/50 border-t border-slate-200 text-xs text-slate-700 italic flex flex-col gap-1">
-                                      <div>
-                                        <span className="font-semibold not-italic">
-                                          Observações:
-                                        </span>{' '}
-                                        <span className="whitespace-pre-wrap">{t.observacoes}</span>
-                                      </div>
-                                    </div>
+                                    <Fragment key={t.id}>
+                                      <tr
+                                        className={`avoid-break ${index > 0 ? 'border-t border-slate-200' : ''}`}
+                                      >
+                                        <td className="p-2 align-top border-r border-slate-200">
+                                          <span className="font-semibold">
+                                            {formatDate(t.data_teste)}
+                                          </span>{' '}
+                                          / {t.tipo_teste}
+                                        </td>
+                                        <td className="p-2 align-top text-blue-900 font-bold whitespace-pre-wrap">
+                                          {resultsStr}
+                                        </td>
+                                      </tr>
+                                      <tr className="avoid-break bg-slate-50/50">
+                                        <td
+                                          colSpan={2}
+                                          className="px-2 py-1 text-slate-600 border-t border-slate-200"
+                                        >
+                                          <span className="font-semibold">
+                                            Equipamento Utilizado:
+                                          </span>{' '}
+                                          {t.equipamento_utilizado}
+                                        </td>
+                                      </tr>
+                                      {hasObservacao && (
+                                        <tr className="avoid-break bg-yellow-50/50">
+                                          <td
+                                            colSpan={2}
+                                            className="px-2 py-1 text-slate-700 italic border-t border-slate-200"
+                                          >
+                                            <span className="font-semibold not-italic">
+                                              Observações:
+                                            </span>{' '}
+                                            <span className="whitespace-pre-wrap">
+                                              {t.observacoes}
+                                            </span>
+                                          </td>
+                                        </tr>
+                                      )}
+                                    </Fragment>
                                   )
-                                })()}
-                              </div>
-                            ))}
+                                })}
+                              </tbody>
+                            </table>
                           </div>
                         </div>
                       )}
@@ -743,9 +745,7 @@ export default function ReportPrint() {
 
                       {/* Photos */}
                       {eq.fotos && eq.fotos.length > 0 && (
-                        <div
-                          className={`avoid-break ${eq.tipo_equipamento === 'Transformador' ? 'break-before-page pt-4' : 'pt-2'}`}
-                        >
+                        <div className="avoid-break break-before-page pt-4">
                           <div className="font-bold text-slate-800 mb-3 border-b border-slate-200 pb-1 text-xs uppercase tracking-wider">
                             Registro Fotográfico
                           </div>
