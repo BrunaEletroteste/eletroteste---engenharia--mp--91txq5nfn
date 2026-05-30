@@ -743,39 +743,44 @@ export function TestModal({
     } else if (watchTipo === 'Resistências dos Isolamentos') {
       form.setValue('unidade', 'Mega-Ohms', { shouldValidate: true })
       form.setValue('valor_teste', 0, { shouldValidate: true })
-      if (equipmentType === 'Transformador') {
-        const currentObs = form.getValues('observacoes')
-        if (!currentObs) {
-          form.setValue(
-            'observacoes',
-            'Nota: Os valores dos testes acima foram comparados com parâmetros de norma de manutenção para transformadores de distribuição: ABNT-NB 108-I.',
-            {
-              shouldValidate: true,
-            },
-          )
-        }
-      }
     } else if (watchTipo === 'Relação de Tensões') {
       if (equipmentType === 'Transformador') {
         form.setValue('unidade', 'V', { shouldValidate: true })
         form.setValue('valor_teste', 0, { shouldValidate: true })
-        const currentObs = form.getValues('observacoes')
-        if (!currentObs) {
-          form.setValue('observacoes', 'Nota: Em conformidade com a norma ABNT NBR 5356/81.', {
-            shouldValidate: true,
-          })
-        }
       } else {
         form.setValue('unidade', 'V', { shouldValidate: true })
       }
     } else if (watchTipo === 'Resistências dos Enrolamentos') {
       form.setValue('unidade', 'Ω / mΩ', { shouldValidate: true })
       form.setValue('valor_teste', 0, { shouldValidate: true })
-      const currentObs = form.getValues('observacoes')
-      if (!currentObs) {
-        form.setValue('observacoes', 'Nota: Os enrolamentos apresentam boa condução elétrica.', {
-          shouldValidate: true,
-        })
+    }
+
+    const currentObs = form.getValues('observacoes')
+    if (!currentObs || currentObs.trim() === '') {
+      let defaultObs = ''
+
+      if (
+        equipmentType === 'Seccionadora' &&
+        (watchTipo === 'Resistências dos Isolamentos' || watchTipo === 'Resistências dos Contatos')
+      ) {
+        defaultObs =
+          'Os valores dos testes acima foram comparados com parâmetros estatísticos para equipamentos similares em operação.'
+      } else if (equipmentType === 'Disjuntor' && watchTipo === 'Resistências dos Contatos') {
+        defaultObs =
+          'Nota: Os valores dos testes acima foram comparados com parâmetros estatísticos para equipamentos similares em operação.'
+      } else if (equipmentType === 'Transformador') {
+        if (watchTipo === 'Resistências dos Isolamentos') {
+          defaultObs =
+            'Nota: Os valores dos testes acima foram comparados com parâmetros de norma de manutenção para transformadores de distribuição: ABNT-NB 108-I.'
+        } else if (watchTipo === 'Relação de Tensões') {
+          defaultObs = 'Nota: Em conformidade com a norma ABNT NBR 5356/81.'
+        } else if (watchTipo === 'Resistências dos Enrolamentos') {
+          defaultObs = 'Nota: Os enrolamentos apresentam boa condução elétrica.'
+        }
+      }
+
+      if (defaultObs) {
+        form.setValue('observacoes', defaultObs, { shouldValidate: true })
       }
     }
   }, [watchTipo, form, open])

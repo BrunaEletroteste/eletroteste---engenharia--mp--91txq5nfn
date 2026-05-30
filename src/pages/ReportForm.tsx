@@ -141,16 +141,45 @@ export default function ReportForm() {
               fotos: e.fotos || [],
               testes: testesRes
                 .filter((t) => t.equipamento_id === e.id)
-                .map((t) => ({
-                  id: t.id,
-                  tipo_teste: t.tipo_teste,
-                  equipamento_utilizado: t.equipamento_utilizado || '',
-                  valor_teste: t.valor_teste,
-                  unidade: t.unidade,
-                  data_teste: t.data_teste.substring(0, 10),
-                  dados_detalhados: t.dados_detalhados || null,
-                  observacoes: t.observacoes || '',
-                })),
+                .map((t) => {
+                  let obs = t.observacoes || ''
+                  if (!obs || obs.trim() === '') {
+                    if (
+                      e.tipo_equipamento === 'Seccionadora' &&
+                      (t.tipo_teste === 'Resistências dos Isolamentos' ||
+                        t.tipo_teste === 'Resistências dos Contatos')
+                    ) {
+                      obs =
+                        'Os valores dos testes acima foram comparados com parâmetros estatísticos para equipamentos similares em operação.'
+                    } else if (
+                      e.tipo_equipamento === 'Disjuntor' &&
+                      t.tipo_teste === 'Resistências dos Contatos'
+                    ) {
+                      obs =
+                        'Nota: Os valores dos testes acima foram comparados com parâmetros estatísticos para equipamentos similares em operação.'
+                    } else if (e.tipo_equipamento === 'Transformador') {
+                      if (t.tipo_teste === 'Resistências dos Isolamentos') {
+                        obs =
+                          'Nota: Os valores dos testes acima foram comparados com parâmetros de norma de manutenção para transformadores de distribuição: ABNT-NB 108-I.'
+                      } else if (t.tipo_teste === 'Relação de Tensões') {
+                        obs = 'Nota: Em conformidade com a norma ABNT NBR 5356/81.'
+                      } else if (t.tipo_teste === 'Resistências dos Enrolamentos') {
+                        obs = 'Nota: Os enrolamentos apresentam boa condução elétrica.'
+                      }
+                    }
+                  }
+
+                  return {
+                    id: t.id,
+                    tipo_teste: t.tipo_teste,
+                    equipamento_utilizado: t.equipamento_utilizado || '',
+                    valor_teste: t.valor_teste,
+                    unidade: t.unidade,
+                    data_teste: t.data_teste.substring(0, 10),
+                    dados_detalhados: t.dados_detalhados || null,
+                    observacoes: obs,
+                  }
+                }),
               parecer: eqParecer
                 ? {
                     id: eqParecer.id,
