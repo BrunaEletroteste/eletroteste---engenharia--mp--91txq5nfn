@@ -44,6 +44,17 @@ export default function ReportForm() {
   const [isSaving, setIsSaving] = useState(false)
   const isReloading = useRef(false)
 
+  const [autoSaveStatus, setAutoSaveStatus] = useState<'idle' | 'saving' | 'saved' | 'error'>(
+    'idle',
+  )
+  const [lastAutoSave, setLastAutoSave] = useState<Date | null>(null)
+  const isAutoSavingRef = useRef(false)
+  const createdReportIdRef = useRef<string | null>(null)
+  const skipLoadRef = useRef(false)
+  const previousStateRef = useRef<string>('')
+  const lastSaveTimeRef = useRef(0)
+  const checkAndAutoSaveRef = useRef<() => void>(() => {})
+
   const methods = useForm<FormValues>({
     resolver: zodResolver(reportFormSchema),
     defaultValues: { status: 'rascunho' },
@@ -75,6 +86,10 @@ export default function ReportForm() {
 
   const loadData = useCallback(
     async (isSilent = false) => {
+      if (skipLoadRef.current) {
+        skipLoadRef.current = false
+        return
+      }
       try {
         if (!isSilent) {
           setIsLoading(true)
@@ -149,15 +164,38 @@ export default function ReportForm() {
           })
 
           setEquipments(loadedEquipments)
+
+          previousStateRef.current = JSON.stringify({
+            values: {
+              numero_relatorio: res.numero_relatorio,
+              numero_proposta: res.numero_proposta || '',
+              cliente_id: res.cliente_id,
+              data_execucao: res.data_execucao ? res.data_execucao.substring(0, 10) : '',
+              data_fim: res.data_fim ? res.data_fim.substring(0, 10) : '',
+              acompanhante: res.acompanhante || '',
+              proxima_manutencao: res.proxima_manutencao
+                ? res.proxima_manutencao.substring(0, 10)
+                : '',
+              status: res.status,
+              observacoes: res.observacoes || '',
+              temperatura_ambiente: res.temperatura_ambiente,
+              umidade_relativa: res.umidade_relativa,
+              parecer_geral: res.parecer_geral || '',
+            },
+            equipments: loadedEquipments,
+            existingAnexos: res.anexos || [],
+            existingFotosEstrutura: res.fotos_estrutura || [],
+            fotosEstruturaFiles: 0,
+          })
         } else {
           setReportRecord(null)
           setExistingAnexos([])
           setExistingFotosEstrutura([])
           setFotosEstruturaFiles([])
-          reset({
+          const initialValues = {
             numero_relatorio: `00${Math.floor(Math.random() * 1000)}/${new Date().getFullYear()}`,
             numero_proposta: '',
-            status: 'rascunho',
+            status: 'rascunho' as const,
             cliente_id: '',
             data_execucao: '',
             data_fim: '',
@@ -167,6 +205,15 @@ export default function ReportForm() {
             temperatura_ambiente: '',
             umidade_relativa: '',
             parecer_geral: '',
+          }
+          reset(initialValues)
+
+          previousStateRef.current = JSON.stringify({
+            values: initialValues,
+            equipments: [],
+            existingAnexos: [],
+            existingFotosEstrutura: [],
+            fotosEstruturaFiles: 0,
           })
         }
       } catch (err) {
@@ -185,7 +232,14 @@ export default function ReportForm() {
   }, [loadData, user])
 
   const handleRemoteUpdate = useCallback(() => {
-    if (isReloading.current || isSavingRef.current || isUploadingAttachmentRef.current) return
+    if (
+      isReloading.current ||
+      isSavingRef.current ||
+      isUploadingAttachmentRef.current ||
+      isAutoSavingRef.current
+    )
+      return
+    if (Date.now() - lastSaveTimeRef.current < 3000) return
     isReloading.current = true
     toast({
       title: 'Atenção',
@@ -477,10 +531,17 @@ export default function ReportForm() {
     return true
   }
 
-  const onSubmit = async (data: FormValues) => {
-    if (!validateEquipments(data.status)) return
-    isSavingRef.current = true
-    setIsSaving(true)
+  const performSave = async (data: FormValues, isSilent: boolean) => {
+    if (!isSilent && !validateEquipments(data.status)) return false
+
+    if (!isSilent) {
+      isSavingRef.current = true
+      setIsSaving(true)
+    } else {
+      isAutoSavingRef.current = true
+      setAutoSaveStatus('saving')
+    }
+
     try {
       const payload: Record<string, any> = {
         numero_relatorio: data.numero_relatorio,
@@ -490,7 +551,8 @@ export default function ReportForm() {
         data_fim: data.data_fim ? `${data.data_fim} 12:00:00Z` : '',
         status: data.status,
       }
-      if (!isEditRoute || !id) {
+      let currentId = id || createdReportIdRef.current
+      if (!currentId) {
         payload.criado_por = user?.id || ''
       }
       if (data.acompanhante) payload.acompanhante = data.acompanhante
@@ -518,12 +580,14 @@ export default function ReportForm() {
       }
       fotosEstruturaFiles.forEach((f) => formData.append('fotos_estrutura', f))
 
-      let relatorioId = id
-      if (isEditRoute && id) {
-        await pb.collection('relatorios').update(id, formData)
+      if (currentId) {
+        await pb.collection('relatorios').update(currentId, formData)
       } else {
         const created = await pb.collection('relatorios').create(formData)
-        relatorioId = created.id
+        currentId = created.id
+        createdReportIdRef.current = currentId
+        skipLoadRef.current = true
+        navigate(`/relatorio/editar/${currentId}`, { replace: true })
       }
 
       let currentOrdem = 1
@@ -532,19 +596,18 @@ export default function ReportForm() {
           await pb.collection('equipamentos_relatorio').delete(eq.id)
         } else if (!eq._delete) {
           const eqPayload = {
-            relatorio_id: relatorioId,
+            relatorio_id: currentId,
             tipo_equipamento: eq.tipo_equipamento,
             dados_tecnicos: eq.dados_tecnicos,
             ordem: currentOrdem,
           }
           currentOrdem++
 
-          let savedEqId = eq.id
           if (eq.id) {
             await pb.collection('equipamentos_relatorio').update(eq.id, eqPayload)
           } else {
             const createdEq = await pb.collection('equipamentos_relatorio').create(eqPayload)
-            savedEqId = createdEq.id
+            eq.id = createdEq.id
           }
 
           if (eq.testes) {
@@ -553,7 +616,7 @@ export default function ReportForm() {
                 await pb.collection('testes_equipamento').delete(t.id)
               } else if (!t._delete) {
                 const tPayload = {
-                  equipamento_id: savedEqId,
+                  equipamento_id: eq.id,
                   tipo_teste: t.tipo_teste,
                   valor_teste: typeof t.valor_teste === 'number' ? t.valor_teste : 0,
                   unidade: t.unidade,
@@ -565,7 +628,8 @@ export default function ReportForm() {
                 if (t.id) {
                   await pb.collection('testes_equipamento').update(t.id, tPayload)
                 } else {
-                  await pb.collection('testes_equipamento').create(tPayload)
+                  const createdT = await pb.collection('testes_equipamento').create(tPayload)
+                  t.id = createdT.id
                 }
               }
             }
@@ -577,7 +641,7 @@ export default function ReportForm() {
               await pb.collection('parecer_tecnico').delete(p.id)
             } else if (!p._delete && p.parecer) {
               const pPayload = {
-                equipamento_id: savedEqId,
+                equipamento_id: eq.id,
                 parecer: p.parecer,
                 parecer_anterior: p.parecer_anterior,
                 justificativa_mudanca: p.justificativa_mudanca,
@@ -586,62 +650,126 @@ export default function ReportForm() {
               if (p.id) {
                 await pb.collection('parecer_tecnico').update(p.id, pPayload)
               } else {
-                await pb.collection('parecer_tecnico').create(pPayload)
+                const createdP = await pb.collection('parecer_tecnico').create(pPayload)
+                p.id = createdP.id
               }
             }
           }
         }
       }
 
-      toast({
-        title: 'Sucesso',
-        description:
-          data.status === 'rascunho'
-            ? 'Rascunho salvo com sucesso.'
-            : 'Relatório finalizado com sucesso.',
-      })
-      navigate('/')
-    } catch (error: any) {
-      isSavingRef.current = false
-      setIsSaving(false)
-      const fieldErrors = extractFieldErrors(error)
-      const hasFieldErrors = Object.keys(fieldErrors).length > 0
-
-      let errMsg = getErrorMessage(error)
-      if (error?.status === 403) {
-        errMsg = 'Você não tem permissão para realizar esta operação.'
-      } else if (error?.status === 400 && hasFieldErrors) {
-        errMsg = 'Verifique os campos do formulário.'
-      }
-
-      if (hasFieldErrors) {
-        Object.entries(fieldErrors).forEach(([field, msg]) => {
-          methods.setError(field as any, { type: 'manual', message: msg })
-          if (field === 'anexos') {
-            errMsg += ` Erro em anexos: ${msg}`
-          } else if (field === 'equipamento_utilizado') {
-            errMsg += ` Equipamento Utilizado: ${msg}`
-          } else if (field === 'valor_teste') {
-            errMsg += ` Valor do Teste: ${msg}`
-          } else if (field === 'tipo_teste') {
-            errMsg += ` Tipo de Teste: ${msg}`
-          } else if (field === 'unidade') {
-            errMsg += ` Unidade: ${msg}`
-          }
+      if (!isSilent) {
+        toast({
+          title: 'Sucesso',
+          description:
+            data.status === 'rascunho'
+              ? 'Rascunho salvo com sucesso.'
+              : 'Relatório finalizado com sucesso.',
         })
+        navigate('/')
+      } else {
+        setLastAutoSave(new Date())
+        setAutoSaveStatus('saved')
       }
+      return true
+    } catch (error: any) {
+      if (!isSilent) {
+        const fieldErrors = extractFieldErrors(error)
+        const hasFieldErrors = Object.keys(fieldErrors).length > 0
 
-      toast({
-        title: hasFieldErrors ? 'Erro de Validação' : 'Erro ao Salvar',
-        description: errMsg,
-        variant: 'destructive',
-      })
+        let errMsg = getErrorMessage(error)
+        if (error?.status === 403) {
+          errMsg = 'Você não tem permissão para realizar esta operação.'
+        } else if (error?.status === 400 && hasFieldErrors) {
+          errMsg = 'Verifique os campos do formulário.'
+        }
+
+        if (hasFieldErrors) {
+          Object.entries(fieldErrors).forEach(([field, msg]) => {
+            methods.setError(field as any, { type: 'manual', message: msg })
+            if (field === 'anexos') {
+              errMsg += ` Erro em anexos: ${msg}`
+            } else if (field === 'equipamento_utilizado') {
+              errMsg += ` Equipamento Utilizado: ${msg}`
+            } else if (field === 'valor_teste') {
+              errMsg += ` Valor do Teste: ${msg}`
+            } else if (field === 'tipo_teste') {
+              errMsg += ` Tipo de Teste: ${msg}`
+            } else if (field === 'unidade') {
+              errMsg += ` Unidade: ${msg}`
+            }
+          })
+        }
+
+        toast({
+          title: hasFieldErrors ? 'Erro de Validação' : 'Erro ao Salvar',
+          description: errMsg,
+          variant: 'destructive',
+        })
+      } else {
+        setAutoSaveStatus('error')
+      }
+      return false
+    } finally {
+      lastSaveTimeRef.current = Date.now()
+      if (!isSilent) {
+        isSavingRef.current = false
+        setIsSaving(false)
+      } else {
+        isAutoSavingRef.current = false
+      }
     }
   }
 
+  const checkAndAutoSave = useCallback(async () => {
+    const currentValues = methods.getValues()
+    if (currentValues.status !== 'rascunho') return
+    if (
+      isReadOnly ||
+      isSavingRef.current ||
+      isAutoSavingRef.current ||
+      isUploadingAttachmentRef.current
+    )
+      return
+
+    const currentState = JSON.stringify({
+      values: currentValues,
+      equipments: equipments
+        .filter((e) => !e._delete)
+        .map((e) => ({
+          ...e,
+          testes: e.testes?.filter((t) => !t._delete),
+          parecer: e.parecer?._delete ? undefined : e.parecer,
+        })),
+      existingAnexos,
+      existingFotosEstrutura,
+      fotosEstruturaFiles: fotosEstruturaFiles.length,
+    })
+
+    if (currentState === previousStateRef.current) {
+      return
+    }
+
+    const success = await performSave(currentValues, true)
+    if (success) {
+      previousStateRef.current = currentState
+    }
+  }, [methods, equipments, isReadOnly, existingAnexos, existingFotosEstrutura, fotosEstruturaFiles])
+
+  useEffect(() => {
+    checkAndAutoSaveRef.current = checkAndAutoSave
+  }, [checkAndAutoSave])
+
+  useEffect(() => {
+    const interval = setInterval(() => {
+      checkAndAutoSaveRef.current()
+    }, 60000)
+    return () => clearInterval(interval)
+  }, [])
+
   const handleStatusSubmit = (status: 'rascunho' | 'finalizado') => {
     methods.setValue('status', status)
-    methods.handleSubmit(onSubmit)()
+    methods.handleSubmit((data) => performSave(data, false))()
   }
 
   if (isLoading && !hasError) {
@@ -732,6 +860,22 @@ export default function ReportForm() {
               <ArrowLeft className="mr-2 h-4 w-4" />
               Voltar
             </Button>
+
+            {!isReadOnly && methods.watch('status') === 'rascunho' && (
+              <div className="flex-1 text-xs text-muted-foreground ml-4 hidden sm:flex items-center">
+                {autoSaveStatus === 'saving' && (
+                  <span className="animate-pulse">Salvando rascunho automaticamente...</span>
+                )}
+                {autoSaveStatus === 'saved' && lastAutoSave && (
+                  <span>Último salvamento automático: {lastAutoSave.toLocaleTimeString()}</span>
+                )}
+                {autoSaveStatus === 'error' && (
+                  <span className="text-destructive font-medium">
+                    Erro ao salvar automaticamente
+                  </span>
+                )}
+              </div>
+            )}
 
             {isReadOnly && isFinalized && (
               <div className="flex flex-col sm:flex-row gap-3 w-full sm:w-auto">
