@@ -903,13 +903,13 @@ export function EquipmentTestsManager({
         </div>
       ) : (
         <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full space-y-4">
-          <TabsList className="w-full flex flex-wrap h-auto bg-transparent p-1 rounded-md justify-start gap-1 border-b pb-2 mb-4">
+          <TabsList className="w-full flex flex-wrap h-auto bg-muted p-1.5 rounded-md justify-start gap-2 mb-4 shadow-inner">
             {testTypes.map((type) => (
               <Tooltip key={type} delayDuration={300}>
                 <TooltipTrigger asChild>
                   <TabsTrigger
                     value={type}
-                    className="flex-1 min-w-[150px] data-[state=active]:bg-slate-300 dark:data-[state=active]:bg-slate-700 data-[state=active]:text-slate-900 dark:data-[state=active]:text-slate-50 border-b-2 border-transparent data-[state=active]:border-b-primary data-[state=inactive]:hover:bg-slate-100 dark:data-[state=inactive]:hover:bg-slate-800 rounded-b-none"
+                    className="flex-1 min-w-[150px] data-[state=active]:bg-background data-[state=active]:text-foreground data-[state=active]:shadow-md border-b-4 border-transparent data-[state=active]:border-b-primary data-[state=inactive]:hover:bg-slate-200 dark:data-[state=inactive]:hover:bg-slate-800 rounded-sm py-2 transition-colors duration-200"
                   >
                     {type}
                   </TabsTrigger>
@@ -930,12 +930,12 @@ export function EquipmentTestsManager({
               <TabsContent key={type} value={type} className="mt-0 outline-none">
                 {isDisjuntorIsolamento ? (
                   <Tabs defaultValue="Fechado" className="w-full space-y-4">
-                    <TabsList className="w-full flex h-auto bg-transparent p-1 rounded-md justify-start gap-1 border-b pb-2 mb-4">
+                    <TabsList className="w-full flex h-auto bg-muted p-1.5 rounded-md justify-start gap-2 mb-4 shadow-inner">
                       <Tooltip delayDuration={300}>
                         <TooltipTrigger asChild>
                           <TabsTrigger
                             value="Fechado"
-                            className="flex-1 min-w-[120px] data-[state=active]:bg-slate-300 dark:data-[state=active]:bg-slate-700 data-[state=active]:text-slate-900 dark:data-[state=active]:text-slate-50 border-b-2 border-transparent data-[state=active]:border-b-primary data-[state=inactive]:hover:bg-slate-100 dark:data-[state=inactive]:hover:bg-slate-800 rounded-b-none"
+                            className="flex-1 min-w-[120px] data-[state=active]:bg-background data-[state=active]:text-foreground data-[state=active]:shadow-md border-b-4 border-transparent data-[state=active]:border-b-primary data-[state=inactive]:hover:bg-slate-200 dark:data-[state=inactive]:hover:bg-slate-800 rounded-sm py-2 transition-colors duration-200"
                           >
                             Contatos Fechados
                           </TabsTrigger>
@@ -948,7 +948,7 @@ export function EquipmentTestsManager({
                         <TooltipTrigger asChild>
                           <TabsTrigger
                             value="Aberto"
-                            className="flex-1 min-w-[120px] data-[state=active]:bg-slate-300 dark:data-[state=active]:bg-slate-700 data-[state=active]:text-slate-900 dark:data-[state=active]:text-slate-50 border-b-2 border-transparent data-[state=active]:border-b-primary data-[state=inactive]:hover:bg-slate-100 dark:data-[state=inactive]:hover:bg-slate-800 rounded-b-none"
+                            className="flex-1 min-w-[120px] data-[state=active]:bg-background data-[state=active]:text-foreground data-[state=active]:shadow-md border-b-4 border-transparent data-[state=active]:border-b-primary data-[state=inactive]:hover:bg-slate-200 dark:data-[state=inactive]:hover:bg-slate-800 rounded-sm py-2 transition-colors duration-200"
                           >
                             Contatos Abertos
                           </TabsTrigger>
@@ -967,12 +967,12 @@ export function EquipmentTestsManager({
                   </Tabs>
                 ) : isEnrolamentos ? (
                   <Tabs defaultValue="ETS" className="w-full space-y-4">
-                    <TabsList className="w-full flex h-auto bg-transparent p-1 rounded-md justify-start gap-1 border-b pb-2 mb-4">
+                    <TabsList className="w-full flex h-auto bg-muted p-1.5 rounded-md justify-start gap-2 mb-4 shadow-inner">
                       <Tooltip delayDuration={300}>
                         <TooltipTrigger asChild>
                           <TabsTrigger
                             value="ETS"
-                            className="flex-1 min-w-[120px] data-[state=active]:bg-slate-300 dark:data-[state=active]:bg-slate-700 data-[state=active]:text-slate-900 dark:data-[state=active]:text-slate-50 border-b-2 border-transparent data-[state=active]:border-b-primary data-[state=inactive]:hover:bg-slate-100 dark:data-[state=inactive]:hover:bg-slate-800 rounded-b-none"
+                            className="flex-1 min-w-[120px] data-[state=active]:bg-background data-[state=active]:text-foreground data-[state=active]:shadow-md border-b-4 border-transparent data-[state=active]:border-b-primary data-[state=inactive]:hover:bg-slate-200 dark:data-[state=inactive]:hover:bg-slate-800 rounded-sm py-2 transition-colors duration-200"
                           >
                             ETS (Alta Tensão)
                           </TabsTrigger>
@@ -985,7 +985,7 @@ export function EquipmentTestsManager({
                         <TooltipTrigger asChild>
                           <TabsTrigger
                             value="ETI"
-                            className="flex-1 min-w-[120px] data-[state=active]:bg-slate-300 dark:data-[state=active]:bg-slate-700 data-[state=active]:text-slate-900 dark:data-[state=active]:text-slate-50 border-b-2 border-transparent data-[state=active]:border-b-primary data-[state=inactive]:hover:bg-slate-100 dark:data-[state=inactive]:hover:bg-slate-800 rounded-b-none"
+                            className="flex-1 min-w-[120px] data-[state=active]:bg-background data-[state=active]:text-foreground data-[state=active]:shadow-md border-b-4 border-transparent data-[state=active]:border-b-primary data-[state=inactive]:hover:bg-slate-200 dark:data-[state=inactive]:hover:bg-slate-800 rounded-sm py-2 transition-colors duration-200"
                           >
                             ETI (Baixa Tensão)
                           </TabsTrigger>
