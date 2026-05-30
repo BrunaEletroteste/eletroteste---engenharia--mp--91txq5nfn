@@ -31,6 +31,7 @@ export default function ReportForm() {
 
   const [isLoading, setIsLoading] = useState(true)
   const [hasError, setHasError] = useState(false)
+  const [has404Error, setHas404Error] = useState(false)
   const [equipments, setEquipments] = useState<EquipmentItem[]>([])
 
   // Attachments State
@@ -94,6 +95,7 @@ export default function ReportForm() {
         if (!isSilent) {
           setIsLoading(true)
           setHasError(false)
+          setHas404Error(false)
         }
 
         if (id && (isViewRoute || isEditRoute)) {
@@ -572,6 +574,77 @@ export default function ReportForm() {
     }
 
     try {
+      let currentId = id || createdReportIdRef.current
+
+      // Pre-save Resource Validation
+      if (currentId) {
+        try {
+          await pb.collection('relatorios').getOne(currentId, { fields: 'id', requestKey: null })
+
+          const existingEqs = await pb
+            .collection('equipamentos_relatorio')
+            .getFullList({ filter: `relatorio_id='${currentId}'`, fields: 'id', requestKey: null })
+          const existingEqIds = new Set(existingEqs.map((e) => e.id))
+          for (const eq of equipments) {
+            if (eq.id && !eq._delete && !existingEqIds.has(eq.id)) {
+              const err = new Error("Erro ao salvar - the requested resource wasn't found") as any
+              err.status = 404
+              err.isCustom404 = true
+              throw err
+            }
+          }
+
+          const existingTestes = await pb
+            .collection('testes_equipamento')
+            .getFullList({
+              filter: `equipamento_id.relatorio_id='${currentId}'`,
+              fields: 'id',
+              requestKey: null,
+            })
+          const existingTesteIds = new Set(existingTestes.map((t) => t.id))
+          for (const eq of equipments) {
+            for (const t of eq.testes || []) {
+              if (t.id && !t._delete && !existingTesteIds.has(t.id)) {
+                const err = new Error("Erro ao salvar - the requested resource wasn't found") as any
+                err.status = 404
+                err.isCustom404 = true
+                throw err
+              }
+            }
+          }
+
+          const existingPareceres = await pb
+            .collection('parecer_tecnico')
+            .getFullList({
+              filter: `equipamento_id.relatorio_id='${currentId}'`,
+              fields: 'id',
+              requestKey: null,
+            })
+          const existingParecerIds = new Set(existingPareceres.map((p) => p.id))
+          for (const eq of equipments) {
+            if (
+              eq.parecer &&
+              eq.parecer.id &&
+              !eq.parecer._delete &&
+              !existingParecerIds.has(eq.parecer.id)
+            ) {
+              const err = new Error("Erro ao salvar - the requested resource wasn't found") as any
+              err.status = 404
+              err.isCustom404 = true
+              throw err
+            }
+          }
+        } catch (err: any) {
+          if (err?.status === 404 || err?.message?.includes("wasn't found")) {
+            const err404 = new Error("Erro ao salvar - the requested resource wasn't found") as any
+            err404.status = 404
+            err404.isCustom404 = true
+            throw err404
+          }
+          throw err
+        }
+      }
+
       const payload: Record<string, any> = {
         numero_relatorio: data.numero_relatorio,
         numero_proposta: data.numero_proposta || '',
@@ -580,7 +653,6 @@ export default function ReportForm() {
         data_fim: data.data_fim ? `${data.data_fim} 12:00:00Z` : '',
         status: data.status,
       }
-      let currentId = id || createdReportIdRef.current
       if (!currentId) {
         payload.criado_por = user?.id || ''
       }
@@ -707,7 +779,10 @@ export default function ReportForm() {
         const hasFieldErrors = Object.keys(fieldErrors).length > 0
 
         let errMsg = getErrorMessage(error)
-        if (error?.status === 403) {
+        if (error?.status === 404 || error?.isCustom404) {
+          errMsg = "Erro ao salvar - the requested resource wasn't found"
+          setHas404Error(true)
+        } else if (error?.status === 403) {
           errMsg = 'Você não tem permissão para realizar esta operação.'
         } else if (error?.status === 400 && hasFieldErrors) {
           errMsg = 'Verifique os campos do formulário.'
@@ -736,6 +811,9 @@ export default function ReportForm() {
           variant: 'destructive',
         })
       } else {
+        if (error?.status === 404 || error?.isCustom404) {
+          setHas404Error(true)
+        }
         setAutoSaveStatus('error')
       }
       return false
@@ -903,6 +981,38 @@ export default function ReportForm() {
                     Erro ao salvar automaticamente
                   </span>
                 )}
+              </div>
+            )}
+
+            {has404Error && !isReadOnly && (
+              <div className="flex w-full sm:w-auto animate-fade-in mr-auto">
+                <Button
+                  type="button"
+                  className="w-full sm:w-auto bg-amber-500 hover:bg-amber-600 text-white shadow-sm"
+                  onClick={() => {
+                    setHas404Error(false)
+                    createdReportIdRef.current = null
+                    setExistingAnexos([])
+                    setExistingFotosEstrutura([])
+                    setEquipments((prev) =>
+                      prev.map((eq) => ({
+                        ...eq,
+                        id: undefined,
+                        testes: eq.testes?.map((t) => ({ ...t, id: undefined })),
+                        parecer: eq.parecer ? { ...eq.parecer, id: undefined } : undefined,
+                      })),
+                    )
+                    navigate('/relatorio/novo', { replace: true })
+                    toast({
+                      title: 'Modo de Recuperação',
+                      description:
+                        'Os dados atuais foram preparados para um novo rascunho. Por favor, salve para confirmar.',
+                    })
+                  }}
+                >
+                  <Save className="mr-2 h-4 w-4" />
+                  Salvar como Novo Relatório
+                </Button>
               </div>
             )}
 
