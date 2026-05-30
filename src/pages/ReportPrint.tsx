@@ -3,6 +3,7 @@ import { useParams, useNavigate } from 'react-router-dom'
 import { Printer, ArrowLeft, Loader2 } from 'lucide-react'
 import pb from '@/lib/pocketbase/client'
 import { Button } from '@/components/ui/button'
+import { getEquipmentFields } from '@/lib/equipment-templates'
 
 const labelMap: Record<string, string> = {
   observacoes: 'Observações',
@@ -33,40 +34,40 @@ const labelMap: Record<string, string> = {
   t_massa: 'T x Massa',
   tensao_primaria: 'Tensão Primária (V)',
   tensao_secundaria: 'Tensão Secundária (V)',
-  potencia: 'Potência',
+  potencia: 'Potência (kVA)',
   isolacao: 'Isolação',
-  classe_tensao: 'Classe de Tensão',
+  classe_tensao: 'Classe de Tensão (kV)',
   corrente_primaria: 'Corrente Primária (A)',
   corrente_secundaria: 'Corrente Secundária (A)',
   exatidao: 'Exatidão',
-  corrente_nominal: 'Corrente Nominal',
-  classe_isolamento: 'Classe de Isolamento',
-  possui_fusivel: 'Possui Fusível',
+  corrente_nominal: 'Corrente Nominal (A)',
+  classe_isolamento: 'Classe de Isolamento (kV)',
+  possui_fusivel: 'Contém Fusível?',
   fusivel_tipo: 'Tipo de Fusível',
-  fusivel_corrente_nominal: 'Corrente Nominal do Fusível',
+  fusivel_corrente_nominal: 'Corrente Nominal do Fusível (A)',
   fusivel_fabricante: 'Fabricante do Fusível',
-  tap_at: 'Tap de AT',
+  tap_at: 'Tap de AT (V)',
   impedancia: 'Impedância (%)',
   condut_vs: 'Condut. de Vs (mm²)',
   meio_isolante: 'Meio Isolante',
   volume_oleo: 'Volume de Óleo (L)',
   peso_total: 'Peso Total (kg)',
   buchas: 'Buchas de AT e BT',
-  desl_angular: 'Deslocamento Angular',
-  ligado_em: 'Ligado Em',
+  desl_angular: 'Desl. Angular',
+  ligado_em: 'Ligado em (V)',
   diagrama: 'Diagrama',
-  potencia_simetrica: 'Potência Simétrica',
-  capacidade_ruptura: 'Capacidade de Ruptura',
+  potencia_simetrica: 'Potência Simétrica (MVA)',
+  capacidade_ruptura: 'Capacidade de Ruptura (kA)',
   rele_minima_tensao: 'Relé de Mínima Tensão',
   rele_abertura: 'Relé de Abertura',
   rele_fechamento: 'Relé de Fechamento',
   motorizacao: 'Motorização',
-  rele_supervisor: 'Relé Supervisor',
+  rele_supervisor: 'Relé Supervisor Trifásico',
   condutores: 'Condutores',
   secao: 'Seção',
   material_condutor: 'Material Condutor',
-  tensao_nominal: 'Tensão Nominal',
-  corrente_descarga: 'Corrente de Descarga',
+  tensao_nominal: 'Tensão Nominal (kV)',
+  corrente_descarga: 'Corrente de Descarga (kA)',
   tipo_modelo: 'Tipo/Modelo',
   subestacao: 'Subestação',
   identificacao: 'Identificação',
@@ -93,7 +94,12 @@ const labelMap: Record<string, string> = {
   padrao: 'Padrão',
 }
 
-const getLabel = (key: string) => {
+const getLabel = (key: string, tipoEquipamento?: string) => {
+  if (tipoEquipamento) {
+    const fields = getEquipmentFields(tipoEquipamento)
+    const field = fields.find((f) => f.name === key)
+    if (field) return field.label
+  }
   const lowerKey = key.toLowerCase()
   if (labelMap[lowerKey]) return labelMap[lowerKey]
   return key.replace(/_/g, ' ').replace(/\b\w/g, (l) => l.toUpperCase())
@@ -171,36 +177,191 @@ export default function ReportPrint() {
     return new Date(dateStr).toLocaleDateString('pt-BR')
   }
 
-  const renderDetalhes = (detalhes: any) => {
-    if (!detalhes) return null
-
-    const flatDetails: Array<{ label: string; value: string }> = []
-    const flatten = (obj: any) => {
-      Object.entries(obj).forEach(([k, v]) => {
-        if (typeof v === 'object' && v !== null) {
-          flatten(v)
-        } else {
-          flatDetails.push({ label: getLabel(k), value: String(v) })
-        }
-      })
+  const formatTestValue = (t: any, tipoEquipamento: string, subType?: string): string[] => {
+    const formatNum = (val: any) => {
+      if (typeof val === 'number' && !isNaN(val)) return new Intl.NumberFormat('pt-BR').format(val)
+      return val
     }
-    flatten(detalhes)
 
-    return (
-      <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 w-full">
-        {flatDetails.map((item, idx) => (
-          <div
-            key={idx}
-            className="flex flex-col border border-slate-200 rounded p-1.5 bg-white shadow-sm"
-          >
-            <span className="text-[10px] font-semibold text-slate-500 uppercase tracking-wider">
-              {item.label}
-            </span>
-            <span className="text-sm font-medium text-slate-900">{item.value}</span>
-          </div>
-        ))}
-      </div>
-    )
+    if (t.tipo_teste === 'Resistências dos Isolamentos') {
+      if (tipoEquipamento === 'Condutor Elétrico') {
+        const d = t.dados_detalhados || {}
+
+        const calcRes = (fase: any) => {
+          if (fase === undefined || fase === null) return '-'
+          if (typeof fase !== 'object') return formatNum(fase)
+          if (fase.resultado !== undefined) return formatNum(fase.resultado)
+          const v1 = Number(fase.v1)
+          const v2 = Number(fase.v2)
+          if (!isNaN(v1) && !isNaN(v2)) return formatNum(v1 * v2)
+          return '-'
+        }
+
+        const a = calcRes(d.fase_a)
+        const b = calcRes(d.fase_b)
+        const c = calcRes(d.fase_c)
+        const rVal = calcRes(d.reserva)
+
+        const items = [`A: ${a}`, `B: ${b}`, `C: ${c}`]
+        if (rVal !== '-') items.push(`R: ${rVal}`)
+        return items
+      } else if (
+        tipoEquipamento === 'Transformador de Potencial' ||
+        tipoEquipamento === 'Transformador de Corrente'
+      ) {
+        const d = t.dados_detalhados?.fases || {}
+
+        const calcRes = (fase: any) => {
+          if (fase === undefined || fase === null) return '-'
+          if (typeof fase !== 'object') return formatNum(fase)
+          if (fase.resultado !== undefined) return formatNum(fase.resultado)
+          const v1 = Number(fase.valor1)
+          const v2 = Number(fase.valor2)
+          if (!isNaN(v1) && !isNaN(v2)) return formatNum(v1 * v2)
+          return '-'
+        }
+
+        const a = calcRes(d.A)
+        const b = calcRes(d.B)
+        const c = calcRes(d.C)
+        return [`A: ${a}`, `B: ${b}`, `C: ${c}`]
+      } else if (tipoEquipamento === 'Disjuntor') {
+        const df = t.dados_detalhados?.fechado || {}
+        const da = t.dados_detalhados?.aberto || {}
+
+        const formatRes = (row: any) => {
+          if (!row) return '-'
+          if (row.resultado !== undefined) return formatNum(row.resultado)
+          const v1 = Number(row.v1)
+          const v2 = Number(row.v2)
+          if (!isNaN(v1) && !isNaN(v2)) return formatNum(v1 * v2)
+          return '-'
+        }
+
+        const f_ab = formatRes(df.ab)
+        const f_bc = formatRes(df.bc)
+        const f_ca = formatRes(df.ac)
+        const f_massa = formatRes(df.abc_massa)
+
+        const a_aa = formatRes(da.aa)
+        const a_bb = formatRes(da.bb)
+        const a_cc = formatRes(da.cc)
+
+        const fechadoItems = [
+          `A x B: ${f_ab}`,
+          `B x C: ${f_bc}`,
+          `C x A: ${f_ca}`,
+          `Massa: ${f_massa}`,
+        ]
+        const abertoItems = [`A x A: ${a_aa}`, `B x B: ${a_bb}`, `C x C: ${a_cc}`]
+
+        if (subType === 'Fechado') {
+          return fechadoItems
+        }
+        if (subType === 'Aberto') {
+          return abertoItems
+        }
+
+        return [
+          'Fechado:',
+          ...fechadoItems.map((i) => `  ${i}`),
+          'Aberto:',
+          ...abertoItems.map((i) => `  ${i}`),
+        ]
+      } else if (tipoEquipamento === 'Transformador') {
+        const d = t.dados_detalhados || {}
+        const m = d.medicoes || d
+        const calcRes = (row: any) => {
+          if (!row) return '-'
+          if (row.resultado !== undefined) return formatNum(row.resultado)
+          const v1 = Number(row.v1)
+          const v2 = Number(row.v2)
+          if (!isNaN(v1) && !isNaN(v2)) return formatNum(v1 * v2)
+          return '-'
+        }
+        return [
+          `A/B: ${calcRes(m.alta_baixa)}`,
+          `A/M: ${calcRes(m.alta_massa)}`,
+          `B/M: ${calcRes(m.baixa_massa)}`,
+        ]
+      } else {
+        const d = t.dados_detalhados || {}
+        const ab = formatNum((Number(d.ab?.v1) || 0) * (Number(d.ab?.v2) || 0))
+        const bc = formatNum((Number(d.bc?.v1) || 0) * (Number(d.bc?.v2) || 0))
+        const ac = formatNum((Number(d.ac?.v1) || 0) * (Number(d.ac?.v2) || 0))
+        const abcm = formatNum((Number(d.abc_massa?.v1) || 0) * (Number(d.abc_massa?.v2) || 0))
+        return [`AB: ${ab}`, `BC: ${bc}`, `CA: ${ac}`, `ABC-M: ${abcm}`]
+      }
+    }
+    if (t.tipo_teste === 'Resistências dos Enrolamentos') {
+      const ets = t.dados_detalhados?.ets || {}
+      const eti = t.dados_detalhados?.eti || {}
+      const ets_corr = t.dados_detalhados?.ets_corr
+      const eti_corr = t.dados_detalhados?.eti_corr
+      const calc = t.dados_detalhados?.resultados_calculados
+      const tRef = t.dados_detalhados?.temperatura_referencia || 75
+
+      const formatField = (val: any, unit: string) =>
+        val !== undefined && val !== null && val !== '' ? `${formatNum(val)} ${unit}` : '-'
+
+      const f_ets = [
+        `H1-H3: ${formatField(ets.h1_h3, 'Ω')}`,
+        `H2-H1: ${formatField(ets.h2_h1, 'Ω')}`,
+        `H3-H2: ${formatField(ets.h3_h2, 'Ω')}`,
+      ]
+      const f_eti = [
+        `X1-X3: ${formatField(eti.x1_x3, 'mΩ')}`,
+        `X2-X1: ${formatField(eti.x2_x1, 'mΩ')}`,
+        `X3-X2: ${formatField(eti.x3_x2, 'mΩ')}`,
+      ]
+
+      if (calc) {
+        if (calc.ets_75 !== null && calc.ets_75 !== undefined)
+          f_ets.push(`Média 75ºC: ${formatField(calc.ets_75, 'Ω')}`)
+        else if (calc.ets_105 !== null && calc.ets_105 !== undefined)
+          f_ets.push(`Média 105ºC: ${formatField(calc.ets_105, 'Ω')}`)
+
+        if (calc.eti_75 !== null && calc.eti_75 !== undefined)
+          f_eti.push(`Média 75ºC: ${formatField(calc.eti_75, 'mΩ')}`)
+        else if (calc.eti_105 !== null && calc.eti_105 !== undefined)
+          f_eti.push(`Média 105ºC: ${formatField(calc.eti_105, 'mΩ')}`)
+      } else if (ets_corr || eti_corr) {
+        if (ets_corr) {
+          f_ets.push(`Corr. ${tRef}ºC:`)
+          f_ets.push(`  H1-H3: ${formatField(ets_corr.h1_h3, 'Ω')}`)
+          f_ets.push(`  H2-H1: ${formatField(ets_corr.h2_h1, 'Ω')}`)
+          f_ets.push(`  H3-H2: ${formatField(ets_corr.h3_h2, 'Ω')}`)
+        }
+        if (eti_corr) {
+          f_eti.push(`Corr. ${tRef}ºC:`)
+          f_eti.push(`  X1-X3: ${formatField(eti_corr.x1_x3, 'mΩ')}`)
+          f_eti.push(`  X2-X1: ${formatField(eti_corr.x2_x1, 'mΩ')}`)
+          f_eti.push(`  X3-X2: ${formatField(eti_corr.x3_x2, 'mΩ')}`)
+        }
+      }
+
+      if (subType === 'ETS') return f_ets
+      if (subType === 'ETI') return f_eti
+      return ['ETS:', ...f_ets.map((i) => `  ${i}`), 'ETI:', ...f_eti.map((i) => `  ${i}`)]
+    }
+    if (t.tipo_teste === 'Resistências dos Contatos') {
+      const d = t.dados_detalhados || {}
+      return [
+        `A: ${formatNum(d.fase_a) ?? '-'}`,
+        `B: ${formatNum(d.fase_b) ?? '-'}`,
+        `C: ${formatNum(d.fase_c) ?? '-'}`,
+      ]
+    }
+    if (t.tipo_teste === 'Relação de Tensões' && tipoEquipamento === 'Transformador') {
+      const d = t.dados_detalhados || {}
+      return [
+        `Posição: ${d.posicao || '-'}`,
+        `H1H3/X0X1: ${formatNum(d.h1h3_x0x1) || '-'}`,
+        `H2H1/X0X2: ${formatNum(d.h2h1_x0x2) || '-'}`,
+        `H3H2/X0X3: ${formatNum(d.h3h2_x0x3) || '-'}`,
+      ]
+    }
+    return [`${formatNum(t.valor_teste)}`]
   }
 
   return (
@@ -359,7 +520,9 @@ export default function ReportPrint() {
                   <div className="grid grid-cols-2 gap-x-6 gap-y-2">
                     {Object.entries(eq.dados_tecnicos).map(([k, v]) => (
                       <div key={k} className="flex text-sm border-b border-slate-100 pb-1">
-                        <span className="font-semibold text-slate-600 w-1/2">{getLabel(k)}:</span>
+                        <span className="font-semibold text-slate-600 w-1/2">
+                          {getLabel(k, eq.tipo_equipamento)}:
+                        </span>
                         <span className="w-1/2 text-slate-900">
                           {typeof v === 'boolean' ? (v ? 'Sim' : 'Não') : String(v)}
                         </span>
@@ -381,17 +544,17 @@ export default function ReportPrint() {
                         <table className="w-full text-sm">
                           <thead>
                             <tr className="bg-slate-50 border-b border-slate-200">
-                              <th className="p-2 text-left text-slate-700 font-semibold w-1/3">
+                              <th className="p-2 text-left text-slate-700 font-semibold w-1/4">
                                 Teste Realizado
                               </th>
-                              <th className="p-2 text-left text-slate-700 font-semibold w-1/3">
+                              <th className="p-2 text-left text-slate-700 font-semibold w-1/4">
                                 Equipamento Utilizado
                               </th>
                               <th className="p-2 text-left text-slate-700 font-semibold w-1/6">
                                 Data
                               </th>
-                              <th className="p-2 text-left text-slate-700 font-semibold w-1/6">
-                                Resultado Geral
+                              <th className="p-2 text-left text-slate-700 font-semibold w-1/3">
+                                Resultados
                               </th>
                             </tr>
                           </thead>
@@ -400,24 +563,23 @@ export default function ReportPrint() {
                               <td className="p-2 font-medium">{t.tipo_teste}</td>
                               <td className="p-2">{t.equipamento_utilizado}</td>
                               <td className="p-2">{formatDate(t.data_teste)}</td>
-                              <td className="p-2 font-bold text-blue-800">
-                                {t.valor_teste !== undefined && t.valor_teste !== null
-                                  ? `${t.valor_teste} ${t.unidade}`
-                                  : 'N/A'}
+                              <td className="p-2">
+                                <div className="flex flex-col gap-0.5 text-sm font-bold text-blue-900 whitespace-pre-wrap">
+                                  {formatTestValue(t, eq.tipo_equipamento).map((line, lineIdx) => (
+                                    <span key={lineIdx} className="block leading-tight">
+                                      {line}
+                                    </span>
+                                  ))}
+                                </div>
+                                {t.tipo_teste !== 'Resistências dos Enrolamentos' && t.unidade && (
+                                  <div className="text-xs text-slate-500 mt-1 font-medium">
+                                    Unidade: {t.unidade}
+                                  </div>
+                                )}
                               </td>
                             </tr>
                           </tbody>
                         </table>
-                        {t.dados_detalhados && Object.keys(t.dados_detalhados).length > 0 && (
-                          <div className="p-3 bg-slate-50 border-t border-slate-200 text-xs">
-                            <div className="font-semibold text-slate-500 mb-2 uppercase tracking-wide text-[10px]">
-                              Detalhes da Medição
-                            </div>
-                            <div className="flex flex-wrap gap-4">
-                              {renderDetalhes(t.dados_detalhados)}
-                            </div>
-                          </div>
-                        )}
                         {t.observacoes && (
                           <div className="p-2 bg-yellow-50/50 border-t border-slate-200 text-xs text-slate-700 italic">
                             <span className="font-semibold not-italic">Observações:</span>{' '}
