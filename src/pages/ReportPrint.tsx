@@ -539,16 +539,60 @@ export default function ReportPrint() {
                     Características Técnicas
                   </div>
                   <div className="grid grid-cols-2 gap-x-6 gap-y-2">
-                    {Object.entries(eq.dados_tecnicos).map(([k, v]) => (
-                      <div key={k} className="flex text-sm border-b border-slate-100 pb-1">
-                        <span className="font-semibold text-slate-600 w-1/2">
-                          {getLabel(k, eq.tipo_equipamento)}:
-                        </span>
-                        <span className="w-1/2 text-slate-900">
-                          {typeof v === 'boolean' ? (v ? 'Sim' : 'Não') : String(v)}
-                        </span>
-                      </div>
-                    ))}
+                    {(() => {
+                      const fields = getEquipmentFields(eq.tipo_equipamento)
+                      const mappedKeys = new Set<string>()
+
+                      // 1. Order and filter standard fields mapping configuration
+                      const orderedData = fields
+                        .filter((f) => {
+                          if (f.dependsOn) {
+                            const depVal = eq.dados_tecnicos[f.dependsOn.field]
+                            if (depVal !== f.dependsOn.value) return false
+                          }
+                          const val = eq.dados_tecnicos[f.name]
+                          return val !== undefined && val !== null && val !== ''
+                        })
+                        .map((f) => {
+                          mappedKeys.add(f.name)
+                          return {
+                            key: f.name,
+                            label: f.label,
+                            value: eq.dados_tecnicos[f.name],
+                          }
+                        })
+
+                      // 2. Fallback to add any remaining filled fields that aren't mapped
+                      const unmappedData = Object.entries(eq.dados_tecnicos)
+                        .filter(
+                          ([k, val]) =>
+                            !mappedKeys.has(k) && val !== undefined && val !== null && val !== '',
+                        )
+                        .map(([k, val]) => ({
+                          key: k,
+                          label: getLabel(k, eq.tipo_equipamento),
+                          value: val,
+                        }))
+
+                      const allData = [...orderedData, ...unmappedData]
+
+                      if (allData.length === 0) {
+                        return (
+                          <div className="text-sm text-slate-500 italic col-span-2">
+                            Nenhuma característica preenchida.
+                          </div>
+                        )
+                      }
+
+                      return allData.map(({ key, label, value }) => (
+                        <div key={key} className="flex text-sm border-b border-slate-100 pb-1">
+                          <span className="font-semibold text-slate-600 w-1/2 pr-2">{label}:</span>
+                          <span className="w-1/2 text-slate-900 break-words">
+                            {typeof value === 'boolean' ? (value ? 'Sim' : 'Não') : String(value)}
+                          </span>
+                        </div>
+                      ))
+                    })()}
                   </div>
                 </div>
               )}
