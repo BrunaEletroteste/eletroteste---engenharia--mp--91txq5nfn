@@ -376,28 +376,28 @@ export function EquipmentSection({ equipments, setEquipments, isView }: Props) {
                 </div>
                 <AccordionContent className="bg-background">
                   <Tabs defaultValue="dados" className="w-full">
-                    <TabsList className="w-full justify-start rounded-none px-4 py-2 h-auto space-x-2 bg-muted border-b overflow-x-auto shadow-inner">
+                    <TabsList className="w-full justify-start rounded-none px-4 py-0 h-auto space-x-6 bg-transparent border-b overflow-x-auto">
                       <TabsTrigger
                         value="dados"
-                        className="px-4 py-2 data-[state=active]:bg-slate-400 data-[state=active]:text-slate-900 data-[state=active]:shadow-md border-b-4 border-transparent data-[state=active]:border-b-primary data-[state=inactive]:hover:bg-slate-200 dark:data-[state=inactive]:hover:bg-slate-800 rounded-sm transition-colors duration-200"
+                        className="px-1 py-3 border-b-4 border-transparent data-[state=active]:border-primary data-[state=active]:text-foreground text-muted-foreground hover:text-foreground transition-colors rounded-none"
                       >
                         Dados Técnicos
                       </TabsTrigger>
                       <TabsTrigger
                         value="testes"
-                        className="px-4 py-2 data-[state=active]:bg-slate-400 data-[state=active]:text-slate-900 data-[state=active]:shadow-md border-b-4 border-transparent data-[state=active]:border-b-primary data-[state=inactive]:hover:bg-slate-200 dark:data-[state=inactive]:hover:bg-slate-800 rounded-sm transition-colors duration-200"
+                        className="px-1 py-3 border-b-4 border-transparent data-[state=active]:border-primary data-[state=active]:text-foreground text-muted-foreground hover:text-foreground transition-colors rounded-none"
                       >
                         Testes Elétricos
                       </TabsTrigger>
                       <TabsTrigger
                         value="fotos"
-                        className="px-4 py-2 data-[state=active]:bg-slate-400 data-[state=active]:text-slate-900 data-[state=active]:shadow-md border-b-4 border-transparent data-[state=active]:border-b-primary data-[state=inactive]:hover:bg-slate-200 dark:data-[state=inactive]:hover:bg-slate-800 rounded-sm transition-colors duration-200"
+                        className="px-1 py-3 border-b-4 border-transparent data-[state=active]:border-primary data-[state=active]:text-foreground text-muted-foreground hover:text-foreground transition-colors rounded-none"
                       >
                         Fotos
                       </TabsTrigger>
                       <TabsTrigger
                         value="parecer"
-                        className="px-4 py-2 data-[state=active]:bg-slate-400 data-[state=active]:text-slate-900 data-[state=active]:shadow-md border-b-4 border-transparent data-[state=active]:border-b-primary data-[state=inactive]:hover:bg-slate-200 dark:data-[state=inactive]:hover:bg-slate-800 rounded-sm transition-colors duration-200"
+                        className="px-1 py-3 border-b-4 border-transparent data-[state=active]:border-primary data-[state=active]:text-foreground text-muted-foreground hover:text-foreground transition-colors rounded-none"
                       >
                         Parecer Técnico
                       </TabsTrigger>
