@@ -703,15 +703,16 @@ export function TestModal({
     String(eti?.x3_x2) !== ''
   const avgEti = hasEti ? (Number(eti.x1_x3) + Number(eti.x2_x1) + Number(eti.x3_x2)) / 3 : null
 
-  const ets75 =
-    avgEts !== null && tempRef !== null ? avgEts * ((234.5 + 75) / (234.5 + tempRef)) : null
-  const eti75 =
-    avgEti !== null && tempRef !== null ? avgEti * ((234.5 + 75) / (234.5 + tempRef)) : null
+  const fatorEnrolamento75 = tempRef !== null ? (234.5 + 75) / (234.5 + tempRef) : null
+  const fatorEnrolamento105 = tempRef !== null ? (255 + 105) / (255 + tempRef) : null
+
+  const ets75 = avgEts !== null && fatorEnrolamento75 !== null ? avgEts * fatorEnrolamento75 : null
+  const eti75 = avgEti !== null && fatorEnrolamento75 !== null ? avgEti * fatorEnrolamento75 : null
 
   const ets105 =
-    avgEts !== null && tempRef !== null ? avgEts * ((255 + 105) / (255 + tempRef)) : null
+    avgEts !== null && fatorEnrolamento105 !== null ? avgEts * fatorEnrolamento105 : null
   const eti105 =
-    avgEti !== null && tempRef !== null ? avgEti * ((255 + 105) / (255 + tempRef)) : null
+    avgEti !== null && fatorEnrolamento105 !== null ? avgEti * fatorEnrolamento105 : null
 
   useEffect(() => {
     if (!open) return
@@ -984,23 +985,16 @@ export function TestModal({
                       avg_eti: sAvgEti,
                     }
 
+                    const calcFator75 = (234.5 + 75) / (234.5 + tRef)
+                    const calcFator105 = (255 + 105) / (255 + tRef)
+                    const aplicadoFator = isOleoMineral ? calcFator75 : calcFator105
+
                     payload.dados_detalhados.resultados_calculados = {
-                      ets_75:
-                        isOleoMineral && sAvgEts !== null
-                          ? sAvgEts * ((234.5 + 75) / (234.5 + tRef))
-                          : null,
-                      eti_75:
-                        isOleoMineral && sAvgEti !== null
-                          ? sAvgEti * ((234.5 + 75) / (234.5 + tRef))
-                          : null,
-                      ets_105:
-                        !isOleoMineral && sAvgEts !== null
-                          ? sAvgEts * ((255 + 105) / (255 + tRef))
-                          : null,
-                      eti_105:
-                        !isOleoMineral && sAvgEti !== null
-                          ? sAvgEti * ((255 + 105) / (255 + tRef))
-                          : null,
+                      ets_75: isOleoMineral && sAvgEts !== null ? sAvgEts * calcFator75 : null,
+                      eti_75: isOleoMineral && sAvgEti !== null ? sAvgEti * calcFator75 : null,
+                      ets_105: !isOleoMineral && sAvgEts !== null ? sAvgEts * calcFator105 : null,
+                      eti_105: !isOleoMineral && sAvgEti !== null ? sAvgEti * calcFator105 : null,
+                      fator_correcao_aplicado: aplicadoFator,
                     }
                   }
                 }
@@ -1196,7 +1190,13 @@ export function TestModal({
                           : 'Fator de Correção 105ºC'}
                       </FormLabel>
                       <div className="h-8 flex items-center px-3 border rounded-md bg-muted text-xs text-muted-foreground">
-                        {tempRef !== null ? tempRef : '-'}
+                        {meioIsolante === 'Óleo Mineral'
+                          ? fatorEnrolamento75 !== null
+                            ? fatorEnrolamento75.toFixed(4)
+                            : '-'
+                          : fatorEnrolamento105 !== null
+                            ? fatorEnrolamento105.toFixed(4)
+                            : '-'}
                       </div>
                     </div>
                   </div>
