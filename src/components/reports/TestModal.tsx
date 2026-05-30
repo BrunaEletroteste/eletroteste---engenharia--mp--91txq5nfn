@@ -722,12 +722,14 @@ export function TestModal({
       if (cat) {
         getOpcoesPadronizadas(cat)
           .then((options) => {
-            setEquipmentOptions(options)
             const current = form.getValues('equipamento_utilizado') || []
-            const valid = current.filter((c) => options.find((o) => o.valor === c))
-            if (valid.length !== current.length) {
-              form.setValue('equipamento_utilizado', valid, { shouldValidate: true })
-            }
+            const mergedOptions = [...options]
+            current.forEach((val) => {
+              if (!mergedOptions.find((o) => o.valor === val)) {
+                mergedOptions.push({ id: val, valor: val, categoria: cat } as OpcaoPadronizada)
+              }
+            })
+            setEquipmentOptions(mergedOptions)
           })
           .catch(console.error)
       } else {

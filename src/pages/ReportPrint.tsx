@@ -94,27 +94,6 @@ const labelMap: Record<string, string> = {
   padrao: 'Padrão',
 }
 
-const getAutomatedNote = (tipoEquipamento: string, tipoTeste: string): string | null => {
-  if (tipoEquipamento === 'Seccionadora') {
-    if (tipoTeste === 'Resistências dos Isolamentos' || tipoTeste === 'Resistências dos Contatos') {
-      return 'Os valores dos testes acima foram comparados com parâmetros estatísticos para equipamentos similares em operação.'
-    }
-  } else if (tipoEquipamento === 'Transformador') {
-    if (tipoTeste === 'Resistências dos Isolamentos') {
-      return 'Nota: Os valores dos testes acima foram comparados com parâmetros de norma de manutenção para transformadores de distribuição: ABNT-NB 108-I.'
-    } else if (tipoTeste === 'Relação de Tensões') {
-      return 'Nota: Em conformidade com a norma ABNT NBR 5356/81.'
-    } else if (tipoTeste === 'Resistências dos Enrolamentos') {
-      return 'Nota: Os enrolamentos apresentam boa condução elétrica.'
-    }
-  } else if (tipoEquipamento === 'Disjuntor') {
-    if (tipoTeste === 'Resistências dos Contatos') {
-      return 'Nota: Os valores dos testes acima foram comparados com parâmetros estatísticos para equipamentos similares em operação.'
-    }
-  }
-  return null
-}
-
 const getLabel = (key: string, tipoEquipamento?: string) => {
   if (tipoEquipamento) {
     const fields = getEquipmentFields(tipoEquipamento)
@@ -646,20 +625,16 @@ export default function ReportPrint() {
                           </tbody>
                         </table>
                         {(() => {
-                          const automatedNote = getAutomatedNote(eq.tipo_equipamento, t.tipo_teste)
                           const hasObservacao = !!t.observacoes
 
-                          if (!hasObservacao && !automatedNote) return null
+                          if (!hasObservacao) return null
 
                           return (
                             <div className="p-2 bg-yellow-50/50 border-t border-slate-200 text-xs text-slate-700 italic flex flex-col gap-1">
-                              {hasObservacao && (
-                                <div>
-                                  <span className="font-semibold not-italic">Observações:</span>{' '}
-                                  <span className="whitespace-pre-wrap">{t.observacoes}</span>
-                                </div>
-                              )}
-                              {automatedNote && <div>{automatedNote}</div>}
+                              <div>
+                                <span className="font-semibold not-italic">Observações:</span>{' '}
+                                <span className="whitespace-pre-wrap">{t.observacoes}</span>
+                              </div>
                             </div>
                           )
                         })()}
