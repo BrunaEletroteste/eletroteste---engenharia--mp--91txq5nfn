@@ -377,13 +377,13 @@ export default function ReportPrint() {
       </div>
 
       {/* Document Container */}
-      <div className="pt-24 px-8 pb-8 max-w-[210mm] mx-auto text-sm print:max-w-none print:pt-0 print:px-0 print:pb-0 font-sans">
+      <div className="pt-24 px-8 pb-8 max-w-[210mm] mx-auto text-sm print:max-w-none print:pt-0 print:px-12 print:pb-0 font-sans">
         <table className="w-full">
           <thead className="table-header-group">
             <tr>
               <td>
                 {/* Technical Header (Carimbo) */}
-                <div className="border-t-[6px] border-blue-900 pb-4 mb-6">
+                <div className="print:mt-8 border-t-[6px] border-blue-900 pb-4 mb-6">
                   <table className="w-full border-collapse border border-slate-800 mt-2 text-sm bg-white">
                     <tbody>
                       <tr>
@@ -549,7 +549,7 @@ export default function ReportPrint() {
                           <div className="font-bold text-slate-800 mb-2 border-b border-slate-200 pb-1 text-xs uppercase tracking-wider">
                             Características Técnicas
                           </div>
-                          <div className="grid grid-cols-2 gap-x-6 gap-y-2">
+                          <div className="grid grid-cols-3 gap-x-4 gap-y-1">
                             {(() => {
                               const fields = getEquipmentFields(eq.tipo_equipamento)
                               const mappedKeys = new Set<string>()
@@ -592,7 +592,7 @@ export default function ReportPrint() {
 
                               if (allData.length === 0) {
                                 return (
-                                  <div className="text-sm text-slate-500 italic col-span-2">
+                                  <div className="text-xs text-slate-500 italic col-span-3">
                                     Nenhuma característica preenchida.
                                   </div>
                                 )
@@ -601,12 +601,12 @@ export default function ReportPrint() {
                               return allData.map(({ key, label, value }) => (
                                 <div
                                   key={key}
-                                  className="flex text-sm border-b border-slate-100 pb-1"
+                                  className="flex items-end text-[11px] border-b border-slate-200 pb-0.5"
                                 >
-                                  <span className="font-semibold text-slate-600 w-1/2 pr-2">
+                                  <span className="font-semibold text-slate-600 w-1/2 pr-1 leading-tight">
                                     {label}:
                                   </span>
-                                  <span className="w-1/2 text-slate-900 break-words">
+                                  <span className="w-1/2 text-slate-900 break-words leading-tight">
                                     {typeof value === 'boolean'
                                       ? value
                                         ? 'Sim'
@@ -630,7 +630,7 @@ export default function ReportPrint() {
                             {eq.testes.map((t: any) => (
                               <div
                                 key={t.id}
-                                className="border border-slate-200 rounded overflow-hidden"
+                                className="border border-slate-200 rounded overflow-hidden avoid-break"
                               >
                                 <table className="w-full text-sm">
                                   <thead>
@@ -743,7 +743,9 @@ export default function ReportPrint() {
 
                       {/* Photos */}
                       {eq.fotos && eq.fotos.length > 0 && (
-                        <div className="pt-2 avoid-break">
+                        <div
+                          className={`avoid-break ${eq.tipo_equipamento === 'Transformador' ? 'break-before-page pt-4' : 'pt-2'}`}
+                        >
                           <div className="font-bold text-slate-800 mb-3 border-b border-slate-200 pb-1 text-xs uppercase tracking-wider">
                             Registro Fotográfico
                           </div>
@@ -831,7 +833,7 @@ export default function ReportPrint() {
             <tr>
               <td>
                 {/* Corporate Standardized Footer */}
-                <div className="mt-6 border-t-[1.5px] border-slate-800 pt-3 text-[10px] text-slate-600 bg-white">
+                <div className="print:mb-8 mt-6 border-t-[1.5px] border-slate-800 pt-3 text-[10px] text-slate-600 bg-white">
                   <div className="flex justify-between items-start gap-4">
                     <div className="flex flex-col gap-1">
                       <span>
