@@ -119,25 +119,21 @@
     @page {
       size: A4;
       margin: 15mm;
-      margin-bottom: 30mm;
     }
     body {
       -webkit-print-color-adjust: exact;
       print-color-adjust: exact;
       counter-reset: page;
     }
-    .print-footer {
-      position: fixed;
-      bottom: 0;
-      left: 0;
-      width: 100%;
-      counter-increment: page;
-    }
     .print-page-number::after {
-      content: 'Página ' counter(page);
+      content: 'Página ' counter(page) ' de ' counter(pages);
     }
     .avoid-break {
       break-inside: avoid;
+    }
+    .break-before-page {
+      break-before: page;
+      counter-increment: page;
     }
   }
 }
