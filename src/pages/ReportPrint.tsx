@@ -4,6 +4,100 @@ import { Printer, ArrowLeft, Loader2 } from 'lucide-react'
 import pb from '@/lib/pocketbase/client'
 import { Button } from '@/components/ui/button'
 
+const labelMap: Record<string, string> = {
+  observacoes: 'Observações',
+  inicio: 'Início',
+  relacao: 'Relação',
+  caracteristicas: 'Características',
+  efetuado: 'Efetuado',
+  proxima_manutencao: 'Próxima Manutenção',
+  parecer_tecnico: 'Parecer Técnico',
+  dados_tecnicos: 'Dados Técnicos',
+  fase_a: 'Fase A',
+  fase_b: 'Fase B',
+  fase_c: 'Fase C',
+  fase_a_massa: 'Fase A x Massa',
+  fase_b_massa: 'Fase B x Massa',
+  fase_c_massa: 'Fase C x Massa',
+  fase_a_fase_b: 'Fase A x Fase B',
+  fase_b_fase_c: 'Fase B x Fase C',
+  fase_c_fase_a: 'Fase C x Fase A',
+  h_massa: 'H x Massa',
+  x_massa: 'X x Massa',
+  h_x: 'H x X',
+  r_s: 'R x S',
+  s_t: 'S x T',
+  t_r: 'T x R',
+  r_massa: 'R x Massa',
+  s_massa: 'S x Massa',
+  t_massa: 'T x Massa',
+  tensao_primaria: 'Tensão Primária (V)',
+  tensao_secundaria: 'Tensão Secundária (V)',
+  potencia: 'Potência',
+  isolacao: 'Isolação',
+  classe_tensao: 'Classe de Tensão',
+  corrente_primaria: 'Corrente Primária (A)',
+  corrente_secundaria: 'Corrente Secundária (A)',
+  exatidao: 'Exatidão',
+  corrente_nominal: 'Corrente Nominal',
+  classe_isolamento: 'Classe de Isolamento',
+  possui_fusivel: 'Possui Fusível',
+  fusivel_tipo: 'Tipo de Fusível',
+  fusivel_corrente_nominal: 'Corrente Nominal do Fusível',
+  fusivel_fabricante: 'Fabricante do Fusível',
+  tap_at: 'Tap de AT',
+  impedancia: 'Impedância (%)',
+  condut_vs: 'Condut. de Vs (mm²)',
+  meio_isolante: 'Meio Isolante',
+  volume_oleo: 'Volume de Óleo (L)',
+  peso_total: 'Peso Total (kg)',
+  buchas: 'Buchas de AT e BT',
+  desl_angular: 'Deslocamento Angular',
+  ligado_em: 'Ligado Em',
+  diagrama: 'Diagrama',
+  potencia_simetrica: 'Potência Simétrica',
+  capacidade_ruptura: 'Capacidade de Ruptura',
+  rele_minima_tensao: 'Relé de Mínima Tensão',
+  rele_abertura: 'Relé de Abertura',
+  rele_fechamento: 'Relé de Fechamento',
+  motorizacao: 'Motorização',
+  rele_supervisor: 'Relé Supervisor',
+  condutores: 'Condutores',
+  secao: 'Seção',
+  material_condutor: 'Material Condutor',
+  tensao_nominal: 'Tensão Nominal',
+  corrente_descarga: 'Corrente de Descarga',
+  tipo_modelo: 'Tipo/Modelo',
+  subestacao: 'Subestação',
+  identificacao: 'Identificação',
+  numero: 'Número',
+  fabricante: 'Fabricante',
+  tipo: 'Tipo',
+  circuito: 'Circuito',
+  ajuste_i_fase: 'I> Fase',
+  ajuste_curva_fase: 'Curva Fase',
+  ajuste_dt_fase: 'Dt Fase',
+  ajuste_i_def_fase: 'I.Def. Fase',
+  ajuste_t_def_fase: 'T.Def. Fase',
+  ajuste_i_3_fase: 'I>>> Fase',
+  ajuste_ie_neutro: 'Ie> Neutro',
+  ajuste_curva_neutro: 'Curva Neutro',
+  ajuste_dt_neutro: 'Dt Neutro',
+  ajuste_i_gs_neutro: 'I.GS. Neutro',
+  ajuste_t_gs_neutro: 'T.GS. Neutro',
+  ajuste_ie_3_neutro: 'Ie>>> Neutro',
+  ajuste_v_maior: 'V>',
+  ajuste_t_v_maior: 'T.V>',
+  ajuste_v_menor: 'V<',
+  ajuste_t_v_menor: 'T.V<',
+}
+
+const getLabel = (key: string) => {
+  const lowerKey = key.toLowerCase()
+  if (labelMap[lowerKey]) return labelMap[lowerKey]
+  return key.replace(/_/g, ' ').replace(/\b\w/g, (l) => l.toUpperCase())
+}
+
 export default function ReportPrint() {
   const { id } = useParams()
   const navigate = useNavigate()
@@ -78,28 +172,66 @@ export default function ReportPrint() {
 
   const renderDetalhes = (detalhes: any) => {
     if (!detalhes) return null
-    return Object.entries(detalhes).map(([k, v]) => {
-      if (typeof v === 'object' && v !== null) {
-        return (
-          <div key={k} className="mb-1">
-            <span className="font-semibold capitalize text-slate-700">{k.replace(/_/g, ' ')}:</span>
-            <div className="ml-4 border-l-2 border-slate-200 pl-2 mt-1 space-y-1">
-              {Object.entries(v).map(([sk, sv]) => (
-                <div key={sk} className="text-slate-600">
-                  <span className="font-medium capitalize">{sk.replace(/_/g, ' ')}:</span>{' '}
-                  {String(sv)}
-                </div>
-              ))}
-            </div>
-          </div>
-        )
-      }
+
+    const isFlat = Object.values(detalhes).every((v) => typeof v !== 'object' || v === null)
+
+    if (isFlat) {
       return (
-        <div key={k} className="text-slate-700">
-          <span className="font-semibold capitalize">{k.replace(/_/g, ' ')}:</span> {String(v)}
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 w-full">
+          {Object.entries(detalhes).map(([k, v]) => (
+            <div
+              key={k}
+              className="flex flex-col border border-slate-200 rounded p-1.5 bg-white shadow-sm"
+            >
+              <span className="text-[10px] font-semibold text-slate-500 uppercase tracking-wider">
+                {getLabel(k)}
+              </span>
+              <span className="text-sm font-medium text-slate-900">{String(v)}</span>
+            </div>
+          ))}
         </div>
       )
-    })
+    }
+
+    return (
+      <div className="flex flex-col gap-4 w-full">
+        {Object.entries(detalhes).map(([k, v]) => {
+          if (typeof v === 'object' && v !== null) {
+            return (
+              <div key={k} className="w-full">
+                <span className="font-semibold text-slate-700 text-xs uppercase block mb-1.5">
+                  {getLabel(k)}
+                </span>
+                <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
+                  {Object.entries(v).map(([sk, sv]) => (
+                    <div
+                      key={sk}
+                      className="flex flex-col border border-slate-200 rounded p-1.5 bg-white shadow-sm"
+                    >
+                      <span className="text-[10px] font-semibold text-slate-500 uppercase tracking-wider">
+                        {getLabel(sk)}
+                      </span>
+                      <span className="text-sm font-medium text-slate-900">{String(sv)}</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )
+          }
+          return (
+            <div
+              key={k}
+              className="flex flex-col border border-slate-200 rounded p-1.5 bg-white shadow-sm w-fit min-w-[120px]"
+            >
+              <span className="text-[10px] font-semibold text-slate-500 uppercase tracking-wider">
+                {getLabel(k)}
+              </span>
+              <span className="text-sm font-medium text-slate-900">{String(v)}</span>
+            </div>
+          )
+        })}
+      </div>
+    )
   }
 
   return (
@@ -205,11 +337,15 @@ export default function ReportPrint() {
               </tr>
               <tr>
                 <td className="border border-slate-300 p-2 font-semibold bg-slate-100 text-slate-700">
+                  Próxima Manutenção
+                </td>
+                <td className="border border-slate-300 p-2">
+                  {formatDate(report.proxima_manutencao)}
+                </td>
+                <td className="border border-slate-300 p-2 font-semibold bg-slate-100 text-slate-700">
                   Responsável Técnico
                 </td>
-                <td className="border border-slate-300 p-2 font-medium" colSpan={3}>
-                  {autor.name || 'N/A'}
-                </td>
+                <td className="border border-slate-300 p-2 font-medium">{autor.name || 'N/A'}</td>
               </tr>
               <tr>
                 <td className="border border-slate-300 p-2 font-semibold bg-slate-100 text-slate-700">
@@ -223,6 +359,14 @@ export default function ReportPrint() {
                 </td>
                 <td className="border border-slate-300 p-2">
                   {report.umidade_relativa ? `${report.umidade_relativa} %` : 'N/A'}
+                </td>
+              </tr>
+              <tr>
+                <td className="border border-slate-300 p-2 font-semibold bg-slate-100 text-slate-700">
+                  Acompanhante
+                </td>
+                <td className="border border-slate-300 p-2" colSpan={3}>
+                  {report.acompanhante || 'N/A'}
                 </td>
               </tr>
             </tbody>
@@ -246,10 +390,10 @@ export default function ReportPrint() {
                   <div className="grid grid-cols-2 gap-x-6 gap-y-2">
                     {Object.entries(eq.dados_tecnicos).map(([k, v]) => (
                       <div key={k} className="flex text-sm border-b border-slate-100 pb-1">
-                        <span className="font-semibold text-slate-600 w-1/2 capitalize">
-                          {k.replace(/_/g, ' ')}:
+                        <span className="font-semibold text-slate-600 w-1/2">{getLabel(k)}:</span>
+                        <span className="w-1/2 text-slate-900">
+                          {typeof v === 'boolean' ? (v ? 'Sim' : 'Não') : String(v)}
                         </span>
-                        <span className="w-1/2 text-slate-900">{String(v)}</span>
                       </div>
                     ))}
                   </div>
@@ -272,13 +416,13 @@ export default function ReportPrint() {
                                 Teste Realizado
                               </th>
                               <th className="p-2 text-left text-slate-700 font-semibold w-1/3">
-                                Equip. Utilizado
+                                Equipamento Utilizado
                               </th>
                               <th className="p-2 text-left text-slate-700 font-semibold w-1/6">
                                 Data
                               </th>
                               <th className="p-2 text-left text-slate-700 font-semibold w-1/6">
-                                Resultado
+                                Resultado Geral
                               </th>
                             </tr>
                           </thead>
@@ -288,7 +432,7 @@ export default function ReportPrint() {
                               <td className="p-2">{t.equipamento_utilizado}</td>
                               <td className="p-2">{formatDate(t.data_teste)}</td>
                               <td className="p-2 font-bold text-blue-800">
-                                {t.valor_teste !== undefined
+                                {t.valor_teste !== undefined && t.valor_teste !== null
                                   ? `${t.valor_teste} ${t.unidade}`
                                   : 'N/A'}
                               </td>
@@ -297,17 +441,18 @@ export default function ReportPrint() {
                         </table>
                         {t.dados_detalhados && Object.keys(t.dados_detalhados).length > 0 && (
                           <div className="p-3 bg-slate-50 border-t border-slate-200 text-xs">
-                            <div className="font-semibold text-slate-500 mb-2 uppercase tracking-wide">
+                            <div className="font-semibold text-slate-500 mb-2 uppercase tracking-wide text-[10px]">
                               Detalhes da Medição
                             </div>
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div className="flex flex-wrap gap-4">
                               {renderDetalhes(t.dados_detalhados)}
                             </div>
                           </div>
                         )}
                         {t.observacoes && (
                           <div className="p-2 bg-yellow-50/50 border-t border-slate-200 text-xs text-slate-700 italic">
-                            <span className="font-semibold not-italic">Obs:</span> {t.observacoes}
+                            <span className="font-semibold not-italic">Observações:</span>{' '}
+                            {t.observacoes}
                           </div>
                         )}
                       </div>
