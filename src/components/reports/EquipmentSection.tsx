@@ -379,25 +379,25 @@ export function EquipmentSection({ equipments, setEquipments, isView }: Props) {
                     <TabsList className="w-full justify-start rounded-none px-4 py-2 h-auto space-x-2 bg-muted border-b overflow-x-auto shadow-inner">
                       <TabsTrigger
                         value="dados"
-                        className="px-4 py-2 data-[state=active]:bg-slate-950 data-[state=active]:text-white data-[state=active]:shadow-md border-b-4 border-transparent data-[state=active]:border-b-primary data-[state=inactive]:hover:bg-slate-200 dark:data-[state=inactive]:hover:bg-slate-800 rounded-sm transition-colors duration-200"
+                        className="px-4 py-2 data-[state=active]:bg-slate-500 data-[state=active]:text-white data-[state=active]:shadow-md border-b-4 border-transparent data-[state=active]:border-b-primary data-[state=inactive]:hover:bg-slate-200 dark:data-[state=inactive]:hover:bg-slate-800 rounded-sm transition-colors duration-200"
                       >
                         Dados Técnicos
                       </TabsTrigger>
                       <TabsTrigger
                         value="testes"
-                        className="px-4 py-2 data-[state=active]:bg-slate-950 data-[state=active]:text-white data-[state=active]:shadow-md border-b-4 border-transparent data-[state=active]:border-b-primary data-[state=inactive]:hover:bg-slate-200 dark:data-[state=inactive]:hover:bg-slate-800 rounded-sm transition-colors duration-200"
+                        className="px-4 py-2 data-[state=active]:bg-slate-500 data-[state=active]:text-white data-[state=active]:shadow-md border-b-4 border-transparent data-[state=active]:border-b-primary data-[state=inactive]:hover:bg-slate-200 dark:data-[state=inactive]:hover:bg-slate-800 rounded-sm transition-colors duration-200"
                       >
                         Testes Elétricos
                       </TabsTrigger>
                       <TabsTrigger
                         value="fotos"
-                        className="px-4 py-2 data-[state=active]:bg-slate-950 data-[state=active]:text-white data-[state=active]:shadow-md border-b-4 border-transparent data-[state=active]:border-b-primary data-[state=inactive]:hover:bg-slate-200 dark:data-[state=inactive]:hover:bg-slate-800 rounded-sm transition-colors duration-200"
+                        className="px-4 py-2 data-[state=active]:bg-slate-500 data-[state=active]:text-white data-[state=active]:shadow-md border-b-4 border-transparent data-[state=active]:border-b-primary data-[state=inactive]:hover:bg-slate-200 dark:data-[state=inactive]:hover:bg-slate-800 rounded-sm transition-colors duration-200"
                       >
                         Fotos
                       </TabsTrigger>
                       <TabsTrigger
                         value="parecer"
-                        className="px-4 py-2 data-[state=active]:bg-slate-950 data-[state=active]:text-white data-[state=active]:shadow-md border-b-4 border-transparent data-[state=active]:border-b-primary data-[state=inactive]:hover:bg-slate-200 dark:data-[state=inactive]:hover:bg-slate-800 rounded-sm transition-colors duration-200"
+                        className="px-4 py-2 data-[state=active]:bg-slate-500 data-[state=active]:text-white data-[state=active]:shadow-md border-b-4 border-transparent data-[state=active]:border-b-primary data-[state=inactive]:hover:bg-slate-200 dark:data-[state=inactive]:hover:bg-slate-800 rounded-sm transition-colors duration-200"
                       >
                         Parecer Técnico
                       </TabsTrigger>
