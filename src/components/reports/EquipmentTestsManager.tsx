@@ -361,29 +361,42 @@ export function EquipmentTestsManager({
 
     if (isMobile) {
       return (
-        <div className="rounded-md border overflow-x-auto">
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>Fase</TableHead>
-                <TableHead>{pYear}</TableHead>
-                <TableHead>{currentYear}</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {data.map((d, idx) => (
-                <TableRow key={idx}>
-                  <TableCell className="py-2 text-sm">{d.phase}</TableCell>
-                  <TableCell className="py-2 text-sm text-muted-foreground">
-                    {d.ano_anterior ?? '-'} {d.ano_anterior !== null ? unidade : ''}
-                  </TableCell>
-                  <TableCell className="py-2 text-sm font-medium">
-                    {d.ano_atual ?? '-'} {d.ano_atual !== null ? unidade : ''}
-                  </TableCell>
+        <div className="flex flex-col gap-2 w-full">
+          <div className="text-xs text-muted-foreground text-right font-medium">
+            Unidade: {unidade || '-'}
+          </div>
+          <div className="rounded-md border overflow-x-auto">
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>Fase</TableHead>
+                  <TableHead>{pYear}</TableHead>
+                  <TableHead>{currentYear}</TableHead>
                 </TableRow>
-              ))}
-            </TableBody>
-          </Table>
+              </TableHeader>
+              <TableBody>
+                {data.map((d, idx) => (
+                  <TableRow key={idx}>
+                    <TableCell className="py-2 text-sm">{d.phase}</TableCell>
+                    <TableCell className="py-2 text-sm text-muted-foreground">
+                      {d.ano_anterior !== null
+                        ? new Intl.NumberFormat('pt-BR', { maximumFractionDigits: 4 }).format(
+                            d.ano_anterior,
+                          )
+                        : '-'}
+                    </TableCell>
+                    <TableCell className="py-2 text-sm font-medium">
+                      {d.ano_atual !== null
+                        ? new Intl.NumberFormat('pt-BR', { maximumFractionDigits: 4 }).format(
+                            d.ano_atual,
+                          )
+                        : '-'}
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          </div>
         </div>
       )
     }
@@ -422,8 +435,10 @@ export function EquipmentTestsManager({
                   axisLine={false}
                   tickMargin={10}
                   fontSize={12}
-                  tickFormatter={(val) => `${val} ${unidade}`}
-                  width={unidade ? 60 : 40}
+                  tickFormatter={(val) =>
+                    new Intl.NumberFormat('pt-BR', { maximumFractionDigits: 4 }).format(val)
+                  }
+                  width={50}
                 />
                 <ChartTooltip
                   cursor={{ fill: 'hsl(var(--muted))', opacity: 0.4 }}
