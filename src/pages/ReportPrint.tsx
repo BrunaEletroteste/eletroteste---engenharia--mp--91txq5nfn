@@ -301,42 +301,42 @@ export default function ReportPrint() {
       const calc = t.dados_detalhados?.resultados_calculados
       const tRef = t.dados_detalhados?.temperatura_referencia || 75
 
-      const formatField = (val: any, unit: string) =>
-        val !== undefined && val !== null && val !== '' ? `${formatNum(val)} ${unit}` : '-'
+      const formatField = (val: any) =>
+        val !== undefined && val !== null && val !== '' ? `${formatNum(val)}` : '-'
 
       const f_ets = [
-        `H1-H3: ${formatField(ets.h1_h3, 'Ω')}`,
-        `H2-H1: ${formatField(ets.h2_h1, 'Ω')}`,
-        `H3-H2: ${formatField(ets.h3_h2, 'Ω')}`,
+        `H1-H3: ${formatField(ets.h1_h3)}`,
+        `H2-H1: ${formatField(ets.h2_h1)}`,
+        `H3-H2: ${formatField(ets.h3_h2)}`,
       ]
       const f_eti = [
-        `X1-X3: ${formatField(eti.x1_x3, 'mΩ')}`,
-        `X2-X1: ${formatField(eti.x2_x1, 'mΩ')}`,
-        `X3-X2: ${formatField(eti.x3_x2, 'mΩ')}`,
+        `X1-X3: ${formatField(eti.x1_x3)}`,
+        `X2-X1: ${formatField(eti.x2_x1)}`,
+        `X3-X2: ${formatField(eti.x3_x2)}`,
       ]
 
       if (calc) {
         if (calc.ets_75 !== null && calc.ets_75 !== undefined)
-          f_ets.push(`Média 75ºC: ${formatField(calc.ets_75, 'Ω')}`)
+          f_ets.push(`Média 75ºC: ${formatField(calc.ets_75)}`)
         else if (calc.ets_105 !== null && calc.ets_105 !== undefined)
-          f_ets.push(`Média 105ºC: ${formatField(calc.ets_105, 'Ω')}`)
+          f_ets.push(`Média 105ºC: ${formatField(calc.ets_105)}`)
 
         if (calc.eti_75 !== null && calc.eti_75 !== undefined)
-          f_eti.push(`Média 75ºC: ${formatField(calc.eti_75, 'mΩ')}`)
+          f_eti.push(`Média 75ºC: ${formatField(calc.eti_75)}`)
         else if (calc.eti_105 !== null && calc.eti_105 !== undefined)
-          f_eti.push(`Média 105ºC: ${formatField(calc.eti_105, 'mΩ')}`)
+          f_eti.push(`Média 105ºC: ${formatField(calc.eti_105)}`)
       } else if (ets_corr || eti_corr) {
         if (ets_corr) {
           f_ets.push(`Corr. ${tRef}ºC:`)
-          f_ets.push(`  H1-H3: ${formatField(ets_corr.h1_h3, 'Ω')}`)
-          f_ets.push(`  H2-H1: ${formatField(ets_corr.h2_h1, 'Ω')}`)
-          f_ets.push(`  H3-H2: ${formatField(ets_corr.h3_h2, 'Ω')}`)
+          f_ets.push(`  H1-H3: ${formatField(ets_corr.h1_h3)}`)
+          f_ets.push(`  H2-H1: ${formatField(ets_corr.h2_h1)}`)
+          f_ets.push(`  H3-H2: ${formatField(ets_corr.h3_h2)}`)
         }
         if (eti_corr) {
           f_eti.push(`Corr. ${tRef}ºC:`)
-          f_eti.push(`  X1-X3: ${formatField(eti_corr.x1_x3, 'mΩ')}`)
-          f_eti.push(`  X2-X1: ${formatField(eti_corr.x2_x1, 'mΩ')}`)
-          f_eti.push(`  X3-X2: ${formatField(eti_corr.x3_x2, 'mΩ')}`)
+          f_eti.push(`  X1-X3: ${formatField(eti_corr.x1_x3)}`)
+          f_eti.push(`  X2-X1: ${formatField(eti_corr.x2_x1)}`)
+          f_eti.push(`  X3-X2: ${formatField(eti_corr.x3_x2)}`)
         }
       }
 
@@ -630,10 +630,13 @@ export default function ReportPrint() {
                             <table className="w-full text-[11px] border-collapse">
                               <thead className="bg-slate-50 border-b border-slate-200">
                                 <tr>
-                                  <th className="p-2 text-left text-slate-700 font-semibold w-1/3 border-r border-slate-200">
-                                    Data / Teste Realizado
+                                  <th className="p-2 text-left text-slate-700 font-semibold w-[15%] border-r border-slate-200 whitespace-nowrap">
+                                    Data
                                   </th>
-                                  <th className="p-2 text-left text-slate-700 font-semibold w-2/3">
+                                  <th className="p-2 text-left text-slate-700 font-semibold w-[25%] border-r border-slate-200">
+                                    Teste Realizado
+                                  </th>
+                                  <th className="p-2 text-left text-slate-700 font-semibold w-[60%]">
                                     Resultados
                                   </th>
                                 </tr>
@@ -642,10 +645,10 @@ export default function ReportPrint() {
                                 {eq.testes.map((t: any, index: number) => {
                                   const resultsArray = formatTestValue(t, eq.tipo_equipamento)
                                   const resultsStr =
-                                    resultsArray.map((s) => s.trim()).join(' | ') +
-                                    (t.tipo_teste !== 'Resistências dos Enrolamentos' && t.unidade
-                                      ? ` | Unidade: ${t.unidade}`
-                                      : '')
+                                    resultsArray
+                                      .map((s) => s.trim())
+                                      .filter(Boolean)
+                                      .join(' | ') + (t.unidade ? ` ${t.unidade}` : '')
                                   const hasObservacao = !!t.observacoes
 
                                   return (
@@ -653,21 +656,18 @@ export default function ReportPrint() {
                                       <tr
                                         className={`avoid-break ${index > 0 ? 'border-t border-slate-200' : ''}`}
                                       >
+                                        <td className="p-2 align-top border-r border-slate-200 font-semibold whitespace-nowrap">
+                                          {formatDate(t.data_teste)}
+                                        </td>
                                         <td className="p-2 align-top border-r border-slate-200">
-                                          <span className="font-semibold">
-                                            {formatDate(t.data_teste)}
-                                          </span>{' '}
-                                          / {t.tipo_teste}
+                                          {t.tipo_teste}
                                         </td>
                                         <td className="p-2 align-top text-blue-900 font-bold whitespace-pre-wrap">
                                           {resultsStr}
                                         </td>
                                       </tr>
-                                      <tr className="avoid-break bg-slate-50/50">
-                                        <td
-                                          colSpan={2}
-                                          className="px-2 py-1 text-slate-600 border-t border-slate-200"
-                                        >
+                                      <tr className="avoid-break bg-slate-50/50 border-t border-slate-200">
+                                        <td colSpan={3} className="px-2 py-1 text-slate-600">
                                           <span className="font-semibold">
                                             Equipamento Utilizado:
                                           </span>{' '}
@@ -675,10 +675,10 @@ export default function ReportPrint() {
                                         </td>
                                       </tr>
                                       {hasObservacao && (
-                                        <tr className="avoid-break bg-yellow-50/50">
+                                        <tr className="avoid-break bg-yellow-50/50 border-t border-slate-200">
                                           <td
-                                            colSpan={2}
-                                            className="px-2 py-1 text-slate-700 italic border-t border-slate-200"
+                                            colSpan={3}
+                                            className="px-2 py-1 text-slate-700 italic"
                                           >
                                             <span className="font-semibold not-italic">
                                               Observações:
@@ -705,10 +705,10 @@ export default function ReportPrint() {
                             Parecer Técnico Específico
                           </div>
                           <div className="border-l-4 border-slate-400 pl-4 py-2 bg-slate-50">
-                            <div className="flex items-center gap-2 mb-2">
+                            <div className="flex items-center gap-2 mb-2 text-[11px]">
                               <span className="font-semibold text-slate-700">Status:</span>
                               <span
-                                className={`font-bold uppercase px-2 py-0.5 rounded text-xs ${
+                                className={`font-bold uppercase px-2 py-0.5 rounded text-[11px] ${
                                   eq.parecer.parecer === 'Conforme'
                                     ? 'bg-green-100 text-green-800'
                                     : eq.parecer.parecer === 'Não Conforme'
@@ -720,7 +720,7 @@ export default function ReportPrint() {
                               </span>
                             </div>
                             {eq.parecer.justificativa_mudanca && (
-                              <div className="mb-2 text-sm">
+                              <div className="mb-2 text-[11px]">
                                 <span className="font-semibold text-slate-700 block">
                                   Justificativa da Mudança:
                                 </span>
@@ -730,7 +730,7 @@ export default function ReportPrint() {
                               </div>
                             )}
                             {eq.parecer.observacoes && (
-                              <div className="text-sm">
+                              <div className="text-[11px]">
                                 <span className="font-semibold text-slate-700 block">
                                   Observações:
                                 </span>
@@ -796,7 +796,7 @@ export default function ReportPrint() {
                           <h4 className="font-bold text-slate-800 mb-2 uppercase text-xs tracking-wider border-b border-slate-300 pb-1">
                             Parecer Final
                           </h4>
-                          <p className="text-slate-900 whitespace-pre-wrap leading-relaxed text-sm">
+                          <p className="text-slate-900 whitespace-pre-wrap leading-relaxed text-[11px]">
                             {report.parecer_geral}
                           </p>
                         </div>
@@ -806,7 +806,7 @@ export default function ReportPrint() {
                           <h4 className="font-bold text-slate-800 mb-2 uppercase text-xs tracking-wider border-b border-slate-300 pb-1 mt-4">
                             Observações Adicionais
                           </h4>
-                          <p className="text-slate-900 whitespace-pre-wrap leading-relaxed text-sm italic">
+                          <p className="text-slate-900 whitespace-pre-wrap leading-relaxed text-[11px] italic">
                             {report.observacoes}
                           </p>
                         </div>
