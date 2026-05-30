@@ -767,6 +767,37 @@ export default function ReportPrint() {
           </div>
         </div>
       </div>
+
+      {/* Footer - Print Only */}
+      <div className="hidden print:block print-footer bg-white pt-3 pb-1 border-t border-slate-800 text-[10px] text-slate-600 z-50">
+        <div className="grid grid-cols-3 gap-4 items-start">
+          <div className="flex flex-col">
+            <span>
+              <strong>CNPJ:</strong> 64.941.818/0001-91
+            </span>
+            <span>
+              <strong>IE:</strong> 748.001.165.111 &nbsp;|&nbsp; <strong>IM:</strong> 688
+            </span>
+          </div>
+          <div className="flex flex-col text-center">
+            <span>Rua Andradina, 262 - Remanso Campineiro</span>
+            <span>CEP: 13184-340 - Hortolândia - SP</span>
+          </div>
+          <div className="flex flex-col text-right">
+            <span>
+              <strong>Tels:</strong> (19) 3865-2942 / 3865-1261
+            </span>
+            <span>
+              <strong>WhatsApp:</strong> (19) 9 7143-3853
+            </span>
+            <span>
+              <strong>Site:</strong> www.eletroteste.com &nbsp;|&nbsp; <strong>E-mail:</strong>{' '}
+              eletroteste@eletroteste.com
+            </span>
+          </div>
+        </div>
+        <div className="mt-2 text-center font-bold text-slate-800 text-xs print-page-number"></div>
+      </div>
     </div>
   )
 }
