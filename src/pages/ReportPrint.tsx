@@ -365,7 +365,7 @@ export default function ReportPrint() {
   }
 
   return (
-    <div className="bg-white print:bg-transparent min-h-screen text-black">
+    <div className="bg-slate-200 print:bg-transparent min-h-screen text-black font-sans pb-12 print:pb-0">
       <style type="text/css">
         {`
           @media print {
@@ -376,54 +376,108 @@ export default function ReportPrint() {
               counter-increment: page;
               content: "Página " counter(page);
             }
+            .avoid-break {
+              page-break-inside: avoid;
+              break-inside: avoid;
+            }
+            .break-before-page {
+              page-break-before: always;
+              break-before: page;
+            }
+            .break-after-page {
+              page-break-after: always;
+              break-after: page;
+            }
           }
         `}
       </style>
       {/* Action Bar - Hidden on print */}
-      <div className="print:hidden bg-slate-100 p-4 flex justify-between items-center fixed top-0 w-full shadow-sm z-50 border-b">
+      <div className="print:hidden bg-white p-4 flex justify-between items-center fixed top-0 w-full shadow-md z-50 border-b border-slate-200">
         <Button variant="outline" onClick={() => navigate(-1)}>
           <ArrowLeft className="mr-2 h-4 w-4" /> Voltar
         </Button>
-        <Button onClick={() => window.print()} className="bg-blue-600 hover:bg-blue-700 text-white">
-          <Printer className="mr-2 h-4 w-4" /> Imprimir / Salvar PDF
+        <Button
+          onClick={() => window.print()}
+          className="bg-blue-700 hover:bg-blue-800 text-white shadow-sm"
+        >
+          <Printer className="mr-2 h-4 w-4" /> Imprimir / PDF
         </Button>
       </div>
 
+      {/* Cover Page */}
+      <div className="relative w-full min-h-[297mm] max-w-[210mm] mx-auto bg-slate-900 flex flex-col justify-center items-center break-after-page print:h-screen print:max-w-none shadow-xl print:shadow-none mb-8 print:mb-0 mt-24 print:mt-0 overflow-hidden print:overflow-visible">
+        <div className="absolute inset-0 z-0">
+          <img
+            src="https://img.usecurling.com/p/800/1130?q=electrical%20substation&color=blue"
+            alt="Cover Background"
+            className="w-full h-full object-cover opacity-20 mix-blend-overlay"
+          />
+        </div>
+        <div className="z-10 flex flex-col items-center justify-center p-8 sm:p-12 text-center w-full">
+          <div className="bg-white p-10 sm:p-14 rounded-xl shadow-2xl flex flex-col items-center w-full max-w-2xl border-t-[16px] border-blue-900 relative">
+            <div className="flex items-center justify-center h-32 mb-10 w-full">
+              <img
+                src="/logotransparente-c06b6.png"
+                alt="Eletroteste Logo"
+                className="max-h-full max-w-[80%] object-contain"
+              />
+            </div>
+            <h1 className="text-3xl sm:text-4xl font-extrabold text-slate-900 uppercase leading-snug tracking-tight text-center">
+              LAUDO TÉCNICO DE MANUTENÇÃO PREVENTIVA EM CABINE PRIMÁRIA
+            </h1>
+            <div className="w-24 h-1.5 bg-blue-700 my-10 rounded-full"></div>
+
+            <div className="w-full text-left space-y-6 bg-slate-50 p-8 rounded-lg border border-slate-200">
+              <div>
+                <p className="text-sm font-bold text-slate-500 uppercase tracking-widest mb-1.5">
+                  Cliente
+                </p>
+                <p className="text-2xl font-bold text-slate-800">{cliente.nome_empresa || 'N/A'}</p>
+              </div>
+              <div>
+                <p className="text-sm font-bold text-slate-500 uppercase tracking-widest mb-1.5">
+                  Relatório Nº
+                </p>
+                <p className="text-xl font-bold text-slate-800">{report.numero_relatorio}</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
       {/* Document Container */}
-      <div className="pt-24 px-8 pb-8 max-w-[210mm] mx-auto text-sm print:max-w-none print:pt-0 print:px-12 print:pb-0 font-sans">
+      <div className="px-8 pb-8 max-w-[210mm] mx-auto text-sm print:max-w-none print:pt-0 print:px-12 print:pb-0 font-sans bg-white shadow-xl print:shadow-none">
         <table className="w-full">
           <thead className="table-header-group">
             <tr>
               <td>
                 {/* Technical Header (Carimbo) */}
-                <div className="print:mt-4 border-t-[6px] border-blue-900 pb-2 mb-3">
+                <div className="print:mt-4 border-t-[6px] border-blue-900 pb-2 mb-4">
                   <table className="w-full border-collapse border border-slate-800 mt-2 text-sm bg-white">
                     <tbody>
                       <tr>
-                        <td className="border border-slate-800 w-1/4 p-2 text-center align-middle">
+                        <td className="border border-slate-800 w-[25%] p-3 text-center align-middle h-24">
                           <img
                             src="/logotransparente-c06b6.png"
                             alt="Eletroteste Logo"
-                            className="h-12 w-auto mx-auto object-contain"
+                            className="max-h-16 w-auto mx-auto object-contain"
                           />
                         </td>
-                        <td className="border border-slate-800 w-2/4 p-2 text-center align-middle">
-                          <div className="font-bold text-base text-slate-900 uppercase">
+                        <td className="border border-slate-800 w-[50%] p-3 text-center align-middle">
+                          <div className="font-extrabold text-base text-slate-900 uppercase tracking-tight">
                             LAUDO TÉCNICO DE MANUTENÇÃO PREVENTIVA EM CABINE PRIMÁRIA
                           </div>
-                          <div className="text-xs text-slate-700 mt-1 font-medium">
+                          <div className="text-xs text-slate-600 mt-1.5 font-semibold">
                             Normas de Referência: NBR 14039 / NBR 5410
                           </div>
                         </td>
-                        <td className="border border-slate-800 w-1/4 p-2 align-middle text-xs text-slate-800">
-                          <div className="mb-2">
-                            <strong className="text-slate-600 block">Relatório Nº:</strong>
-                            <span className="font-bold text-sm">{report.numero_relatorio}</span>
-                          </div>
-                          <div>
-                            <strong className="text-slate-600 block">Data:</strong>
-                            <span className="font-medium">{formatDate(report.data_execucao)}</span>
-                          </div>
+                        <td className="border border-slate-800 w-[25%] p-4 align-middle text-sm text-slate-800 text-center bg-slate-50">
+                          <strong className="text-slate-500 block text-[10px] uppercase tracking-widest mb-1">
+                            Relatório Nº
+                          </strong>
+                          <span className="font-bold text-lg text-blue-900 leading-none">
+                            {report.numero_relatorio}
+                          </span>
                         </td>
                       </tr>
                     </tbody>
@@ -549,10 +603,10 @@ export default function ReportPrint() {
                 {equipments.map((eq: any, i: number) => (
                   <div
                     key={eq.id}
-                    className="mb-6 break-before-page border border-slate-400 bg-white"
+                    className="mb-4 break-before-page border border-slate-400 bg-white"
                   >
-                    <div className="bg-slate-200 text-slate-900 p-2 font-bold text-sm border-b border-slate-400">
-                      {i + 1}. EQUIPAMENTO: {eq.tipo_equipamento.toUpperCase()}
+                    <div className="bg-slate-200 text-slate-900 p-2 font-bold text-sm border-b border-slate-400 uppercase tracking-wide">
+                      {i + 1}. EQUIPAMENTO: {eq.tipo_equipamento}
                     </div>
 
                     <div className="p-3 space-y-3">
@@ -567,7 +621,6 @@ export default function ReportPrint() {
                               const fields = getEquipmentFields(eq.tipo_equipamento)
                               const mappedKeys = new Set<string>()
 
-                              // 1. Order and filter standard fields mapping configuration
                               const orderedData = fields
                                 .filter((f) => {
                                   if (f.dependsOn) {
@@ -586,7 +639,6 @@ export default function ReportPrint() {
                                   }
                                 })
 
-                              // 2. Fallback to add any remaining filled fields that aren't mapped
                               const unmappedData = Object.entries(eq.dados_tecnicos)
                                 .filter(
                                   ([k, val]) =>
@@ -758,9 +810,26 @@ export default function ReportPrint() {
 
                       {/* Photos */}
                       {eq.fotos && eq.fotos.length > 0 && (
-                        <div className="avoid-break break-before-page pt-4">
-                          <div className="font-bold text-slate-800 mb-3 border-b border-slate-200 pb-1 text-xs uppercase tracking-wider">
-                            Registro Fotográfico
+                        <div className="avoid-break pt-4 mt-4 border-t border-slate-200">
+                          <div className="font-bold text-slate-800 mb-3 pb-1 text-sm uppercase tracking-wider flex flex-col">
+                            <span>
+                              Registro Fotográfico:{' '}
+                              <span className="font-extrabold text-blue-900">
+                                {eq.tipo_equipamento}
+                              </span>
+                            </span>
+                            <span className="text-[11px] text-slate-500 font-semibold mt-1 normal-case tracking-normal">
+                              Subestação:{' '}
+                              <span className="text-slate-800">
+                                {eq.dados_tecnicos?.subestacao || 'N/A'}
+                              </span>{' '}
+                              &nbsp;|&nbsp; Nº:{' '}
+                              <span className="text-slate-800">
+                                {eq.dados_tecnicos?.numero ||
+                                  eq.dados_tecnicos?.identificacao ||
+                                  'N/A'}
+                              </span>
+                            </span>
                           </div>
                           <div className="grid grid-cols-2 gap-4">
                             {eq.fotos.map((foto: string) => (
@@ -768,7 +837,7 @@ export default function ReportPrint() {
                                 key={foto}
                                 src={pb.files.getURL(eq, foto)}
                                 alt="Equipamento"
-                                className="w-full h-48 object-cover border border-slate-300 rounded shadow-sm avoid-break"
+                                className="w-full h-56 object-contain border border-slate-300 rounded shadow-sm avoid-break bg-slate-50 p-1"
                               />
                             ))}
                           </div>
@@ -780,17 +849,17 @@ export default function ReportPrint() {
 
                 {/* General Photos (Estrutura) */}
                 {report.fotos_estrutura && report.fotos_estrutura.length > 0 && (
-                  <div className="mb-6 break-before-page avoid-break">
+                  <div className="mb-6 break-before-page avoid-break border border-slate-400 bg-white">
                     <div className="bg-slate-800 text-white p-2 font-bold mb-3 uppercase text-xs tracking-wider">
                       Fotos Gerais / Estrutura
                     </div>
-                    <div className="grid grid-cols-2 gap-4">
+                    <div className="grid grid-cols-2 gap-4 p-3">
                       {report.fotos_estrutura.map((foto: string) => (
                         <img
                           key={foto}
                           src={pb.files.getURL(report, foto)}
                           alt="Estrutura"
-                          className="w-full h-64 object-cover border border-slate-300 rounded shadow-sm avoid-break"
+                          className="w-full h-64 object-contain border border-slate-300 rounded shadow-sm avoid-break bg-slate-50 p-1"
                         />
                       ))}
                     </div>
@@ -799,7 +868,7 @@ export default function ReportPrint() {
 
                 {/* Conclusion */}
                 {(report.parecer_geral || report.observacoes) && (
-                  <div className="mb-6 avoid-break border-2 border-slate-800 rounded-sm">
+                  <div className="mb-4 avoid-break border-2 border-slate-800 rounded-sm mt-6">
                     <div className="bg-slate-800 text-white p-2 font-bold text-sm tracking-wide text-center uppercase">
                       Conclusão Geral e Parecer Técnico
                     </div>
