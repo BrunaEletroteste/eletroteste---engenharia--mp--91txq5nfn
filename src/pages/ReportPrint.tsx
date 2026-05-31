@@ -612,235 +612,266 @@ export default function ReportPrint() {
                 </div>
 
                 {/* Equipments Body */}
-                {equipments.map((eq: any, i: number) => (
-                  <div
-                    key={eq.id}
-                    className="mb-8 break-before-page border border-slate-400 bg-white text-[12px]"
-                  >
-                    <div className="bg-slate-200 text-slate-900 p-3 font-semibold text-[14px] border-b border-slate-400 uppercase tracking-wide">
-                      {i + 1}. EQUIPAMENTO: {eq.tipo_equipamento}
-                    </div>
+                {equipments.map((eq: any, i: number) => {
+                  const isTransformador = eq.tipo_equipamento === 'Transformador'
+                  const containerSpace = isTransformador ? 'space-y-3' : 'space-y-6'
+                  const sectionMargin = isTransformador ? 'mt-4' : 'mt-8'
+                  const textSize = isTransformador ? 'text-[11px]' : 'text-[12px]'
+                  const tablePadding = isTransformador ? 'p-1.5' : 'p-3'
 
-                    <div className="p-4 space-y-6">
-                      {/* Technical Data */}
-                      {eq.dados_tecnicos && Object.keys(eq.dados_tecnicos).length > 0 && (
-                        <div>
-                          <div className="font-semibold text-slate-800 mb-3 border-b border-slate-200 pb-1 text-[13px] uppercase tracking-wider">
-                            Características Técnicas
-                          </div>
-                          <div className="grid grid-cols-3 gap-x-4 gap-y-2">
-                            {(() => {
-                              const fields = getEquipmentFields(eq.tipo_equipamento)
-                              const mappedKeys = new Set<string>()
+                  return (
+                    <div
+                      key={eq.id}
+                      className="mb-8 break-before-page border border-slate-400 bg-white text-[12px]"
+                    >
+                      <div className="bg-slate-200 text-slate-900 p-3 font-semibold text-[14px] border-b border-slate-400 uppercase tracking-wide">
+                        {i + 1}. EQUIPAMENTO: {eq.tipo_equipamento}
+                      </div>
 
-                              const orderedData = fields
-                                .filter((f) => {
-                                  if (f.dependsOn) {
-                                    const depVal = eq.dados_tecnicos[f.dependsOn.field]
-                                    if (depVal !== f.dependsOn.value) return false
-                                  }
-                                  const val = eq.dados_tecnicos[f.name]
-                                  return val !== undefined && val !== null && val !== ''
-                                })
-                                .map((f) => {
-                                  mappedKeys.add(f.name)
-                                  return {
-                                    key: f.name,
-                                    label: f.label,
-                                    value: eq.dados_tecnicos[f.name],
-                                  }
-                                })
+                      <div className={`p-4 ${containerSpace}`}>
+                        {/* Technical Data */}
+                        {eq.dados_tecnicos && Object.keys(eq.dados_tecnicos).length > 0 && (
+                          <div>
+                            <div className="font-semibold text-slate-800 mb-2 border-b border-slate-200 pb-1 text-[13px] uppercase tracking-wider">
+                              Características Técnicas
+                            </div>
+                            <div
+                              className={`grid grid-cols-3 gap-x-4 ${isTransformador ? 'gap-y-1' : 'gap-y-2'}`}
+                            >
+                              {(() => {
+                                const fields = getEquipmentFields(eq.tipo_equipamento)
+                                const mappedKeys = new Set<string>()
 
-                              const unmappedData = Object.entries(eq.dados_tecnicos)
-                                .filter(
-                                  ([k, val]) =>
-                                    !mappedKeys.has(k) &&
-                                    val !== undefined &&
-                                    val !== null &&
-                                    val !== '',
-                                )
-                                .map(([k, val]) => ({
-                                  key: k,
-                                  label: getLabel(k, eq.tipo_equipamento),
-                                  value: val,
-                                }))
+                                const orderedData = fields
+                                  .filter((f) => {
+                                    if (f.dependsOn) {
+                                      const depVal = eq.dados_tecnicos[f.dependsOn.field]
+                                      if (depVal !== f.dependsOn.value) return false
+                                    }
+                                    const val = eq.dados_tecnicos[f.name]
+                                    return val !== undefined && val !== null && val !== ''
+                                  })
+                                  .map((f) => {
+                                    mappedKeys.add(f.name)
+                                    return {
+                                      key: f.name,
+                                      label: f.label,
+                                      value: eq.dados_tecnicos[f.name],
+                                    }
+                                  })
 
-                              const allData = [...orderedData, ...unmappedData]
+                                const unmappedData = Object.entries(eq.dados_tecnicos)
+                                  .filter(
+                                    ([k, val]) =>
+                                      !mappedKeys.has(k) &&
+                                      val !== undefined &&
+                                      val !== null &&
+                                      val !== '',
+                                  )
+                                  .map(([k, val]) => ({
+                                    key: k,
+                                    label: getLabel(k, eq.tipo_equipamento),
+                                    value: val,
+                                  }))
 
-                              if (allData.length === 0) {
-                                return (
-                                  <div className="text-[12px] text-slate-500 italic col-span-3">
-                                    Nenhuma característica preenchida.
-                                  </div>
-                                )
-                              }
+                                const allData = [...orderedData, ...unmappedData]
 
-                              return allData.map(({ key, label, value }) => (
-                                <div
-                                  key={key}
-                                  className="flex items-baseline text-[12px] border-b border-slate-100 pb-1"
-                                >
-                                  <span className="font-medium text-slate-600 whitespace-nowrap pr-2 leading-tight">
-                                    {label}:
-                                  </span>
-                                  <span className="text-slate-900 break-words leading-tight">
-                                    {typeof value === 'boolean'
-                                      ? value
-                                        ? 'Sim'
-                                        : 'Não'
-                                      : String(value)}
-                                  </span>
-                                </div>
-                              ))
-                            })()}
-                          </div>
-                        </div>
-                      )}
-
-                      {/* Tests */}
-                      {eq.testes && eq.testes.length > 0 && (
-                        <div className="mt-8">
-                          <div className="font-semibold text-slate-800 mb-3 border-b border-slate-200 pb-1 text-[13px] uppercase tracking-wider">
-                            Resultados dos Testes
-                          </div>
-                          <div className="border border-slate-200 rounded overflow-hidden">
-                            <table className="w-full text-[12px] border-collapse">
-                              <thead className="bg-slate-50 border-b border-slate-200">
-                                <tr>
-                                  <th className="p-3 text-left text-slate-700 font-medium w-[15%] border-r border-slate-200 whitespace-nowrap">
-                                    Data
-                                  </th>
-                                  <th className="p-3 text-left text-slate-700 font-medium w-[30%] border-r border-slate-200 whitespace-nowrap">
-                                    Teste Realizado
-                                  </th>
-                                  <th className="p-3 text-left text-slate-700 font-medium w-[55%]">
-                                    Resultados
-                                  </th>
-                                </tr>
-                              </thead>
-                              <tbody>
-                                {eq.testes.map((t: any, index: number) => {
-                                  const resultsArray = formatTestValue(t, eq.tipo_equipamento)
-                                  const resultsStr =
-                                    resultsArray
-                                      .map((s) => s.trim())
-                                      .filter(Boolean)
-                                      .join(' | ') + (t.unidade ? ` ${t.unidade}` : '')
-                                  const hasObservacao = !!t.observacoes
-
+                                if (allData.length === 0) {
                                   return (
-                                    <Fragment key={t.id}>
-                                      <tr
-                                        className={`avoid-break ${index > 0 ? 'border-t border-slate-200' : ''}`}
-                                      >
-                                        <td className="p-3 align-top border-r border-slate-200 font-medium whitespace-nowrap text-slate-900">
-                                          {formatDate(t.data_teste)}
-                                        </td>
-                                        <td className="p-3 align-top border-r border-slate-200 whitespace-nowrap text-slate-900">
-                                          {t.tipo_teste}
-                                        </td>
-                                        <td className="p-3 align-top text-blue-900 font-semibold whitespace-pre-wrap">
-                                          {resultsStr}
-                                        </td>
-                                      </tr>
-                                      <tr className="avoid-break bg-slate-50/50 border-t border-slate-200">
-                                        <td colSpan={3} className="px-3 py-2 text-slate-600">
-                                          <span className="font-medium">
-                                            Equipamento Utilizado:
-                                          </span>{' '}
-                                          {t.equipamento_utilizado}
-                                        </td>
-                                      </tr>
-                                      {hasObservacao && (
-                                        <tr className="avoid-break bg-yellow-50/50 border-t border-slate-200">
+                                    <div className="text-[12px] text-slate-500 italic col-span-3">
+                                      Nenhuma característica preenchida.
+                                    </div>
+                                  )
+                                }
+
+                                return allData.map(({ key, label, value }) => (
+                                  <div
+                                    key={key}
+                                    className={`flex items-baseline ${textSize} border-b border-slate-100 pb-1`}
+                                  >
+                                    <span className="font-medium text-slate-600 whitespace-nowrap pr-2 leading-tight">
+                                      {label}:
+                                    </span>
+                                    <span className="text-slate-900 break-words leading-tight">
+                                      {typeof value === 'boolean'
+                                        ? value
+                                          ? 'Sim'
+                                          : 'Não'
+                                        : String(value)}
+                                    </span>
+                                  </div>
+                                ))
+                              })()}
+                            </div>
+                          </div>
+                        )}
+
+                        {/* Tests */}
+                        {eq.testes && eq.testes.length > 0 && (
+                          <div className={sectionMargin}>
+                            <div className="font-semibold text-slate-800 mb-2 border-b border-slate-200 pb-1 text-[13px] uppercase tracking-wider">
+                              Resultados dos Testes
+                            </div>
+                            <div className="border border-slate-200 rounded overflow-hidden">
+                              <table className={`w-full ${textSize} border-collapse`}>
+                                <thead className="bg-slate-50 border-b border-slate-200">
+                                  <tr>
+                                    <th
+                                      className={`${tablePadding} text-left text-slate-700 font-medium w-[15%] border-r border-slate-200 whitespace-nowrap`}
+                                    >
+                                      Data
+                                    </th>
+                                    <th
+                                      className={`${tablePadding} text-left text-slate-700 font-medium w-[30%] border-r border-slate-200 whitespace-nowrap`}
+                                    >
+                                      Teste Realizado
+                                    </th>
+                                    <th
+                                      className={`${tablePadding} text-left text-slate-700 font-medium w-[55%]`}
+                                    >
+                                      Resultados
+                                    </th>
+                                  </tr>
+                                </thead>
+                                <tbody>
+                                  {eq.testes.map((t: any, index: number) => {
+                                    const resultsArray = formatTestValue(t, eq.tipo_equipamento)
+                                    const resultsStr =
+                                      resultsArray
+                                        .map((s) => s.trim())
+                                        .filter(Boolean)
+                                        .join(' | ') + (t.unidade ? ` ${t.unidade}` : '')
+                                    const hasObservacao = !!t.observacoes
+
+                                    return (
+                                      <Fragment key={t.id}>
+                                        <tr
+                                          className={`avoid-break ${index > 0 ? 'border-t border-slate-200' : ''}`}
+                                        >
                                           <td
-                                            colSpan={3}
-                                            className="px-3 py-2 text-slate-700 italic"
+                                            className={`${tablePadding} align-top border-r border-slate-200 font-medium whitespace-nowrap text-slate-900`}
                                           >
-                                            <span className="font-medium not-italic">
-                                              Observações:
-                                            </span>{' '}
-                                            <span className="whitespace-pre-wrap">
-                                              {t.observacoes}
-                                            </span>
+                                            {formatDate(t.data_teste)}
+                                          </td>
+                                          <td
+                                            className={`${tablePadding} align-top border-r border-slate-200 whitespace-nowrap text-slate-900`}
+                                          >
+                                            {t.tipo_teste}
+                                          </td>
+                                          <td
+                                            className={`${tablePadding} align-top text-blue-900 font-semibold whitespace-pre-wrap`}
+                                          >
+                                            {resultsStr}
                                           </td>
                                         </tr>
-                                      )}
-                                    </Fragment>
-                                  )
-                                })}
-                              </tbody>
-                            </table>
-                          </div>
-                        </div>
-                      )}
-
-                      {/* Technical Opinion */}
-                      {eq.parecer && (
-                        <div className="mt-8">
-                          <div className="font-semibold text-slate-800 mb-3 border-b border-slate-200 pb-1 text-[13px] uppercase tracking-wider">
-                            Parecer Técnico Específico
-                          </div>
-                          <div className="border-l-4 border-slate-400 pl-4 py-3 bg-slate-50 space-y-2">
-                            <div className="flex items-center gap-2 mb-2 text-[12px]">
-                              <span className="font-medium text-slate-700">Status:</span>
-                              <span
-                                className={`font-semibold uppercase px-2 py-1 rounded text-[12px] ${
-                                  eq.parecer.parecer === 'Conforme'
-                                    ? 'bg-green-100 text-green-800'
-                                    : eq.parecer.parecer === 'Não Conforme'
-                                      ? 'bg-red-100 text-red-800'
-                                      : 'bg-amber-100 text-amber-800'
-                                }`}
-                              >
-                                {eq.parecer.parecer}
-                              </span>
+                                        <tr className="avoid-break bg-slate-50/50 border-t border-slate-200">
+                                          <td
+                                            colSpan={3}
+                                            className={`${isTransformador ? 'px-1.5 py-1' : 'px-3 py-2'} text-slate-600`}
+                                          >
+                                            <span className="font-medium">
+                                              Equipamento Utilizado:
+                                            </span>{' '}
+                                            {t.equipamento_utilizado}
+                                          </td>
+                                        </tr>
+                                        {hasObservacao && (
+                                          <tr className="avoid-break bg-yellow-50/50 border-t border-slate-200">
+                                            <td
+                                              colSpan={3}
+                                              className={`${isTransformador ? 'px-1.5 py-1' : 'px-3 py-2'} text-slate-700 italic`}
+                                            >
+                                              <span className="font-medium not-italic">
+                                                Observações:
+                                              </span>{' '}
+                                              <span className="whitespace-pre-wrap">
+                                                {t.observacoes}
+                                              </span>
+                                            </td>
+                                          </tr>
+                                        )}
+                                      </Fragment>
+                                    )
+                                  })}
+                                </tbody>
+                              </table>
                             </div>
-                            {eq.parecer.justificativa_mudanca && (
-                              <div className="text-[12px]">
-                                <span className="font-medium text-slate-700 block mb-1">
-                                  Justificativa da Mudança:
-                                </span>
-                                <span className="text-slate-900 block bg-white p-2 border border-slate-200 rounded">
-                                  {eq.parecer.justificativa_mudanca}
-                                </span>
-                              </div>
-                            )}
-                            {eq.parecer.observacoes && (
-                              <div className="text-[12px]">
-                                <span className="font-medium text-slate-700 block mb-1">
-                                  Observações:
-                                </span>
-                                <span className="text-slate-900 block whitespace-pre-wrap bg-white p-2 border border-slate-200 rounded">
-                                  {eq.parecer.observacoes}
-                                </span>
-                              </div>
-                            )}
                           </div>
-                        </div>
-                      )}
+                        )}
 
-                      {/* Photos */}
-                      {eq.fotos && eq.fotos.length > 0 && (
-                        <div className="avoid-break mt-8">
-                          <div className="font-semibold text-slate-800 mb-3 border-b border-slate-200 pb-1 text-[13px] uppercase tracking-wider">
-                            REGISTRO FOTOGRÁFICO
+                        {/* Technical Opinion */}
+                        {eq.parecer && (
+                          <div className={sectionMargin}>
+                            <div className="font-semibold text-slate-800 mb-2 border-b border-slate-200 pb-1 text-[13px] uppercase tracking-wider">
+                              Parecer Técnico Específico
+                            </div>
+                            <div
+                              className={`border-l-4 border-slate-400 pl-4 py-2 bg-slate-50 ${isTransformador ? 'space-y-1' : 'space-y-2'}`}
+                            >
+                              <div className={`flex items-center gap-2 mb-2 ${textSize}`}>
+                                <span className="font-medium text-slate-700">Status:</span>
+                                <span
+                                  className={`font-semibold uppercase px-2 py-1 rounded ${textSize} ${
+                                    eq.parecer.parecer === 'Conforme'
+                                      ? 'bg-green-100 text-green-800'
+                                      : eq.parecer.parecer === 'Não Conforme'
+                                        ? 'bg-red-100 text-red-800'
+                                        : 'bg-amber-100 text-amber-800'
+                                  }`}
+                                >
+                                  {eq.parecer.parecer}
+                                </span>
+                              </div>
+                              {eq.parecer.justificativa_mudanca && (
+                                <div className={textSize}>
+                                  <span className="font-medium text-slate-700 block mb-0.5">
+                                    Justificativa da Mudança:
+                                  </span>
+                                  <span
+                                    className={`text-slate-900 block bg-white ${isTransformador ? 'p-1.5' : 'p-2'} border border-slate-200 rounded`}
+                                  >
+                                    {eq.parecer.justificativa_mudanca}
+                                  </span>
+                                </div>
+                              )}
+                              {eq.parecer.observacoes && (
+                                <div className={textSize}>
+                                  <span className="font-medium text-slate-700 block mb-0.5">
+                                    Observações:
+                                  </span>
+                                  <span
+                                    className={`text-slate-900 block whitespace-pre-wrap bg-white ${isTransformador ? 'p-1.5' : 'p-2'} border border-slate-200 rounded`}
+                                  >
+                                    {eq.parecer.observacoes}
+                                  </span>
+                                </div>
+                              )}
+                            </div>
                           </div>
-                          <div className="grid grid-cols-2 gap-6">
-                            {eq.fotos.map((foto: string) => (
-                              <img
-                                key={foto}
-                                src={pb.files.getURL(eq, foto)}
-                                alt="Equipamento"
-                                className="w-full h-64 object-contain border border-slate-300 rounded shadow-sm avoid-break bg-slate-50 p-2"
-                              />
-                            ))}
+                        )}
+
+                        {/* Photos */}
+                        {eq.fotos && eq.fotos.length > 0 && (
+                          <div className={`avoid-break ${sectionMargin}`}>
+                            <div className="font-semibold text-slate-800 mb-2 border-b border-slate-200 pb-1 text-[13px] uppercase tracking-wider">
+                              REGISTRO FOTOGRÁFICO
+                            </div>
+                            <div className="grid grid-cols-2 gap-4">
+                              {eq.fotos.map((foto: string) => (
+                                <img
+                                  key={foto}
+                                  src={pb.files.getURL(eq, foto)}
+                                  alt="Equipamento"
+                                  className="w-full h-64 object-contain border border-slate-300 rounded shadow-sm avoid-break bg-slate-50 p-2"
+                                />
+                              ))}
+                            </div>
                           </div>
-                        </div>
-                      )}
+                        )}
+                      </div>
                     </div>
-                  </div>
-                ))}
+                  )
+                })}
 
                 {/* General Photos (Estrutura) */}
                 {report.fotos_estrutura && report.fotos_estrutura.length > 0 && (
