@@ -4,6 +4,7 @@ import { Printer, ArrowLeft, Loader2 } from 'lucide-react'
 import pb from '@/lib/pocketbase/client'
 import { Button } from '@/components/ui/button'
 import { getEquipmentFields } from '@/lib/equipment-templates'
+import logoImg from '@/assets/logotransparente-c06b6.png'
 
 const labelMap: Record<string, string> = {
   observacoes: 'Observações',
@@ -382,42 +383,38 @@ export default function ReportPrint() {
       </div>
 
       {/* Cover Page */}
-      <div className="relative w-full aspect-[210/297] max-w-[210mm] mx-auto bg-slate-900 flex flex-col justify-end break-after-page print:aspect-auto print:h-[277mm] print:max-w-none shadow-xl print:shadow-none mb-8 print:mb-0 mt-24 print:mt-0 overflow-hidden">
+      <div className="relative w-full aspect-[210/297] max-w-[210mm] mx-auto bg-slate-900 flex flex-col justify-end break-after-page print:aspect-auto print:h-[297mm] print:max-w-none shadow-xl print:shadow-none mb-8 print:mb-0 mt-24 print:mt-0 overflow-hidden box-border">
         <div className="absolute inset-0 z-0">
           <img
-            src="https://img.usecurling.com/p/800/1130?q=electrical%20engineering&color=blue&dpr=2"
+            src="https://img.usecurling.com/p/800/1130?q=high-voltage%20substation&color=blue&dpr=2"
             alt="Cover Background"
-            className="w-full h-full object-cover opacity-25 mix-blend-overlay"
+            className="w-full h-full object-cover opacity-50 mix-blend-overlay"
           />
         </div>
-        <div className="z-10 flex flex-col items-start justify-end p-8 sm:p-12 w-full h-full pb-16">
-          <div className="bg-white/95 backdrop-blur-sm p-6 sm:p-8 rounded-xl shadow-2xl flex flex-col items-start w-full max-w-xl border-l-[10px] border-blue-900 relative">
-            <div className="flex items-center justify-start h-16 mb-6 w-full">
-              <img
-                src="/logotransparente-c06b6.png"
-                alt="Eletroteste Logo"
-                className="max-h-full object-contain"
-              />
+        <div className="z-10 flex flex-col items-start justify-end p-6 sm:p-10 w-full h-full pb-10">
+          <div className="bg-white/95 backdrop-blur-sm p-5 sm:p-6 rounded-xl shadow-2xl flex flex-col items-start w-full max-w-xl border-l-[10px] border-blue-900 relative">
+            <div className="flex items-center justify-start h-14 mb-4 w-full">
+              <img src={logoImg} alt="Eletroteste Logo" className="max-h-full object-contain" />
             </div>
-            <h1 className="text-xl sm:text-2xl font-extrabold text-slate-900 uppercase leading-snug tracking-tight text-left">
+            <h1 className="text-lg sm:text-xl font-extrabold text-slate-900 uppercase leading-snug tracking-tight text-left">
               LAUDO TÉCNICO DE MANUTENÇÃO PREVENTIVA EM CABINE PRIMÁRIA
             </h1>
-            <div className="w-12 h-1 bg-blue-700 my-6 rounded-full"></div>
+            <div className="w-12 h-1 bg-blue-700 my-4 rounded-full"></div>
 
-            <div className="w-full text-left space-y-4">
+            <div className="w-full text-left space-y-3">
               <div>
-                <p className="text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-1">
+                <p className="text-[18px] font-bold text-slate-500 uppercase tracking-widest mb-1 leading-none">
                   Cliente
                 </p>
-                <p className="text-[18px] font-bold text-slate-800 leading-none">
+                <p className="text-[18px] font-bold text-slate-800 leading-none mt-1">
                   {cliente.nome_empresa || 'N/A'}
                 </p>
               </div>
               <div>
-                <p className="text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-1">
+                <p className="text-[18px] font-bold text-slate-500 uppercase tracking-widest mb-1 leading-none">
                   Relatório Nº
                 </p>
-                <p className="text-[18px] font-bold text-slate-800 leading-none">
+                <p className="text-[18px] font-bold text-slate-800 leading-none mt-1">
                   {report.numero_relatorio}
                 </p>
               </div>
@@ -440,7 +437,7 @@ export default function ReportPrint() {
                         <td className="border border-slate-800 w-[25%] p-3 align-middle text-center">
                           <div className="flex items-center justify-center h-full min-h-[4rem]">
                             <img
-                              src="/logotransparente-c06b6.png"
+                              src={logoImg}
                               alt="Eletroteste Logo"
                               className="max-h-12 w-auto object-contain"
                             />
@@ -670,7 +667,7 @@ export default function ReportPrint() {
 
                       {/* Tests */}
                       {eq.testes && eq.testes.length > 0 && (
-                        <div className="mt-6">
+                        <div className="mt-10">
                           <div className="font-bold text-slate-800 mb-2 border-b border-slate-200 pb-1 text-xs uppercase tracking-wider">
                             Resultados dos Testes
                           </div>
@@ -748,7 +745,7 @@ export default function ReportPrint() {
 
                       {/* Technical Opinion */}
                       {eq.parecer && (
-                        <div className="mt-6">
+                        <div className="mt-10">
                           <div className="font-bold text-slate-800 mb-2 border-b border-slate-200 pb-1 text-xs uppercase tracking-wider">
                             Parecer Técnico Específico
                           </div>
@@ -793,7 +790,7 @@ export default function ReportPrint() {
 
                       {/* Photos */}
                       {eq.fotos && eq.fotos.length > 0 && (
-                        <div className="avoid-break mt-6">
+                        <div className="avoid-break mt-10">
                           <div className="font-bold text-slate-800 mb-2 border-b border-slate-200 pb-1 text-xs uppercase tracking-wider">
                             REGISTRO FOTOGRÁFICO
                           </div>
@@ -834,7 +831,7 @@ export default function ReportPrint() {
 
                 {/* Conclusion */}
                 {(report.parecer_geral || report.observacoes) && (
-                  <div className="mb-4 avoid-break border-2 border-slate-800 rounded-sm mt-6">
+                  <div className="mb-4 avoid-break border-2 border-slate-800 rounded-sm mt-10">
                     <div className="bg-slate-800 text-white p-2 font-bold text-sm tracking-wide text-center uppercase">
                       Conclusão Geral e Parecer Técnico
                     </div>
