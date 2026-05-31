@@ -395,6 +395,8 @@ export default function ReportPrint() {
           style={{
             backgroundImage:
               "url(\"data:image/svg+xml,%3Csvg width='40' height='40' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M0 0h40v40H0z' fill='none'/%3E%3Cpath d='M0 39.5h40M39.5 0v40' stroke='%23cbd5e1' stroke-width='1'/%3E%3C/svg%3E\")",
+            WebkitMaskImage: 'linear-gradient(to bottom, black 0%, transparent 35%)',
+            maskImage: 'linear-gradient(to bottom, black 0%, transparent 35%)',
           }}
         ></div>
 
@@ -418,18 +420,20 @@ export default function ReportPrint() {
 
           <div className="w-full text-center space-y-8 mt-8">
             <div>
-              <p className="font-medium text-slate-500 uppercase tracking-widest mb-2 leading-none">
+              <p className="text-[16px] font-medium text-slate-500 uppercase tracking-widest mb-2 leading-none">
                 Cliente
               </p>
-              <p className="font-semibold text-slate-800 leading-none">
+              <p className="text-[16px] font-semibold text-slate-800 leading-none">
                 {cliente.nome_empresa || 'N/A'}
               </p>
             </div>
             <div>
-              <p className="font-medium text-slate-500 uppercase tracking-widest mb-2 leading-none mt-6">
+              <p className="text-[16px] font-medium text-slate-500 uppercase tracking-widest mb-2 leading-none mt-6">
                 Relatório Nº
               </p>
-              <p className="font-semibold text-slate-800 leading-none">{report.numero_relatorio}</p>
+              <p className="text-[16px] font-semibold text-slate-800 leading-none">
+                {report.numero_relatorio}
+              </p>
             </div>
           </div>
         </div>
@@ -456,8 +460,9 @@ export default function ReportPrint() {
                           </div>
                         </td>
                         <td className="border border-slate-800 w-[50%] p-3 text-center align-middle">
-                          <div className="font-semibold text-[14px] text-slate-900 uppercase tracking-tight">
-                            LAUDO TÉCNICO DE MANUTENÇÃO PREVENTIVA EM CABINE PRIMÁRIA
+                          <div className="font-semibold text-[14px] text-slate-900 uppercase tracking-tight leading-snug">
+                            <div>LAUDO TÉCNICO DE MANUTENÇÃO</div>
+                            <div>PREVENTIVA EM CABINE PRIMÁRIA</div>
                           </div>
                           <div className="text-[12px] text-slate-600 mt-1.5 font-medium">
                             Normas de Referência: NBR 14039 / NBR 5410
@@ -612,7 +617,7 @@ export default function ReportPrint() {
                           <div className="font-semibold text-slate-800 mb-3 border-b border-slate-200 pb-1 text-[13px] uppercase tracking-wider">
                             Características Técnicas
                           </div>
-                          <div className="grid grid-cols-2 gap-x-6 gap-y-2">
+                          <div className="grid grid-cols-3 gap-x-4 gap-y-2">
                             {(() => {
                               const fields = getEquipmentFields(eq.tipo_equipamento)
                               const mappedKeys = new Set<string>()
@@ -653,7 +658,7 @@ export default function ReportPrint() {
 
                               if (allData.length === 0) {
                                 return (
-                                  <div className="text-[12px] text-slate-500 italic col-span-2">
+                                  <div className="text-[12px] text-slate-500 italic col-span-3">
                                     Nenhuma característica preenchida.
                                   </div>
                                 )
