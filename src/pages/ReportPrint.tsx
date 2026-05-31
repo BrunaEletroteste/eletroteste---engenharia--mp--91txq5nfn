@@ -186,7 +186,6 @@ export default function ReportPrint() {
     if (t.tipo_teste === 'Resistências dos Isolamentos') {
       if (tipoEquipamento === 'Condutor Elétrico') {
         const d = t.dados_detalhados || {}
-
         const calcRes = (fase: any) => {
           if (fase === undefined || fase === null) return '-'
           if (typeof fase !== 'object') return formatNum(fase)
@@ -196,12 +195,10 @@ export default function ReportPrint() {
           if (!isNaN(v1) && !isNaN(v2)) return formatNum(v1 * v2)
           return '-'
         }
-
         const a = calcRes(d.fase_a)
         const b = calcRes(d.fase_b)
         const c = calcRes(d.fase_c)
         const rVal = calcRes(d.reserva)
-
         const items = [`A: ${a}`, `B: ${b}`, `C: ${c}`]
         if (rVal !== '-') items.push(`R: ${rVal}`)
         return items
@@ -210,7 +207,6 @@ export default function ReportPrint() {
         tipoEquipamento === 'Transformador de Corrente'
       ) {
         const d = t.dados_detalhados?.fases || {}
-
         const calcRes = (fase: any) => {
           if (fase === undefined || fase === null) return '-'
           if (typeof fase !== 'object') return formatNum(fase)
@@ -220,7 +216,6 @@ export default function ReportPrint() {
           if (!isNaN(v1) && !isNaN(v2)) return formatNum(v1 * v2)
           return '-'
         }
-
         const a = calcRes(d.A)
         const b = calcRes(d.B)
         const c = calcRes(d.C)
@@ -228,7 +223,6 @@ export default function ReportPrint() {
       } else if (tipoEquipamento === 'Disjuntor') {
         const df = t.dados_detalhados?.fechado || {}
         const da = t.dados_detalhados?.aberto || {}
-
         const formatRes = (row: any) => {
           if (!row) return '-'
           if (row.resultado !== undefined) return formatNum(row.resultado)
@@ -237,16 +231,13 @@ export default function ReportPrint() {
           if (!isNaN(v1) && !isNaN(v2)) return formatNum(v1 * v2)
           return '-'
         }
-
         const f_ab = formatRes(df.ab)
         const f_bc = formatRes(df.bc)
         const f_ca = formatRes(df.ac)
         const f_massa = formatRes(df.abc_massa)
-
         const a_aa = formatRes(da.aa)
         const a_bb = formatRes(da.bb)
         const a_cc = formatRes(da.cc)
-
         const fechadoItems = [
           `A x B: ${f_ab}`,
           `B x C: ${f_bc}`,
@@ -254,14 +245,8 @@ export default function ReportPrint() {
           `Massa: ${f_massa}`,
         ]
         const abertoItems = [`A x A: ${a_aa}`, `B x B: ${a_bb}`, `C x C: ${a_cc}`]
-
-        if (subType === 'Fechado') {
-          return fechadoItems
-        }
-        if (subType === 'Aberto') {
-          return abertoItems
-        }
-
+        if (subType === 'Fechado') return fechadoItems
+        if (subType === 'Aberto') return abertoItems
         return [
           'Fechado:',
           ...fechadoItems.map((i) => `  ${i}`),
@@ -300,10 +285,8 @@ export default function ReportPrint() {
       const eti_corr = t.dados_detalhados?.eti_corr
       const calc = t.dados_detalhados?.resultados_calculados
       const tRef = t.dados_detalhados?.temperatura_referencia || 75
-
       const formatField = (val: any) =>
         val !== undefined && val !== null && val !== '' ? `${formatNum(val)}` : '-'
-
       const f_ets = [
         `H1-H3: ${formatField(ets.h1_h3)}`,
         `H2-H1: ${formatField(ets.h2_h1)}`,
@@ -314,13 +297,11 @@ export default function ReportPrint() {
         `X2-X1: ${formatField(eti.x2_x1)}`,
         `X3-X2: ${formatField(eti.x3_x2)}`,
       ]
-
       if (calc) {
         if (calc.ets_75 !== null && calc.ets_75 !== undefined)
           f_ets.push(`Média 75ºC: ${formatField(calc.ets_75)}`)
         else if (calc.ets_105 !== null && calc.ets_105 !== undefined)
           f_ets.push(`Média 105ºC: ${formatField(calc.ets_105)}`)
-
         if (calc.eti_75 !== null && calc.eti_75 !== undefined)
           f_eti.push(`Média 75ºC: ${formatField(calc.eti_75)}`)
         else if (calc.eti_105 !== null && calc.eti_105 !== undefined)
@@ -339,7 +320,6 @@ export default function ReportPrint() {
           f_eti.push(`  X3-X2: ${formatField(eti_corr.x3_x2)}`)
         }
       }
-
       if (subType === 'ETS') return f_ets
       if (subType === 'ETI') return f_eti
       return ['ETS:', ...f_ets.map((i) => `  ${i}`), 'ETI:', ...f_eti.map((i) => `  ${i}`)]
@@ -370,11 +350,8 @@ export default function ReportPrint() {
         {`
           @media print {
             body {
-              counter-reset: page;
-            }
-            .print-page-number::after {
-              counter-increment: page;
-              content: "Página " counter(page);
+              -webkit-print-color-adjust: exact;
+              print-color-adjust: exact;
             }
             .avoid-break {
               page-break-inside: avoid;
@@ -405,40 +382,40 @@ export default function ReportPrint() {
       </div>
 
       {/* Cover Page */}
-      <div className="relative w-full min-h-[297mm] max-w-[210mm] mx-auto bg-slate-900 flex flex-col justify-center items-center break-after-page print:h-screen print:max-w-none shadow-xl print:shadow-none mb-8 print:mb-0 mt-24 print:mt-0 overflow-hidden print:overflow-visible">
+      <div className="relative w-full min-h-[297mm] max-w-[210mm] mx-auto bg-slate-900 flex flex-col justify-end break-after-page print:h-screen print:max-w-none shadow-xl print:shadow-none mb-8 print:mb-0 mt-24 print:mt-0 overflow-hidden print:overflow-visible">
         <div className="absolute inset-0 z-0">
           <img
-            src="https://img.usecurling.com/p/800/1130?q=electrical%20substation&color=blue"
+            src="https://img.usecurling.com/p/800/1130?q=electrical%20engineering&color=blue&dpr=2"
             alt="Cover Background"
-            className="w-full h-full object-cover opacity-20 mix-blend-overlay"
+            className="w-full h-full object-cover opacity-25 mix-blend-overlay"
           />
         </div>
-        <div className="z-10 flex flex-col items-center justify-center p-8 sm:p-12 text-center w-full">
-          <div className="bg-white p-10 sm:p-14 rounded-xl shadow-2xl flex flex-col items-center w-full max-w-2xl border-t-[16px] border-blue-900 relative">
-            <div className="flex items-center justify-center h-32 mb-10 w-full">
+        <div className="z-10 flex flex-col items-start justify-end p-8 sm:p-12 w-full h-full pb-16">
+          <div className="bg-white/95 backdrop-blur-sm p-8 sm:p-10 rounded-xl shadow-2xl flex flex-col items-start w-full max-w-2xl border-l-[12px] border-blue-900 relative">
+            <div className="flex items-center justify-start h-20 mb-8 w-full">
               <img
                 src="/logotransparente-c06b6.png"
                 alt="Eletroteste Logo"
-                className="max-h-full max-w-[80%] object-contain"
+                className="max-h-full object-contain"
               />
             </div>
-            <h1 className="text-3xl sm:text-4xl font-extrabold text-slate-900 uppercase leading-snug tracking-tight text-center">
+            <h1 className="text-2xl sm:text-3xl font-extrabold text-slate-900 uppercase leading-snug tracking-tight text-left">
               LAUDO TÉCNICO DE MANUTENÇÃO PREVENTIVA EM CABINE PRIMÁRIA
             </h1>
-            <div className="w-24 h-1.5 bg-blue-700 my-10 rounded-full"></div>
+            <div className="w-16 h-1.5 bg-blue-700 my-8 rounded-full"></div>
 
-            <div className="w-full text-left space-y-6 bg-slate-50 p-8 rounded-lg border border-slate-200">
+            <div className="w-full text-left space-y-5">
               <div>
-                <p className="text-sm font-bold text-slate-500 uppercase tracking-widest mb-1.5">
+                <p className="text-xs font-bold text-slate-500 uppercase tracking-widest mb-1">
                   Cliente
                 </p>
-                <p className="text-2xl font-bold text-slate-800">{cliente.nome_empresa || 'N/A'}</p>
+                <p className="text-xl font-bold text-slate-800">{cliente.nome_empresa || 'N/A'}</p>
               </div>
               <div>
-                <p className="text-sm font-bold text-slate-500 uppercase tracking-widest mb-1.5">
+                <p className="text-xs font-bold text-slate-500 uppercase tracking-widest mb-1">
                   Relatório Nº
                 </p>
-                <p className="text-xl font-bold text-slate-800">{report.numero_relatorio}</p>
+                <p className="text-lg font-bold text-slate-800">{report.numero_relatorio}</p>
               </div>
             </div>
           </div>
@@ -456,12 +433,14 @@ export default function ReportPrint() {
                   <table className="w-full border-collapse border border-slate-800 mt-2 text-sm bg-white">
                     <tbody>
                       <tr>
-                        <td className="border border-slate-800 w-[25%] p-3 text-center align-middle h-24">
-                          <img
-                            src="/logotransparente-c06b6.png"
-                            alt="Eletroteste Logo"
-                            className="max-h-16 w-auto mx-auto object-contain"
-                          />
+                        <td className="border border-slate-800 w-[25%] p-3 align-middle text-center">
+                          <div className="flex items-center justify-center h-full min-h-[4rem]">
+                            <img
+                              src="/logotransparente-c06b6.png"
+                              alt="Eletroteste Logo"
+                              className="max-h-12 w-auto object-contain"
+                            />
+                          </div>
                         </td>
                         <td className="border border-slate-800 w-[50%] p-3 text-center align-middle">
                           <div className="font-extrabold text-base text-slate-900 uppercase tracking-tight">
@@ -812,24 +791,7 @@ export default function ReportPrint() {
                       {eq.fotos && eq.fotos.length > 0 && (
                         <div className="avoid-break pt-4 mt-4 border-t border-slate-200">
                           <div className="font-bold text-slate-800 mb-3 pb-1 text-sm uppercase tracking-wider flex flex-col">
-                            <span>
-                              Registro Fotográfico:{' '}
-                              <span className="font-extrabold text-blue-900">
-                                {eq.tipo_equipamento}
-                              </span>
-                            </span>
-                            <span className="text-[11px] text-slate-500 font-semibold mt-1 normal-case tracking-normal">
-                              Subestação:{' '}
-                              <span className="text-slate-800">
-                                {eq.dados_tecnicos?.subestacao || 'N/A'}
-                              </span>{' '}
-                              &nbsp;|&nbsp; Nº:{' '}
-                              <span className="text-slate-800">
-                                {eq.dados_tecnicos?.numero ||
-                                  eq.dados_tecnicos?.identificacao ||
-                                  'N/A'}
-                              </span>
-                            </span>
+                            <span>REGISTRO FOTOGRÁFICO</span>
                           </div>
                           <div className="grid grid-cols-2 gap-4">
                             {eq.fotos.map((foto: string) => (
@@ -922,9 +884,7 @@ export default function ReportPrint() {
                         <strong>CNPJ:</strong> 64.941.818/0001-91 &nbsp;|&nbsp; <strong>IE:</strong>{' '}
                         748.001.165.111 &nbsp;|&nbsp; <strong>IM:</strong> 688
                       </span>
-                      <span>
-                        Rua Andradina, 262 - Remanso Campineiro - CEP: 13184-340 - Hortolândia - SP
-                      </span>
+                      <span>Rua Andradina, 262 - Remanso Campineiro - Hortolândia - SP</span>
                     </div>
                     <div className="flex flex-col text-right gap-0.5">
                       <span>
@@ -937,7 +897,6 @@ export default function ReportPrint() {
                       </span>
                     </div>
                   </div>
-                  <div className="mt-1.5 mb-0 text-center font-bold text-slate-800 text-xs print-page-number"></div>
                 </div>
               </td>
             </tr>
