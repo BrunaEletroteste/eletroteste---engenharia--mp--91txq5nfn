@@ -382,7 +382,7 @@ export default function ReportPrint() {
       </div>
 
       {/* Cover Page */}
-      <div className="relative w-full min-h-[297mm] max-w-[210mm] mx-auto bg-slate-900 flex flex-col justify-end break-after-page print:h-screen print:max-w-none shadow-xl print:shadow-none mb-8 print:mb-0 mt-24 print:mt-0 overflow-hidden print:overflow-visible">
+      <div className="relative w-full aspect-[210/297] max-w-[210mm] mx-auto bg-slate-900 flex flex-col justify-end break-after-page print:aspect-auto print:h-[277mm] print:max-w-none shadow-xl print:shadow-none mb-8 print:mb-0 mt-24 print:mt-0 overflow-hidden">
         <div className="absolute inset-0 z-0">
           <img
             src="https://img.usecurling.com/p/800/1130?q=electrical%20engineering&color=blue&dpr=2"
@@ -391,31 +391,35 @@ export default function ReportPrint() {
           />
         </div>
         <div className="z-10 flex flex-col items-start justify-end p-8 sm:p-12 w-full h-full pb-16">
-          <div className="bg-white/95 backdrop-blur-sm p-8 sm:p-10 rounded-xl shadow-2xl flex flex-col items-start w-full max-w-2xl border-l-[12px] border-blue-900 relative">
-            <div className="flex items-center justify-start h-20 mb-8 w-full">
+          <div className="bg-white/95 backdrop-blur-sm p-6 sm:p-8 rounded-xl shadow-2xl flex flex-col items-start w-full max-w-xl border-l-[10px] border-blue-900 relative">
+            <div className="flex items-center justify-start h-16 mb-6 w-full">
               <img
                 src="/logotransparente-c06b6.png"
                 alt="Eletroteste Logo"
                 className="max-h-full object-contain"
               />
             </div>
-            <h1 className="text-2xl sm:text-3xl font-extrabold text-slate-900 uppercase leading-snug tracking-tight text-left">
+            <h1 className="text-xl sm:text-2xl font-extrabold text-slate-900 uppercase leading-snug tracking-tight text-left">
               LAUDO TÉCNICO DE MANUTENÇÃO PREVENTIVA EM CABINE PRIMÁRIA
             </h1>
-            <div className="w-16 h-1.5 bg-blue-700 my-8 rounded-full"></div>
+            <div className="w-12 h-1 bg-blue-700 my-6 rounded-full"></div>
 
-            <div className="w-full text-left space-y-5">
+            <div className="w-full text-left space-y-4">
               <div>
-                <p className="text-xs font-bold text-slate-500 uppercase tracking-widest mb-1">
+                <p className="text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-1">
                   Cliente
                 </p>
-                <p className="text-xl font-bold text-slate-800">{cliente.nome_empresa || 'N/A'}</p>
+                <p className="text-[18px] font-bold text-slate-800 leading-none">
+                  {cliente.nome_empresa || 'N/A'}
+                </p>
               </div>
               <div>
-                <p className="text-xs font-bold text-slate-500 uppercase tracking-widest mb-1">
+                <p className="text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-1">
                   Relatório Nº
                 </p>
-                <p className="text-lg font-bold text-slate-800">{report.numero_relatorio}</p>
+                <p className="text-[18px] font-bold text-slate-800 leading-none">
+                  {report.numero_relatorio}
+                </p>
               </div>
             </div>
           </div>
@@ -666,7 +670,7 @@ export default function ReportPrint() {
 
                       {/* Tests */}
                       {eq.testes && eq.testes.length > 0 && (
-                        <div>
+                        <div className="mt-6">
                           <div className="font-bold text-slate-800 mb-2 border-b border-slate-200 pb-1 text-xs uppercase tracking-wider">
                             Resultados dos Testes
                           </div>
@@ -744,7 +748,7 @@ export default function ReportPrint() {
 
                       {/* Technical Opinion */}
                       {eq.parecer && (
-                        <div>
+                        <div className="mt-6">
                           <div className="font-bold text-slate-800 mb-2 border-b border-slate-200 pb-1 text-xs uppercase tracking-wider">
                             Parecer Técnico Específico
                           </div>
@@ -789,9 +793,9 @@ export default function ReportPrint() {
 
                       {/* Photos */}
                       {eq.fotos && eq.fotos.length > 0 && (
-                        <div className="avoid-break pt-4 mt-4 border-t border-slate-200">
-                          <div className="font-bold text-slate-800 mb-3 pb-1 text-sm uppercase tracking-wider flex flex-col">
-                            <span>REGISTRO FOTOGRÁFICO</span>
+                        <div className="avoid-break mt-6">
+                          <div className="font-bold text-slate-800 mb-2 border-b border-slate-200 pb-1 text-xs uppercase tracking-wider">
+                            REGISTRO FOTOGRÁFICO
                           </div>
                           <div className="grid grid-cols-2 gap-4">
                             {eq.fotos.map((foto: string) => (
@@ -811,11 +815,11 @@ export default function ReportPrint() {
 
                 {/* General Photos (Estrutura) */}
                 {report.fotos_estrutura && report.fotos_estrutura.length > 0 && (
-                  <div className="mb-6 break-before-page avoid-break border border-slate-400 bg-white">
-                    <div className="bg-slate-800 text-white p-2 font-bold mb-3 uppercase text-xs tracking-wider">
-                      Fotos Gerais / Estrutura
+                  <div className="mb-6 break-before-page avoid-break border border-slate-400 bg-white p-3">
+                    <div className="font-bold text-slate-800 mb-2 border-b border-slate-200 pb-1 text-xs uppercase tracking-wider">
+                      REGISTRO FOTOGRÁFICO - GERAL / ESTRUTURA
                     </div>
-                    <div className="grid grid-cols-2 gap-4 p-3">
+                    <div className="grid grid-cols-2 gap-4">
                       {report.fotos_estrutura.map((foto: string) => (
                         <img
                           key={foto}
