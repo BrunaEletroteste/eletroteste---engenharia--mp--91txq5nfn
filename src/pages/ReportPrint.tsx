@@ -396,7 +396,7 @@ export default function ReportPrint() {
             <tr>
               <td>
                 {/* Technical Header (Carimbo) */}
-                <div className="print:mt-8 border-t-[6px] border-blue-900 pb-4 mb-6">
+                <div className="print:mt-4 border-t-[6px] border-blue-900 pb-2 mb-3">
                   <table className="w-full border-collapse border border-slate-800 mt-2 text-sm bg-white">
                     <tbody>
                       <tr>
@@ -436,8 +436,8 @@ export default function ReportPrint() {
             <tr>
               <td>
                 {/* Client and Report Info */}
-                <div className="mb-8 avoid-break">
-                  <div className="bg-slate-800 text-white p-2 font-bold mb-3 uppercase text-xs tracking-wider">
+                <div className="mb-4 avoid-break">
+                  <div className="bg-slate-800 text-white p-2 font-bold mb-2 uppercase text-xs tracking-wider">
                     Dados do Cliente e Relatório
                   </div>
                   <table className="w-full border-collapse border border-slate-300 text-sm">
@@ -483,8 +483,8 @@ export default function ReportPrint() {
                 </div>
 
                 {/* Execution Info */}
-                <div className="mb-8 avoid-break">
-                  <div className="bg-slate-800 text-white p-2 font-bold mb-3 uppercase text-xs tracking-wider">
+                <div className="mb-4 avoid-break">
+                  <div className="bg-slate-800 text-white p-2 font-bold mb-2 uppercase text-xs tracking-wider">
                     Dados da Execução
                   </div>
                   <table className="w-full border-collapse border border-slate-300 text-sm">
@@ -549,13 +549,13 @@ export default function ReportPrint() {
                 {equipments.map((eq: any, i: number) => (
                   <div
                     key={eq.id}
-                    className="mb-10 break-before-page border border-slate-400 bg-white"
+                    className="mb-6 break-before-page border border-slate-400 bg-white"
                   >
-                    <div className="bg-slate-200 text-slate-900 p-3 font-bold text-base border-b border-slate-400">
+                    <div className="bg-slate-200 text-slate-900 p-2 font-bold text-sm border-b border-slate-400">
                       {i + 1}. EQUIPAMENTO: {eq.tipo_equipamento.toUpperCase()}
                     </div>
 
-                    <div className="p-4 space-y-6">
+                    <div className="p-3 space-y-3">
                       {/* Technical Data */}
                       {eq.dados_tecnicos && Object.keys(eq.dados_tecnicos).length > 0 && (
                         <div>
@@ -780,8 +780,8 @@ export default function ReportPrint() {
 
                 {/* General Photos (Estrutura) */}
                 {report.fotos_estrutura && report.fotos_estrutura.length > 0 && (
-                  <div className="mb-10 break-before-page avoid-break">
-                    <div className="bg-slate-800 text-white p-2 font-bold mb-4 uppercase text-xs tracking-wider">
+                  <div className="mb-6 break-before-page avoid-break">
+                    <div className="bg-slate-800 text-white p-2 font-bold mb-3 uppercase text-xs tracking-wider">
                       Fotos Gerais / Estrutura
                     </div>
                     <div className="grid grid-cols-2 gap-4">
@@ -799,11 +799,11 @@ export default function ReportPrint() {
 
                 {/* Conclusion */}
                 {(report.parecer_geral || report.observacoes) && (
-                  <div className="mb-10 avoid-break border-2 border-slate-800 rounded-sm">
-                    <div className="bg-slate-800 text-white p-3 font-bold text-base tracking-wide text-center uppercase">
+                  <div className="mb-6 avoid-break border-2 border-slate-800 rounded-sm">
+                    <div className="bg-slate-800 text-white p-2 font-bold text-sm tracking-wide text-center uppercase">
                       Conclusão Geral e Parecer Técnico
                     </div>
-                    <div className="p-5 space-y-4 bg-slate-50">
+                    <div className="p-4 space-y-3 bg-slate-50">
                       {report.parecer_geral && (
                         <div>
                           <h4 className="font-bold text-slate-800 mb-2 uppercase text-xs tracking-wider border-b border-slate-300 pb-1">
@@ -829,7 +829,7 @@ export default function ReportPrint() {
                 )}
 
                 {/* Signature Line */}
-                <div className="mt-20 pt-10 pb-10 flex justify-center avoid-break">
+                <div className="mt-12 pt-6 pb-6 flex justify-center avoid-break">
                   <div className="w-72 text-center">
                     <div className="border-t border-black pt-2 font-bold text-sm">
                       {autor.name || 'Responsável Técnico'}
@@ -847,7 +847,7 @@ export default function ReportPrint() {
               <td>
                 {/* Corporate Standardized Footer */}
                 <div className="print:mb-2 mt-4 border-t-[1.5px] border-slate-800 pt-2 text-[10px] text-slate-600 bg-white leading-tight">
-                  <div className="flex justify-between items-start gap-2">
+                  <div className="flex justify-between items-start gap-2 whitespace-nowrap">
                     <div className="flex flex-col gap-0.5">
                       <span>
                         <strong>CNPJ:</strong> 64.941.818/0001-91 &nbsp;|&nbsp; <strong>IE:</strong>{' '}

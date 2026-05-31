@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-05-31T00:07:47.611Z",
+  "generatedAt": "2026-05-31T00:14:09.229Z",
   "collections": [
     {
       "name": "users",
@@ -29,31 +29,21 @@
           "type": "autodate",
           "required": false,
           "system": false,
-          "autodateTriggers": [
-            "onCreate"
-          ]
+          "autodateTriggers": ["onCreate"]
         },
         {
           "name": "updated",
           "type": "autodate",
           "required": false,
           "system": false,
-          "autodateTriggers": [
-            "onCreate",
-            "onUpdate"
-          ]
+          "autodateTriggers": ["onCreate", "onUpdate"]
         },
         {
           "name": "tipo_acesso",
           "type": "select",
           "required": false,
           "system": false,
-          "selectValues": [
-            "admin",
-            "tecnico_campo",
-            "revisor_interno",
-            "cliente"
-          ]
+          "selectValues": ["admin", "tecnico_campo", "revisor_interno", "cliente"]
         },
         {
           "name": "cnpj_cliente",
@@ -119,24 +109,17 @@
           "type": "autodate",
           "required": false,
           "system": false,
-          "autodateTriggers": [
-            "onCreate"
-          ]
+          "autodateTriggers": ["onCreate"]
         },
         {
           "name": "updated",
           "type": "autodate",
           "required": false,
           "system": false,
-          "autodateTriggers": [
-            "onCreate",
-            "onUpdate"
-          ]
+          "autodateTriggers": ["onCreate", "onUpdate"]
         }
       ],
-      "indexes": [
-        "CREATE UNIQUE INDEX idx_clientes_cnpj ON clientes (cnpj)"
-      ]
+      "indexes": ["CREATE UNIQUE INDEX idx_clientes_cnpj ON clientes (cnpj)"]
     },
     {
       "name": "relatorios",
@@ -185,10 +168,7 @@
           "type": "select",
           "required": true,
           "system": false,
-          "selectValues": [
-            "rascunho",
-            "finalizado"
-          ]
+          "selectValues": ["rascunho", "finalizado"]
         },
         {
           "name": "criado_por",
@@ -208,19 +188,14 @@
           "type": "autodate",
           "required": false,
           "system": false,
-          "autodateTriggers": [
-            "onCreate"
-          ]
+          "autodateTriggers": ["onCreate"]
         },
         {
           "name": "updated",
           "type": "autodate",
           "required": false,
           "system": false,
-          "autodateTriggers": [
-            "onCreate",
-            "onUpdate"
-          ]
+          "autodateTriggers": ["onCreate", "onUpdate"]
         },
         {
           "name": "anexos",
@@ -265,9 +240,7 @@
           "system": false
         }
       ],
-      "indexes": [
-        "CREATE UNIQUE INDEX idx_relatorios_numero ON relatorios (numero_relatorio)"
-      ]
+      "indexes": ["CREATE UNIQUE INDEX idx_relatorios_numero ON relatorios (numero_relatorio)"]
     },
     {
       "name": "equipamentos_relatorio",
@@ -314,19 +287,14 @@
           "type": "autodate",
           "required": false,
           "system": false,
-          "autodateTriggers": [
-            "onCreate"
-          ]
+          "autodateTriggers": ["onCreate"]
         },
         {
           "name": "updated",
           "type": "autodate",
           "required": false,
           "system": false,
-          "autodateTriggers": [
-            "onCreate",
-            "onUpdate"
-          ]
+          "autodateTriggers": ["onCreate", "onUpdate"]
         },
         {
           "name": "ordem",
@@ -341,9 +309,7 @@
           "system": false
         }
       ],
-      "indexes": [
-        "CREATE INDEX `idx_equip_rel_ordem` ON `equipamentos_relatorio` (ordem)"
-      ]
+      "indexes": ["CREATE INDEX `idx_equip_rel_ordem` ON `equipamentos_relatorio` (ordem)"]
     },
     {
       "name": "testes_equipamento",
@@ -398,19 +364,14 @@
           "type": "autodate",
           "required": false,
           "system": false,
-          "autodateTriggers": [
-            "onCreate"
-          ]
+          "autodateTriggers": ["onCreate"]
         },
         {
           "name": "updated",
           "type": "autodate",
           "required": false,
           "system": false,
-          "autodateTriggers": [
-            "onCreate",
-            "onUpdate"
-          ]
+          "autodateTriggers": ["onCreate", "onUpdate"]
         },
         {
           "name": "dados_detalhados",
@@ -456,22 +417,14 @@
           "type": "select",
           "required": true,
           "system": false,
-          "selectValues": [
-            "Conforme",
-            "Possui Ressalvas",
-            "Não Conforme"
-          ]
+          "selectValues": ["Conforme", "Possui Ressalvas", "Não Conforme"]
         },
         {
           "name": "parecer_anterior",
           "type": "select",
           "required": false,
           "system": false,
-          "selectValues": [
-            "Conforme",
-            "Possui Ressalvas",
-            "Não Conforme"
-          ]
+          "selectValues": ["Conforme", "Possui Ressalvas", "Não Conforme"]
         },
         {
           "name": "justificativa_mudanca",
@@ -484,19 +437,14 @@
           "type": "autodate",
           "required": false,
           "system": false,
-          "autodateTriggers": [
-            "onCreate"
-          ]
+          "autodateTriggers": ["onCreate"]
         },
         {
           "name": "updated",
           "type": "autodate",
           "required": false,
           "system": false,
-          "autodateTriggers": [
-            "onCreate",
-            "onUpdate"
-          ]
+          "autodateTriggers": ["onCreate", "onUpdate"]
         },
         {
           "name": "observacoes",
@@ -535,19 +483,14 @@
           "type": "autodate",
           "required": false,
           "system": false,
-          "autodateTriggers": [
-            "onCreate"
-          ]
+          "autodateTriggers": ["onCreate"]
         },
         {
           "name": "updated",
           "type": "autodate",
           "required": false,
           "system": false,
-          "autodateTriggers": [
-            "onCreate",
-            "onUpdate"
-          ]
+          "autodateTriggers": ["onCreate", "onUpdate"]
         }
       ],
       "indexes": [

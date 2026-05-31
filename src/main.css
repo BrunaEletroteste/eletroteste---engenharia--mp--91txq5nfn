@@ -126,7 +126,8 @@
       counter-reset: page;
     }
     .print-page-number::after {
-      content: 'Página ' counter(page) ' de ' counter(pages);
+      counter-increment: page;
+      content: 'Página ' counter(page);
     }
     .avoid-break {
       break-inside: avoid;
