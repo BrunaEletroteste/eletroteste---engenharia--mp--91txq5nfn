@@ -366,8 +366,21 @@ export default function ReportPrint() {
 
   return (
     <div className="bg-white print:bg-transparent min-h-screen text-black">
+      <style type="text/css">
+        {`
+          @media print {
+            body {
+              counter-reset: page;
+            }
+            .print-page-number::after {
+              counter-increment: page;
+              content: "Página " counter(page);
+            }
+          }
+        `}
+      </style>
       {/* Action Bar - Hidden on print */}
-      <div className="no-print bg-slate-100 p-4 flex justify-between items-center fixed top-0 w-full shadow-sm z-50 border-b">
+      <div className="print:hidden bg-slate-100 p-4 flex justify-between items-center fixed top-0 w-full shadow-sm z-50 border-b">
         <Button variant="outline" onClick={() => navigate(-1)}>
           <ArrowLeft className="mr-2 h-4 w-4" /> Voltar
         </Button>
@@ -633,7 +646,7 @@ export default function ReportPrint() {
                                   <th className="p-2 text-left text-slate-700 font-semibold w-[15%] border-r border-slate-200 whitespace-nowrap">
                                     Data
                                   </th>
-                                  <th className="p-2 text-left text-slate-700 font-semibold w-[25%] border-r border-slate-200">
+                                  <th className="p-2 text-left text-slate-700 font-semibold w-[25%] border-r border-slate-200 whitespace-nowrap">
                                     Teste Realizado
                                   </th>
                                   <th className="p-2 text-left text-slate-700 font-semibold w-[60%]">
@@ -659,7 +672,7 @@ export default function ReportPrint() {
                                         <td className="p-2 align-top border-r border-slate-200 font-semibold whitespace-nowrap">
                                           {formatDate(t.data_teste)}
                                         </td>
-                                        <td className="p-2 align-top border-r border-slate-200">
+                                        <td className="p-2 align-top border-r border-slate-200 whitespace-nowrap">
                                           {t.tipo_teste}
                                         </td>
                                         <td className="p-2 align-top text-blue-900 font-bold whitespace-pre-wrap">
@@ -833,9 +846,9 @@ export default function ReportPrint() {
             <tr>
               <td>
                 {/* Corporate Standardized Footer */}
-                <div className="print:mb-8 mt-6 border-t-[1.5px] border-slate-800 pt-3 text-[10px] text-slate-600 bg-white">
-                  <div className="flex justify-between items-start gap-4">
-                    <div className="flex flex-col gap-1">
+                <div className="print:mb-2 mt-4 border-t-[1.5px] border-slate-800 pt-2 text-[10px] text-slate-600 bg-white leading-tight">
+                  <div className="flex justify-between items-start gap-2">
+                    <div className="flex flex-col gap-0.5">
                       <span>
                         <strong>CNPJ:</strong> 64.941.818/0001-91 &nbsp;|&nbsp; <strong>IE:</strong>{' '}
                         748.001.165.111 &nbsp;|&nbsp; <strong>IM:</strong> 688
@@ -844,7 +857,7 @@ export default function ReportPrint() {
                         Rua Andradina, 262 - Remanso Campineiro - CEP: 13184-340 - Hortolândia - SP
                       </span>
                     </div>
-                    <div className="flex flex-col text-right gap-1">
+                    <div className="flex flex-col text-right gap-0.5">
                       <span>
                         <strong>Tels:</strong> (19) 3865-2942 / 3865-1261 &nbsp;|&nbsp;{' '}
                         <strong>WhatsApp:</strong> (19) 9 7143-3853
@@ -855,7 +868,7 @@ export default function ReportPrint() {
                       </span>
                     </div>
                   </div>
-                  <div className="mt-3 mb-1 text-center font-bold text-slate-800 text-xs print-page-number"></div>
+                  <div className="mt-1.5 mb-0 text-center font-bold text-slate-800 text-xs print-page-number"></div>
                 </div>
               </td>
             </tr>
