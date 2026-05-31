@@ -389,14 +389,25 @@ export default function ReportPrint() {
 
       {/* Cover Page */}
       <div className="w-full h-[297mm] max-w-[210mm] mx-auto bg-white flex flex-col justify-center items-center break-after-page print:max-w-none shadow-xl print:shadow-none mb-8 print:mb-0 mt-24 print:mt-0 overflow-hidden box-border p-10 relative">
-        {/* Background Engineering Grid */}
+        {/* Background Circuit Pattern (Top Fade-out) */}
         <div
-          className="absolute inset-0 z-0 opacity-40 pointer-events-none"
+          className="absolute inset-0 z-0 opacity-50 pointer-events-none"
           style={{
             backgroundImage:
-              "url(\"data:image/svg+xml,%3Csvg width='40' height='40' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M0 0h40v40H0z' fill='none'/%3E%3Cpath d='M0 39.5h40M39.5 0v40' stroke='%23cbd5e1' stroke-width='1'/%3E%3C/svg%3E\")",
+              "url(\"data:image/svg+xml,%3Csvg width='100' height='100' xmlns='http://www.w3.org/2000/svg'%3E%3Cg stroke='%23cbd5e1' stroke-width='1.5' fill='none' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M10,10 l20,0 l10,10 l0,20 l10,10 l20,0' /%3E%3Cpath d='M90,10 l-20,0 l-10,10 l0,20 l-10,10 l-20,0' /%3E%3Cpath d='M10,90 l20,0 l10,-10 l0,-20 l10,-10 l20,0' /%3E%3Cpath d='M90,90 l-20,0 l-10,-10 l0,-20 l-10,-10 l-20,0' /%3E%3Cpath d='M50,10 l0,15 l15,15' /%3E%3Cpath d='M50,90 l0,-15 l-15,-15' /%3E%3Cpath d='M10,50 l15,0 l15,15' /%3E%3Cpath d='M90,50 l-15,0 l-15,-15' /%3E%3C/g%3E%3Cg fill='%2394a3b8'%3E%3Ccircle cx='10' cy='10' r='2.5' /%3E%3Ccircle cx='90' cy='10' r='2.5' /%3E%3Ccircle cx='10' cy='90' r='2.5' /%3E%3Ccircle cx='90' cy='90' r='2.5' /%3E%3Ccircle cx='70' cy='50' r='3' fill='white' stroke='%23cbd5e1' stroke-width='1.5'/%3E%3Ccircle cx='30' cy='50' r='3' fill='white' stroke='%23cbd5e1' stroke-width='1.5'/%3E%3Ccircle cx='50' cy='30' r='3' fill='white' stroke='%23cbd5e1' stroke-width='1.5'/%3E%3Ccircle cx='50' cy='70' r='3' fill='white' stroke='%23cbd5e1' stroke-width='1.5'/%3E%3Ccircle cx='10' cy='50' r='2' /%3E%3Ccircle cx='90' cy='50' r='2' /%3E%3Ccircle cx='50' cy='10' r='2' /%3E%3Ccircle cx='50' cy='90' r='2' /%3E%3C/g%3E%3C/svg%3E\")",
             WebkitMaskImage: 'linear-gradient(to bottom, black 0%, transparent 35%)',
             maskImage: 'linear-gradient(to bottom, black 0%, transparent 35%)',
+          }}
+        ></div>
+
+        {/* Background Circuit Pattern (Bottom Fade-in) */}
+        <div
+          className="absolute inset-0 z-0 opacity-50 pointer-events-none"
+          style={{
+            backgroundImage:
+              "url(\"data:image/svg+xml,%3Csvg width='100' height='100' xmlns='http://www.w3.org/2000/svg'%3E%3Cg stroke='%23cbd5e1' stroke-width='1.5' fill='none' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M10,10 l20,0 l10,10 l0,20 l10,10 l20,0' /%3E%3Cpath d='M90,10 l-20,0 l-10,10 l0,20 l-10,10 l-20,0' /%3E%3Cpath d='M10,90 l20,0 l10,-10 l0,-20 l10,-10 l20,0' /%3E%3Cpath d='M90,90 l-20,0 l-10,-10 l0,-20 l-10,-10 l-20,0' /%3E%3Cpath d='M50,10 l0,15 l15,15' /%3E%3Cpath d='M50,90 l0,-15 l-15,-15' /%3E%3Cpath d='M10,50 l15,0 l15,15' /%3E%3Cpath d='M90,50 l-15,0 l-15,-15' /%3E%3C/g%3E%3Cg fill='%2394a3b8'%3E%3Ccircle cx='10' cy='10' r='2.5' /%3E%3Ccircle cx='90' cy='10' r='2.5' /%3E%3Ccircle cx='10' cy='90' r='2.5' /%3E%3Ccircle cx='90' cy='90' r='2.5' /%3E%3Ccircle cx='70' cy='50' r='3' fill='white' stroke='%23cbd5e1' stroke-width='1.5'/%3E%3Ccircle cx='30' cy='50' r='3' fill='white' stroke='%23cbd5e1' stroke-width='1.5'/%3E%3Ccircle cx='50' cy='30' r='3' fill='white' stroke='%23cbd5e1' stroke-width='1.5'/%3E%3Ccircle cx='50' cy='70' r='3' fill='white' stroke='%23cbd5e1' stroke-width='1.5'/%3E%3Ccircle cx='10' cy='50' r='2' /%3E%3Ccircle cx='90' cy='50' r='2' /%3E%3Ccircle cx='50' cy='10' r='2' /%3E%3Ccircle cx='50' cy='90' r='2' /%3E%3C/g%3E%3C/svg%3E\")",
+            WebkitMaskImage: 'linear-gradient(to top, black 0%, transparent 35%)',
+            maskImage: 'linear-gradient(to top, black 0%, transparent 35%)',
           }}
         ></div>
 
@@ -411,7 +422,7 @@ export default function ReportPrint() {
 
           <div className="flex flex-col items-center justify-center space-y-4">
             <Cpu className="w-12 h-12 text-blue-900 stroke-[1.5]" />
-            <h1 className="text-[16px] font-semibold text-slate-900 uppercase leading-snug tracking-tight text-center">
+            <h1 className="text-[18px] font-semibold text-slate-900 uppercase leading-snug tracking-tight text-center">
               LAUDO TÉCNICO DE MANUTENÇÃO PREVENTIVA EM CABINE PRIMÁRIA
             </h1>
           </div>
