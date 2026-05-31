@@ -1,6 +1,6 @@
 import { useEffect, useState, Fragment } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
-import { Printer, ArrowLeft, Loader2 } from 'lucide-react'
+import { Printer, ArrowLeft, Loader2, Cpu } from 'lucide-react'
 import pb from '@/lib/pocketbase/client'
 import { Button } from '@/components/ui/button'
 import { getEquipmentFields } from '@/lib/equipment-templates'
@@ -152,8 +152,8 @@ export default function ReportPrint() {
   if (loading) {
     return (
       <div className="flex h-screen items-center justify-center bg-white text-black">
-        <Loader2 className="animate-spin h-8 w-8 text-primary" />
-        <span className="ml-3 font-medium text-base">Preparando documento...</span>
+        <Loader2 className="animate-spin h-8 w-8 text-blue-900" />
+        <span className="ml-3 font-medium text-[16px]">Preparando documento...</span>
       </div>
     )
   }
@@ -161,7 +161,7 @@ export default function ReportPrint() {
   if (!data) {
     return (
       <div className="flex h-screen items-center justify-center bg-white text-black flex-col">
-        <p className="text-xl font-semibold mb-4">Erro ao carregar relatório.</p>
+        <p className="text-[16px] font-semibold mb-4">Erro ao carregar relatório.</p>
         <Button onClick={() => navigate(-1)}>
           <ArrowLeft className="mr-2 h-4 w-4" /> Voltar
         </Button>
@@ -388,39 +388,55 @@ export default function ReportPrint() {
       </div>
 
       {/* Cover Page */}
-      <div className="w-full h-[297mm] max-w-[210mm] mx-auto bg-white flex flex-col justify-center items-center break-after-page print:max-w-none shadow-xl print:shadow-none mb-8 print:mb-0 mt-24 print:mt-0 overflow-hidden box-border p-10">
-        <div className="flex flex-col items-center justify-center w-full max-w-2xl text-center space-y-8">
-          <div className="flex items-center justify-center h-28 mb-8 w-full">
+      <div className="w-full h-[297mm] max-w-[210mm] mx-auto bg-white flex flex-col justify-center items-center break-after-page print:max-w-none shadow-xl print:shadow-none mb-8 print:mb-0 mt-24 print:mt-0 overflow-hidden box-border p-10 relative">
+        {/* Background Engineering Grid */}
+        <div
+          className="absolute inset-0 z-0 opacity-40 pointer-events-none"
+          style={{
+            backgroundImage:
+              "url(\"data:image/svg+xml,%3Csvg width='40' height='40' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M0 0h40v40H0z' fill='none'/%3E%3Cpath d='M0 39.5h40M39.5 0v40' stroke='%23cbd5e1' stroke-width='1'/%3E%3C/svg%3E\")",
+          }}
+        ></div>
+
+        {/* Lateral Frame / Brand Colors */}
+        <div className="absolute left-0 top-0 bottom-0 w-4 bg-blue-900 z-10"></div>
+        <div className="absolute left-4 top-0 bottom-0 w-1 bg-amber-500 z-10"></div>
+
+        <div className="flex flex-col items-center justify-center w-full max-w-2xl text-center space-y-8 z-20 relative text-[16px]">
+          <div className="flex items-center justify-center h-28 mb-4 w-full">
             <img src={logoImg} alt="Eletroteste Logo" className="max-h-full object-contain" />
           </div>
-          <h1 className="text-[28px] font-semibold text-slate-900 uppercase leading-snug tracking-tight text-center">
-            LAUDO TÉCNICO DE MANUTENÇÃO PREVENTIVA EM CABINE PRIMÁRIA
-          </h1>
-          <div className="w-24 h-1 bg-blue-700 my-8 rounded-full"></div>
+
+          <div className="flex flex-col items-center justify-center space-y-4">
+            <Cpu className="w-12 h-12 text-blue-900 stroke-[1.5]" />
+            <h1 className="text-[16px] font-semibold text-slate-900 uppercase leading-snug tracking-tight text-center">
+              LAUDO TÉCNICO DE MANUTENÇÃO PREVENTIVA EM CABINE PRIMÁRIA
+            </h1>
+          </div>
+
+          <div className="w-24 h-1 bg-blue-900 my-8 rounded-full"></div>
 
           <div className="w-full text-center space-y-8 mt-8">
             <div>
-              <p className="text-base font-medium text-slate-500 uppercase tracking-widest mb-2 leading-none">
+              <p className="font-medium text-slate-500 uppercase tracking-widest mb-2 leading-none">
                 Cliente
               </p>
-              <p className="text-xl font-semibold text-slate-800 leading-none">
+              <p className="font-semibold text-slate-800 leading-none">
                 {cliente.nome_empresa || 'N/A'}
               </p>
             </div>
             <div>
-              <p className="text-base font-medium text-slate-500 uppercase tracking-widest mb-2 leading-none mt-6">
+              <p className="font-medium text-slate-500 uppercase tracking-widest mb-2 leading-none mt-6">
                 Relatório Nº
               </p>
-              <p className="text-xl font-semibold text-slate-800 leading-none">
-                {report.numero_relatorio}
-              </p>
+              <p className="font-semibold text-slate-800 leading-none">{report.numero_relatorio}</p>
             </div>
           </div>
         </div>
       </div>
 
       {/* Document Container */}
-      <div className="px-8 pb-8 max-w-[210mm] mx-auto text-base print:max-w-none print:pt-0 print:px-12 print:pb-0 font-sans bg-white shadow-xl print:shadow-none">
+      <div className="px-8 pb-8 max-w-[210mm] mx-auto text-[12px] print:max-w-none print:pt-0 print:px-12 print:pb-0 font-sans bg-white shadow-xl print:shadow-none relative z-10">
         <table className="w-full">
           <thead className="table-header-group">
             <tr>
@@ -440,18 +456,18 @@ export default function ReportPrint() {
                           </div>
                         </td>
                         <td className="border border-slate-800 w-[50%] p-3 text-center align-middle">
-                          <div className="font-semibold text-lg text-slate-900 uppercase tracking-tight">
+                          <div className="font-semibold text-[14px] text-slate-900 uppercase tracking-tight">
                             LAUDO TÉCNICO DE MANUTENÇÃO PREVENTIVA EM CABINE PRIMÁRIA
                           </div>
-                          <div className="text-base text-slate-600 mt-1.5 font-medium">
+                          <div className="text-[12px] text-slate-600 mt-1.5 font-medium">
                             Normas de Referência: NBR 14039 / NBR 5410
                           </div>
                         </td>
-                        <td className="border border-slate-800 w-[25%] p-4 align-middle text-slate-800 text-center bg-slate-50">
-                          <strong className="text-slate-500 block text-sm uppercase tracking-widest mb-1 font-medium">
+                        <td className="border border-slate-800 w-[25%] p-3 align-middle text-slate-800 text-center bg-slate-50">
+                          <strong className="text-slate-500 block text-[12px] uppercase tracking-widest mb-1 font-medium">
                             Relatório Nº
                           </strong>
-                          <span className="font-semibold text-xl text-blue-900 leading-none">
+                          <span className="font-semibold text-[14px] text-blue-900 leading-none">
                             {report.numero_relatorio}
                           </span>
                         </td>
@@ -466,17 +482,17 @@ export default function ReportPrint() {
             <tr>
               <td>
                 {/* Client and Report Info */}
-                <div className="mb-6 avoid-break">
-                  <div className="bg-slate-800 text-white p-2 font-medium mb-2 uppercase text-base tracking-wider">
+                <div className="mb-6 avoid-break text-[12px]">
+                  <div className="bg-slate-800 text-white p-2 font-medium mb-2 uppercase text-[13px] tracking-wider">
                     Dados do Cliente e Relatório
                   </div>
-                  <table className="w-full border-collapse border border-slate-300 text-base">
+                  <table className="w-full border-collapse border border-slate-300">
                     <tbody>
                       <tr>
                         <td className="border border-slate-300 p-2 font-medium w-1/4 bg-slate-100 text-slate-700">
                           Empresa
                         </td>
-                        <td className="border border-slate-300 p-2 w-3/4 font-semibold">
+                        <td className="border border-slate-300 p-2 w-3/4 font-semibold text-slate-900">
                           {cliente.nome_empresa || 'N/A'}
                         </td>
                       </tr>
@@ -484,13 +500,17 @@ export default function ReportPrint() {
                         <td className="border border-slate-300 p-2 font-medium bg-slate-100 text-slate-700">
                           CNPJ
                         </td>
-                        <td className="border border-slate-300 p-2">{cliente.cnpj || 'N/A'}</td>
+                        <td className="border border-slate-300 p-2 text-slate-900">
+                          {cliente.cnpj || 'N/A'}
+                        </td>
                       </tr>
                       <tr>
                         <td className="border border-slate-300 p-2 font-medium bg-slate-100 text-slate-700">
                           Endereço
                         </td>
-                        <td className="border border-slate-300 p-2">{cliente.endereco || 'N/A'}</td>
+                        <td className="border border-slate-300 p-2 text-slate-900">
+                          {cliente.endereco || 'N/A'}
+                        </td>
                       </tr>
                       <tr>
                         <td className="border border-slate-300 p-2 font-medium bg-slate-100 text-slate-700">
@@ -504,7 +524,7 @@ export default function ReportPrint() {
                         <td className="border border-slate-300 p-2 font-medium bg-slate-100 text-slate-700">
                           Nº Proposta
                         </td>
-                        <td className="border border-slate-300 p-2">
+                        <td className="border border-slate-300 p-2 text-slate-900">
                           {report.numero_proposta || 'N/A'}
                         </td>
                       </tr>
@@ -513,23 +533,23 @@ export default function ReportPrint() {
                 </div>
 
                 {/* Execution Info */}
-                <div className="mb-8 avoid-break">
-                  <div className="bg-slate-800 text-white p-2 font-medium mb-2 uppercase text-base tracking-wider">
+                <div className="mb-8 avoid-break text-[12px]">
+                  <div className="bg-slate-800 text-white p-2 font-medium mb-2 uppercase text-[13px] tracking-wider">
                     Dados da Execução
                   </div>
-                  <table className="w-full border-collapse border border-slate-300 text-base">
+                  <table className="w-full border-collapse border border-slate-300">
                     <tbody>
                       <tr>
                         <td className="border border-slate-300 p-2 font-medium w-1/4 bg-slate-100 text-slate-700">
                           Data Início
                         </td>
-                        <td className="border border-slate-300 p-2 w-1/4">
+                        <td className="border border-slate-300 p-2 w-1/4 text-slate-900">
                           {formatDate(report.data_execucao)}
                         </td>
                         <td className="border border-slate-300 p-2 font-medium w-1/4 bg-slate-100 text-slate-700">
                           Data Fim
                         </td>
-                        <td className="border border-slate-300 p-2 w-1/4">
+                        <td className="border border-slate-300 p-2 w-1/4 text-slate-900">
                           {formatDate(report.data_fim)}
                         </td>
                       </tr>
@@ -537,13 +557,13 @@ export default function ReportPrint() {
                         <td className="border border-slate-300 p-2 font-medium bg-slate-100 text-slate-700">
                           Próxima Manutenção
                         </td>
-                        <td className="border border-slate-300 p-2">
+                        <td className="border border-slate-300 p-2 text-slate-900">
                           {formatDate(report.proxima_manutencao)}
                         </td>
                         <td className="border border-slate-300 p-2 font-medium bg-slate-100 text-slate-700">
                           Responsável Técnico
                         </td>
-                        <td className="border border-slate-300 p-2 font-semibold">
+                        <td className="border border-slate-300 p-2 font-semibold text-slate-900">
                           {autor.name || 'N/A'}
                         </td>
                       </tr>
@@ -551,7 +571,7 @@ export default function ReportPrint() {
                         <td className="border border-slate-300 p-2 font-medium bg-slate-100 text-slate-700">
                           Temp. Ambiente
                         </td>
-                        <td className="border border-slate-300 p-2">
+                        <td className="border border-slate-300 p-2 text-slate-900">
                           {report.temperatura_ambiente
                             ? `${report.temperatura_ambiente} °C`
                             : 'N/A'}
@@ -559,7 +579,7 @@ export default function ReportPrint() {
                         <td className="border border-slate-300 p-2 font-medium bg-slate-100 text-slate-700">
                           Umidade Relativa
                         </td>
-                        <td className="border border-slate-300 p-2">
+                        <td className="border border-slate-300 p-2 text-slate-900">
                           {report.umidade_relativa ? `${report.umidade_relativa} %` : 'N/A'}
                         </td>
                       </tr>
@@ -567,7 +587,7 @@ export default function ReportPrint() {
                         <td className="border border-slate-300 p-2 font-medium bg-slate-100 text-slate-700">
                           Acompanhante
                         </td>
-                        <td className="border border-slate-300 p-2" colSpan={3}>
+                        <td className="border border-slate-300 p-2 text-slate-900" colSpan={3}>
                           {report.acompanhante || 'N/A'}
                         </td>
                       </tr>
@@ -579,9 +599,9 @@ export default function ReportPrint() {
                 {equipments.map((eq: any, i: number) => (
                   <div
                     key={eq.id}
-                    className="mb-8 break-before-page border border-slate-400 bg-white"
+                    className="mb-8 break-before-page border border-slate-400 bg-white text-[12px]"
                   >
-                    <div className="bg-slate-200 text-slate-900 p-3 font-semibold text-base border-b border-slate-400 uppercase tracking-wide">
+                    <div className="bg-slate-200 text-slate-900 p-3 font-semibold text-[14px] border-b border-slate-400 uppercase tracking-wide">
                       {i + 1}. EQUIPAMENTO: {eq.tipo_equipamento}
                     </div>
 
@@ -589,7 +609,7 @@ export default function ReportPrint() {
                       {/* Technical Data */}
                       {eq.dados_tecnicos && Object.keys(eq.dados_tecnicos).length > 0 && (
                         <div>
-                          <div className="font-semibold text-slate-800 mb-3 border-b border-slate-200 pb-1 text-base uppercase tracking-wider">
+                          <div className="font-semibold text-slate-800 mb-3 border-b border-slate-200 pb-1 text-[13px] uppercase tracking-wider">
                             Características Técnicas
                           </div>
                           <div className="grid grid-cols-2 gap-x-6 gap-y-2">
@@ -633,7 +653,7 @@ export default function ReportPrint() {
 
                               if (allData.length === 0) {
                                 return (
-                                  <div className="text-base text-slate-500 italic col-span-2">
+                                  <div className="text-[12px] text-slate-500 italic col-span-2">
                                     Nenhuma característica preenchida.
                                   </div>
                                 )
@@ -642,7 +662,7 @@ export default function ReportPrint() {
                               return allData.map(({ key, label, value }) => (
                                 <div
                                   key={key}
-                                  className="flex items-baseline text-base border-b border-slate-100 pb-1"
+                                  className="flex items-baseline text-[12px] border-b border-slate-100 pb-1"
                                 >
                                   <span className="font-medium text-slate-600 whitespace-nowrap pr-2 leading-tight">
                                     {label}:
@@ -663,12 +683,12 @@ export default function ReportPrint() {
 
                       {/* Tests */}
                       {eq.testes && eq.testes.length > 0 && (
-                        <div className="mt-10">
-                          <div className="font-semibold text-slate-800 mb-3 border-b border-slate-200 pb-1 text-base uppercase tracking-wider">
+                        <div className="mt-8">
+                          <div className="font-semibold text-slate-800 mb-3 border-b border-slate-200 pb-1 text-[13px] uppercase tracking-wider">
                             Resultados dos Testes
                           </div>
                           <div className="border border-slate-200 rounded overflow-hidden">
-                            <table className="w-full text-base border-collapse">
+                            <table className="w-full text-[12px] border-collapse">
                               <thead className="bg-slate-50 border-b border-slate-200">
                                 <tr>
                                   <th className="p-3 text-left text-slate-700 font-medium w-[15%] border-r border-slate-200 whitespace-nowrap">
@@ -697,10 +717,10 @@ export default function ReportPrint() {
                                       <tr
                                         className={`avoid-break ${index > 0 ? 'border-t border-slate-200' : ''}`}
                                       >
-                                        <td className="p-3 align-top border-r border-slate-200 font-medium whitespace-nowrap">
+                                        <td className="p-3 align-top border-r border-slate-200 font-medium whitespace-nowrap text-slate-900">
                                           {formatDate(t.data_teste)}
                                         </td>
-                                        <td className="p-3 align-top border-r border-slate-200 whitespace-nowrap">
+                                        <td className="p-3 align-top border-r border-slate-200 whitespace-nowrap text-slate-900">
                                           {t.tipo_teste}
                                         </td>
                                         <td className="p-3 align-top text-blue-900 font-semibold whitespace-pre-wrap">
@@ -741,15 +761,15 @@ export default function ReportPrint() {
 
                       {/* Technical Opinion */}
                       {eq.parecer && (
-                        <div className="mt-10">
-                          <div className="font-semibold text-slate-800 mb-3 border-b border-slate-200 pb-1 text-base uppercase tracking-wider">
+                        <div className="mt-8">
+                          <div className="font-semibold text-slate-800 mb-3 border-b border-slate-200 pb-1 text-[13px] uppercase tracking-wider">
                             Parecer Técnico Específico
                           </div>
                           <div className="border-l-4 border-slate-400 pl-4 py-3 bg-slate-50 space-y-2">
-                            <div className="flex items-center gap-2 mb-2 text-base">
+                            <div className="flex items-center gap-2 mb-2 text-[12px]">
                               <span className="font-medium text-slate-700">Status:</span>
                               <span
-                                className={`font-semibold uppercase px-3 py-1 rounded text-base ${
+                                className={`font-semibold uppercase px-2 py-1 rounded text-[12px] ${
                                   eq.parecer.parecer === 'Conforme'
                                     ? 'bg-green-100 text-green-800'
                                     : eq.parecer.parecer === 'Não Conforme'
@@ -761,7 +781,7 @@ export default function ReportPrint() {
                               </span>
                             </div>
                             {eq.parecer.justificativa_mudanca && (
-                              <div className="text-base">
+                              <div className="text-[12px]">
                                 <span className="font-medium text-slate-700 block mb-1">
                                   Justificativa da Mudança:
                                 </span>
@@ -771,7 +791,7 @@ export default function ReportPrint() {
                               </div>
                             )}
                             {eq.parecer.observacoes && (
-                              <div className="text-base">
+                              <div className="text-[12px]">
                                 <span className="font-medium text-slate-700 block mb-1">
                                   Observações:
                                 </span>
@@ -786,8 +806,8 @@ export default function ReportPrint() {
 
                       {/* Photos */}
                       {eq.fotos && eq.fotos.length > 0 && (
-                        <div className="avoid-break mt-10">
-                          <div className="font-semibold text-slate-800 mb-3 border-b border-slate-200 pb-1 text-base uppercase tracking-wider">
+                        <div className="avoid-break mt-8">
+                          <div className="font-semibold text-slate-800 mb-3 border-b border-slate-200 pb-1 text-[13px] uppercase tracking-wider">
                             REGISTRO FOTOGRÁFICO
                           </div>
                           <div className="grid grid-cols-2 gap-6">
@@ -809,7 +829,7 @@ export default function ReportPrint() {
                 {/* General Photos (Estrutura) */}
                 {report.fotos_estrutura && report.fotos_estrutura.length > 0 && (
                   <div className="mb-8 break-before-page avoid-break border border-slate-400 bg-white p-4">
-                    <div className="font-semibold text-slate-800 mb-3 border-b border-slate-200 pb-1 text-base uppercase tracking-wider">
+                    <div className="font-semibold text-slate-800 mb-3 border-b border-slate-200 pb-1 text-[13px] uppercase tracking-wider">
                       REGISTRO FOTOGRÁFICO - GERAL / ESTRUTURA
                     </div>
                     <div className="grid grid-cols-2 gap-6">
@@ -828,26 +848,26 @@ export default function ReportPrint() {
                 {/* Conclusion */}
                 {(report.parecer_geral || report.observacoes) && (
                   <div className="mb-8 avoid-break border-2 border-slate-800 rounded-sm mt-10">
-                    <div className="bg-slate-800 text-white p-3 font-medium text-base tracking-wide text-center uppercase">
+                    <div className="bg-slate-800 text-white p-3 font-medium text-[13px] tracking-wide text-center uppercase">
                       Conclusão Geral e Parecer Técnico
                     </div>
-                    <div className="p-6 space-y-6 bg-slate-50">
+                    <div className="p-6 space-y-6 bg-slate-50 text-[12px]">
                       {report.parecer_geral && (
                         <div>
-                          <h4 className="font-semibold text-slate-800 mb-3 uppercase text-base tracking-wider border-b border-slate-300 pb-1">
+                          <h4 className="font-semibold text-slate-800 mb-3 uppercase text-[13px] tracking-wider border-b border-slate-300 pb-1">
                             Parecer Final
                           </h4>
-                          <p className="text-slate-900 whitespace-pre-wrap leading-relaxed text-base bg-white p-4 border border-slate-200 rounded">
+                          <p className="text-slate-900 whitespace-pre-wrap leading-relaxed bg-white p-4 border border-slate-200 rounded">
                             {report.parecer_geral}
                           </p>
                         </div>
                       )}
                       {report.observacoes && (
                         <div>
-                          <h4 className="font-semibold text-slate-800 mb-3 uppercase text-base tracking-wider border-b border-slate-300 pb-1 mt-6">
+                          <h4 className="font-semibold text-slate-800 mb-3 uppercase text-[13px] tracking-wider border-b border-slate-300 pb-1 mt-6">
                             Observações Adicionais
                           </h4>
-                          <p className="text-slate-900 whitespace-pre-wrap leading-relaxed text-base italic bg-white p-4 border border-slate-200 rounded">
+                          <p className="text-slate-900 whitespace-pre-wrap leading-relaxed italic bg-white p-4 border border-slate-200 rounded">
                             {report.observacoes}
                           </p>
                         </div>
@@ -858,11 +878,11 @@ export default function ReportPrint() {
 
                 {/* Signature Line */}
                 <div className="mt-16 pt-8 pb-8 flex justify-center avoid-break">
-                  <div className="w-80 text-center">
-                    <div className="border-t border-black pt-3 font-semibold text-base">
+                  <div className="w-80 text-center text-[12px]">
+                    <div className="border-t border-black pt-3 font-semibold text-slate-900">
                       {autor.name || 'Responsável Técnico'}
                     </div>
-                    <div className="text-base text-slate-600 mt-2 font-medium">
+                    <div className="text-slate-600 mt-1 font-medium">
                       ELETROTESTE ENGENHARIA E SERVIÇOS
                     </div>
                   </div>
@@ -874,7 +894,7 @@ export default function ReportPrint() {
             <tr>
               <td>
                 {/* Corporate Standardized Footer */}
-                <div className="print:mb-4 mt-8 border-t-2 border-slate-800 pt-4 text-sm text-slate-600 bg-white leading-relaxed">
+                <div className="print:mb-4 mt-8 border-t-2 border-slate-800 pt-4 text-[11px] text-slate-600 bg-white leading-relaxed">
                   <div className="flex justify-between items-start gap-4">
                     <div className="flex flex-col gap-1">
                       <span>
