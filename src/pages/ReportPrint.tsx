@@ -589,28 +589,6 @@ export default function ReportPrint() {
                       </tr>
                       <tr>
                         <td className="border border-slate-300 p-2 font-medium bg-slate-100 text-slate-700">
-                          Temp. Ambiente
-                        </td>
-                        <td className="border border-slate-300 p-2 text-slate-900">
-                          {report.temperatura_ambiente !== undefined &&
-                          report.temperatura_ambiente !== null &&
-                          report.temperatura_ambiente !== ''
-                            ? `${formatNumberPtBR(report.temperatura_ambiente, 1, 1)} °C`
-                            : 'N/A'}
-                        </td>
-                        <td className="border border-slate-300 p-2 font-medium bg-slate-100 text-slate-700">
-                          Umidade Relativa
-                        </td>
-                        <td className="border border-slate-300 p-2 text-slate-900">
-                          {report.umidade_relativa !== undefined &&
-                          report.umidade_relativa !== null &&
-                          report.umidade_relativa !== ''
-                            ? `${formatNumberPtBR(report.umidade_relativa, 1, 1)} %`
-                            : 'N/A'}
-                        </td>
-                      </tr>
-                      <tr>
-                        <td className="border border-slate-300 p-2 font-medium bg-slate-100 text-slate-700">
                           Acompanhante
                         </td>
                         <td className="border border-slate-300 p-2 text-slate-900" colSpan={3}>
@@ -885,52 +863,18 @@ export default function ReportPrint() {
                   )
                 })}
 
-                {/* General Photos (Estrutura) */}
-                {report.fotos_estrutura && report.fotos_estrutura.length > 0 && (
-                  <div className="mb-8 break-before-page avoid-break border border-slate-400 bg-white p-4">
-                    <div className="font-semibold text-slate-800 mb-3 border-b border-slate-200 pb-1 text-[13px] uppercase tracking-wider">
-                      REGISTRO FOTOGRÁFICO - GERAL / ESTRUTURA
-                    </div>
-                    <div className="grid grid-cols-2 gap-6">
-                      {report.fotos_estrutura.map((foto: string) => (
-                        <img
-                          key={foto}
-                          src={pb.files.getURL(report, foto)}
-                          alt="Estrutura"
-                          className="w-full h-72 object-contain border border-slate-300 rounded shadow-sm avoid-break bg-slate-50 p-2"
-                        />
-                      ))}
-                    </div>
-                  </div>
-                )}
-
                 {/* Conclusion */}
-                {(report.parecer_geral || report.observacoes) && (
+                {report.observacoes && (
                   <div className="mb-8 avoid-break border-2 border-slate-800 rounded-sm mt-10">
                     <div className="bg-slate-800 text-white p-3 font-medium text-[13px] tracking-wide text-center uppercase">
-                      Conclusão Geral e Parecer Técnico
+                      Observações
                     </div>
                     <div className="p-6 space-y-6 bg-slate-50 text-[12px]">
-                      {report.parecer_geral && (
-                        <div>
-                          <h4 className="font-semibold text-slate-800 mb-3 uppercase text-[13px] tracking-wider border-b border-slate-300 pb-1">
-                            Parecer Final
-                          </h4>
-                          <p className="text-slate-900 whitespace-pre-wrap leading-relaxed bg-white p-4 border border-slate-200 rounded">
-                            {report.parecer_geral}
-                          </p>
-                        </div>
-                      )}
-                      {report.observacoes && (
-                        <div>
-                          <h4 className="font-semibold text-slate-800 mb-3 uppercase text-[13px] tracking-wider border-b border-slate-300 pb-1 mt-6">
-                            Observações Adicionais
-                          </h4>
-                          <p className="text-slate-900 whitespace-pre-wrap leading-relaxed italic bg-white p-4 border border-slate-200 rounded">
-                            {report.observacoes}
-                          </p>
-                        </div>
-                      )}
+                      <div>
+                        <p className="text-slate-900 whitespace-pre-wrap leading-relaxed italic bg-white p-4 border border-slate-200 rounded">
+                          {report.observacoes}
+                        </p>
+                      </div>
                     </div>
                   </div>
                 )}

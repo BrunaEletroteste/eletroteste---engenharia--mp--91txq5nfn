@@ -10,9 +10,6 @@ export const reportFormSchema = z.object({
   proxima_manutencao: z.string().optional(),
   status: z.enum(['rascunho', 'finalizado']),
   observacoes: z.string().optional(),
-  temperatura_ambiente: z.union([z.coerce.number(), z.string()]).optional(),
-  umidade_relativa: z.union([z.coerce.number(), z.string()]).optional(),
-  parecer_geral: z.string().optional(),
 })
 
 export type FormValues = z.infer<typeof reportFormSchema>

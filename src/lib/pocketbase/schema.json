@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-06-01T14:54:40.494Z",
+  "generatedAt": "2026-06-01T15:05:52.438Z",
   "collections": [
     {
       "name": "users",
@@ -206,30 +206,6 @@
         {
           "name": "numero_proposta",
           "type": "text",
-          "required": false,
-          "system": false
-        },
-        {
-          "name": "temperatura_ambiente",
-          "type": "number",
-          "required": false,
-          "system": false
-        },
-        {
-          "name": "umidade_relativa",
-          "type": "number",
-          "required": false,
-          "system": false
-        },
-        {
-          "name": "parecer_geral",
-          "type": "text",
-          "required": false,
-          "system": false
-        },
-        {
-          "name": "fotos_estrutura",
-          "type": "file",
           "required": false,
           "system": false
         },
