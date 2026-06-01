@@ -1,6 +1,6 @@
 import { Outlet, useLocation, Link, useNavigate } from 'react-router-dom'
 import { LayoutDashboard, FileText, Users, Settings, Bell, LogOut } from 'lucide-react'
-import logoUrl from '@/assets/logotransparente-c06b6.png'
+import logoUrl from '@/assets/logotransparente-20c57.png'
 import {
   SidebarProvider,
   Sidebar,
@@ -32,9 +32,9 @@ export default function Layout() {
   return (
     <SidebarProvider>
       <Sidebar>
-        <SidebarHeader className="border-b border-slate-200 bg-white p-4">
-          <div className="flex items-center h-8">
-            <img src={logoUrl} alt="EletroTeste Logo" className="h-full object-contain" />
+        <SidebarHeader className="relative z-10 border-b border-slate-200 bg-white py-5 px-4 shadow-sm">
+          <div className="flex items-center justify-center h-12 w-full">
+            <img src={logoUrl} alt="EletroTeste Logo" className="h-full w-auto object-contain" />
           </div>
         </SidebarHeader>
         <SidebarContent>
