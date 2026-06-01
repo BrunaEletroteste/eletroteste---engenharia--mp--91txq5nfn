@@ -504,10 +504,15 @@ export function EquipmentTestsManager({
 
   const formatTestValue = (t: any, tipoEquipamento: string, subType?: string): string[] => {
     const formatNum = (val: any, isRelacao = false) => {
-      if (typeof val === 'number' && !isNaN(val)) {
-        return isRelacao ? formatNumberPtBR(val, 3, 3) : formatNumberPtBR(val, 4)
+      if (val === undefined || val === null || val === '') return '-'
+      const numericVal = typeof val === 'string' ? Number(val.replace(',', '.')) : val
+      if (typeof numericVal === 'number' && !isNaN(numericVal)) {
+        const numStr = isRelacao
+          ? formatNumberPtBR(numericVal, 3, 3)
+          : formatNumberPtBR(numericVal, 4)
+        return t.unidade ? `${numStr} ${t.unidade}` : numStr
       }
-      return val
+      return val === '-' ? val : t.unidade ? `${val} ${t.unidade}` : String(val)
     }
 
     if (t.tipo_teste === 'Resistências dos Isolamentos') {
@@ -732,7 +737,6 @@ export function EquipmentTestsManager({
                   <TableRow>
                     <TableHead>Equipamento Utilizado</TableHead>
                     <TableHead>Valor</TableHead>
-                    {!isEnrolamentos && <TableHead>Unidade</TableHead>}
                     <TableHead>Data</TableHead>
                     {!isView && <TableHead className="w-[100px]">Ações</TableHead>}
                   </TableRow>
@@ -759,11 +763,6 @@ export function EquipmentTestsManager({
                           )}
                         </div>
                       </TableCell>
-                      {!isEnrolamentos && (
-                        <TableCell className="text-sm text-muted-foreground">
-                          {t.unidade || '-'}
-                        </TableCell>
-                      )}
                       <TableCell>{format(parseISO(t.data_teste), 'dd/MM/yyyy')}</TableCell>
                       {!isView && (
                         <TableCell>
@@ -827,7 +826,6 @@ export function EquipmentTestsManager({
                     <TableRow>
                       <TableHead>Equipamento Utilizado</TableHead>
                       <TableHead>Valor</TableHead>
-                      {!isEnrolamentos && <TableHead>Unidade</TableHead>}
                       <TableHead>Ano</TableHead>
                     </TableRow>
                   </TableHeader>
@@ -853,11 +851,6 @@ export function EquipmentTestsManager({
                             )}
                           </div>
                         </TableCell>
-                        {!isEnrolamentos && (
-                          <TableCell className="py-2 text-sm text-muted-foreground">
-                            {ht.unidade || '-'}
-                          </TableCell>
-                        )}
                         <TableCell className="py-2 text-sm">
                           {new Date(ht.data_teste).getFullYear()}
                         </TableCell>

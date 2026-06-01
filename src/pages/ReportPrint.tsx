@@ -182,10 +182,15 @@ export default function ReportPrint() {
 
   const formatTestValue = (t: any, tipoEquipamento: string, subType?: string): string[] => {
     const formatNum = (val: any, isRelacao = false) => {
-      if (typeof val === 'number' && !isNaN(val)) {
-        return isRelacao ? formatNumberPtBR(val, 3, 3) : formatNumberPtBR(val, 4)
+      if (val === undefined || val === null || val === '') return '-'
+      const numericVal = typeof val === 'string' ? Number(val.replace(',', '.')) : val
+      if (typeof numericVal === 'number' && !isNaN(numericVal)) {
+        const numStr = isRelacao
+          ? formatNumberPtBR(numericVal, 3, 3)
+          : formatNumberPtBR(numericVal, 4)
+        return t.unidade ? `${numStr} ${t.unidade}` : numStr
       }
-      return val
+      return val === '-' ? val : t.unidade ? `${val} ${t.unidade}` : String(val)
     }
 
     if (t.tipo_teste === 'Resistências dos Isolamentos') {
@@ -241,7 +246,7 @@ export default function ReportPrint() {
         const f_ca = formatRes(df.ac)
         const f_massa = formatRes(df.abc_massa)
         const a_aa = formatRes(da.aa)
-        const a_bb = formatRes(da.da)
+        const a_bb = formatRes(da.bb)
         const a_cc = formatRes(da.cc)
         const fechadoItems = [
           `A x B: ${f_ab}`,
@@ -290,39 +295,41 @@ export default function ReportPrint() {
       const eti_corr = t.dados_detalhados?.eti_corr
       const calc = t.dados_detalhados?.resultados_calculados
       const tRef = t.dados_detalhados?.temperatura_referencia || 75
-      const formatField = (val: any) =>
-        val !== undefined && val !== null && val !== '' ? `${formatNumberPtBR(val, 2, 2)}` : '-'
+      const formatField = (val: any, unit: string) =>
+        val !== undefined && val !== null && val !== ''
+          ? `${formatNumberPtBR(val, 2, 2)} ${unit}`
+          : '-'
       const f_ets = [
-        `H1-H3: ${formatField(ets.h1_h3)}`,
-        `H2-H1: ${formatField(ets.h2_h1)}`,
-        `H3-H2: ${formatField(ets.h3_h2)}`,
+        `H1-H3: ${formatField(ets.h1_h3, 'Ω')}`,
+        `H2-H1: ${formatField(ets.h2_h1, 'Ω')}`,
+        `H3-H2: ${formatField(ets.h3_h2, 'Ω')}`,
       ]
       const f_eti = [
-        `X1-X3: ${formatField(eti.x1_x3)}`,
-        `X2-X1: ${formatField(eti.x2_x1)}`,
-        `X3-X2: ${formatField(eti.x3_x2)}`,
+        `X1-X3: ${formatField(eti.x1_x3, 'mΩ')}`,
+        `X2-X1: ${formatField(eti.x2_x1, 'mΩ')}`,
+        `X3-X2: ${formatField(eti.x3_x2, 'mΩ')}`,
       ]
       if (calc) {
         if (calc.ets_75 !== null && calc.ets_75 !== undefined)
-          f_ets.push(`Média 75ºC: ${formatField(calc.ets_75)}`)
+          f_ets.push(`Média 75ºC: ${formatField(calc.ets_75, 'Ω')}`)
         else if (calc.ets_105 !== null && calc.ets_105 !== undefined)
-          f_ets.push(`Média 105ºC: ${formatField(calc.ets_105)}`)
+          f_ets.push(`Média 105ºC: ${formatField(calc.ets_105, 'Ω')}`)
         if (calc.eti_75 !== null && calc.eti_75 !== undefined)
-          f_eti.push(`Média 75ºC: ${formatField(calc.eti_75)}`)
+          f_eti.push(`Média 75ºC: ${formatField(calc.eti_75, 'mΩ')}`)
         else if (calc.eti_105 !== null && calc.eti_105 !== undefined)
-          f_eti.push(`Média 105ºC: ${formatField(calc.eti_105)}`)
+          f_eti.push(`Média 105ºC: ${formatField(calc.eti_105, 'mΩ')}`)
       } else if (ets_corr || eti_corr) {
         if (ets_corr) {
           f_ets.push(`Corr. ${tRef}ºC:`)
-          f_ets.push(`  H1-H3: ${formatField(ets_corr.h1_h3)}`)
-          f_ets.push(`  H2-H1: ${formatField(ets_corr.h2_h1)}`)
-          f_ets.push(`  H3-H2: ${formatField(ets_corr.h3_h2)}`)
+          f_ets.push(`  H1-H3: ${formatField(ets_corr.h1_h3, 'Ω')}`)
+          f_ets.push(`  H2-H1: ${formatField(ets_corr.h2_h1, 'Ω')}`)
+          f_ets.push(`  H3-H2: ${formatField(ets_corr.h3_h2, 'Ω')}`)
         }
         if (eti_corr) {
           f_eti.push(`Corr. ${tRef}ºC:`)
-          f_eti.push(`  X1-X3: ${formatField(eti_corr.x1_x3)}`)
-          f_eti.push(`  X2-X1: ${formatField(eti_corr.x2_x1)}`)
-          f_eti.push(`  X3-X2: ${formatField(eti_corr.x3_x2)}`)
+          f_eti.push(`  X1-X3: ${formatField(eti_corr.x1_x3, 'mΩ')}`)
+          f_eti.push(`  X2-X1: ${formatField(eti_corr.x2_x1, 'mΩ')}`)
+          f_eti.push(`  X3-X2: ${formatField(eti_corr.x3_x2, 'mΩ')}`)
         }
       }
       if (subType === 'ETS') return f_ets
@@ -726,11 +733,6 @@ export default function ReportPrint() {
                                 <tbody>
                                   {eq.testes.map((t: any, index: number) => {
                                     const resultsArray = formatTestValue(t, eq.tipo_equipamento)
-                                    const resultsStr =
-                                      resultsArray
-                                        .map((s) => s.trim())
-                                        .filter(Boolean)
-                                        .join(' | ') + (t.unidade ? ` ${t.unidade}` : '')
                                     const hasObservacao = !!t.observacoes
 
                                     return (
@@ -751,7 +753,11 @@ export default function ReportPrint() {
                                           <td
                                             className={`${tablePadding} align-top text-blue-900 font-semibold whitespace-pre-wrap`}
                                           >
-                                            {resultsStr}
+                                            {resultsArray.map((line, lineIdx) => (
+                                              <span key={lineIdx} className="block leading-tight">
+                                                {line}
+                                              </span>
+                                            ))}
                                           </td>
                                         </tr>
                                         <tr className="avoid-break bg-slate-50/50 border-t border-slate-200">
