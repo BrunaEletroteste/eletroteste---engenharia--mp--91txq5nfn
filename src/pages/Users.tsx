@@ -111,6 +111,7 @@ export default function UsersPage() {
         passwordConfirm: data.password,
         tipo_acesso: data.tipo_acesso,
         ativo: true,
+        emailVisibility: true,
       })
       toast({ title: 'Sucesso', description: 'Usuário criado com sucesso.' })
       setOpen(false)
