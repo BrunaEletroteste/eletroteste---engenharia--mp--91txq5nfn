@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-06-01T15:33:32.351Z",
+  "generatedAt": "2026-06-01T15:43:34.298Z",
   "collections": [
     {
       "name": "users",
@@ -7,7 +7,7 @@
       "apiRules": {
         "list": "@request.auth.tipo_acesso = 'admin' || id = @request.auth.id",
         "view": "@request.auth.tipo_acesso = 'admin' || id = @request.auth.id",
-        "create": "@request.auth.tipo_acesso = 'admin'",
+        "create": "",
         "update": "@request.auth.tipo_acesso = 'admin' || id = @request.auth.id",
         "delete": "@request.auth.tipo_acesso = 'admin' || id = @request.auth.id"
       },
