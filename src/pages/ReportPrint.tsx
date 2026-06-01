@@ -288,7 +288,7 @@ export default function ReportPrint() {
       const calc = t.dados_detalhados?.resultados_calculados
       const tRef = t.dados_detalhados?.temperatura_referencia || 75
       const formatField = (val: any) =>
-        val !== undefined && val !== null && val !== '' ? `${formatNum(val)}` : '-'
+        val !== undefined && val !== null && val !== '' ? `${formatNumberPtBR(val, 2, 2)}` : '-'
       const f_ets = [
         `H1-H3: ${formatField(ets.h1_h3)}`,
         `H2-H1: ${formatField(ets.h2_h1)}`,

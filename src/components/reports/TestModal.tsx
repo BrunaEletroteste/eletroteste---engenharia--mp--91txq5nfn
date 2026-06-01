@@ -41,6 +41,7 @@ import { Badge } from '@/components/ui/badge'
 import { Check, ChevronsUpDown } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { TestItem } from '@/types/reports'
+import { formatNumberPtBR, parseNumberPtBR } from '@/lib/format'
 import {
   Table,
   TableBody,
@@ -523,6 +524,81 @@ const FATOR_CORRECAO_105: Record<number, number> = {
   100: 1.41,
 }
 
+function roundEnrolamento(val: number | null): number | null {
+  if (val === null) return null
+  const parts = val.toFixed(4).split('.')
+  if (parts.length < 2) return val
+  const decimals = parts[1]
+  const thirdDigit = parseInt(decimals[2] || '0', 10)
+  const base = Math.floor(val * 100) / 100
+  if (thirdDigit > 5) {
+    return parseFloat((base + 0.01).toFixed(2))
+  }
+  return parseFloat(base.toFixed(2))
+}
+
+const NumberInputPtBR = ({
+  value,
+  onChange,
+  className,
+  suffix,
+}: {
+  value: any
+  onChange: (val: any) => void
+  className?: string
+  suffix?: string
+}) => {
+  const [local, setLocal] = useState(() => {
+    if (value === null || value === undefined || value === '') return ''
+    return formatNumberPtBR(value, 2, 2)
+  })
+
+  useEffect(() => {
+    if (value === null || value === undefined || value === '') {
+      setLocal('')
+    } else {
+      const parsedLocal = parseNumberPtBR(local)
+      const parsedValue = typeof value === 'string' ? parseNumberPtBR(value) : value
+      if (parsedLocal !== parsedValue) {
+        setLocal(formatNumberPtBR(value, 2, 2))
+      }
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [value])
+
+  return (
+    <div className="flex-1 relative w-full">
+      <Input
+        type="text"
+        className={className}
+        value={local}
+        onChange={(e) => {
+          let val = e.target.value.replace(/[^0-9,.-]/g, '')
+          setLocal(val)
+          const parsed = parseNumberPtBR(val)
+          onChange(parsed === '' ? '' : parsed)
+        }}
+        onBlur={() => {
+          const parsed = parseNumberPtBR(local)
+          if (parsed !== '') {
+            const formatted = formatNumberPtBR(parsed, 2, 2)
+            setLocal(formatted)
+            onChange(parsed)
+          } else {
+            setLocal('')
+            onChange('')
+          }
+        }}
+      />
+      {suffix && (
+        <span className="absolute right-3 top-1/2 -translate-y-1/2 text-xs text-muted-foreground pointer-events-none select-none">
+          {suffix}
+        </span>
+      )}
+    </div>
+  )
+}
+
 export function TestModal({
   open,
   onOpenChange,
@@ -706,13 +782,23 @@ export function TestModal({
   const fatorEnrolamento75 = tempRef !== null ? (234.5 + 75) / (234.5 + tempRef) : null
   const fatorEnrolamento105 = tempRef !== null ? (255 + 105) / (255 + tempRef) : null
 
-  const ets75 = avgEts !== null && fatorEnrolamento75 !== null ? avgEts * fatorEnrolamento75 : null
-  const eti75 = avgEti !== null && fatorEnrolamento75 !== null ? avgEti * fatorEnrolamento75 : null
+  const ets75 =
+    avgEts !== null && fatorEnrolamento75 !== null
+      ? roundEnrolamento(avgEts * fatorEnrolamento75)
+      : null
+  const eti75 =
+    avgEti !== null && fatorEnrolamento75 !== null
+      ? roundEnrolamento(avgEti * fatorEnrolamento75)
+      : null
 
   const ets105 =
-    avgEts !== null && fatorEnrolamento105 !== null ? avgEts * fatorEnrolamento105 : null
+    avgEts !== null && fatorEnrolamento105 !== null
+      ? roundEnrolamento(avgEts * fatorEnrolamento105)
+      : null
   const eti105 =
-    avgEti !== null && fatorEnrolamento105 !== null ? avgEti * fatorEnrolamento105 : null
+    avgEti !== null && fatorEnrolamento105 !== null
+      ? roundEnrolamento(avgEti * fatorEnrolamento105)
+      : null
 
   useEffect(() => {
     if (!open) return
@@ -997,10 +1083,22 @@ export function TestModal({
                     const aplicadoFator = isOleoMineral ? calcFator75 : calcFator105
 
                     payload.dados_detalhados.resultados_calculados = {
-                      ets_75: isOleoMineral && sAvgEts !== null ? sAvgEts * calcFator75 : null,
-                      eti_75: isOleoMineral && sAvgEti !== null ? sAvgEti * calcFator75 : null,
-                      ets_105: !isOleoMineral && sAvgEts !== null ? sAvgEts * calcFator105 : null,
-                      eti_105: !isOleoMineral && sAvgEti !== null ? sAvgEti * calcFator105 : null,
+                      ets_75:
+                        isOleoMineral && sAvgEts !== null
+                          ? roundEnrolamento(sAvgEts * calcFator75)
+                          : null,
+                      eti_75:
+                        isOleoMineral && sAvgEti !== null
+                          ? roundEnrolamento(sAvgEti * calcFator75)
+                          : null,
+                      ets_105:
+                        !isOleoMineral && sAvgEts !== null
+                          ? roundEnrolamento(sAvgEts * calcFator105)
+                          : null,
+                      eti_105:
+                        !isOleoMineral && sAvgEti !== null
+                          ? roundEnrolamento(sAvgEti * calcFator105)
+                          : null,
                       fator_correcao_aplicado: aplicadoFator,
                     }
                   }
@@ -1174,18 +1272,11 @@ export function TestModal({
                       render={({ field }) => (
                         <FormItem className="flex-1 max-w-[250px]">
                           <FormLabel className="text-xs">Temperatura Medida (°C)</FormLabel>
-                          <FormControl>
-                            <Input
-                              type="number"
-                              step="any"
-                              className="h-8 text-xs"
-                              {...field}
-                              value={field.value ?? ''}
-                              onChange={(e) =>
-                                field.onChange(e.target.value === '' ? '' : Number(e.target.value))
-                              }
-                            />
-                          </FormControl>
+                          <NumberInputPtBR
+                            className="h-8 text-xs"
+                            value={field.value}
+                            onChange={field.onChange}
+                          />
                           <FormMessage className="text-[10px]" />
                         </FormItem>
                       )}
@@ -1199,10 +1290,10 @@ export function TestModal({
                       <div className="h-8 flex items-center px-3 border rounded-md bg-muted text-xs text-muted-foreground">
                         {meioIsolante === 'Óleo Mineral'
                           ? fatorEnrolamento75 !== null
-                            ? fatorEnrolamento75.toFixed(4)
+                            ? formatNumberPtBR(fatorEnrolamento75, 2, 2)
                             : '-'
                           : fatorEnrolamento105 !== null
-                            ? fatorEnrolamento105.toFixed(4)
+                            ? formatNumberPtBR(fatorEnrolamento105, 2, 2)
                             : '-'}
                       </div>
                     </div>
@@ -1228,24 +1319,12 @@ export function TestModal({
                                 <FormLabel className="text-xs w-16 text-right font-semibold shrink-0">
                                   {r.label} <span className="text-destructive">*</span>
                                 </FormLabel>
-                                <div className="flex-1 relative">
-                                  <FormControl>
-                                    <Input
-                                      type="number"
-                                      step="any"
-                                      className="h-8 text-xs pr-8"
-                                      value={field.value ?? ''}
-                                      onChange={(e) =>
-                                        field.onChange(
-                                          e.target.value === '' ? '' : Number(e.target.value),
-                                        )
-                                      }
-                                    />
-                                  </FormControl>
-                                  <span className="absolute right-3 top-1/2 -translate-y-1/2 text-xs text-muted-foreground pointer-events-none select-none">
-                                    Ω
-                                  </span>
-                                </div>
+                                <NumberInputPtBR
+                                  className="h-8 text-xs pr-8"
+                                  value={field.value}
+                                  onChange={field.onChange}
+                                  suffix="Ω"
+                                />
                               </div>
                               <FormMessage className="text-[10px]" />
                             </FormItem>
@@ -1272,24 +1351,12 @@ export function TestModal({
                                 <FormLabel className="text-xs w-16 text-right font-semibold shrink-0">
                                   {r.label} <span className="text-destructive">*</span>
                                 </FormLabel>
-                                <div className="flex-1 relative">
-                                  <FormControl>
-                                    <Input
-                                      type="number"
-                                      step="any"
-                                      className="h-8 text-xs pr-10"
-                                      value={field.value ?? ''}
-                                      onChange={(e) =>
-                                        field.onChange(
-                                          e.target.value === '' ? '' : Number(e.target.value),
-                                        )
-                                      }
-                                    />
-                                  </FormControl>
-                                  <span className="absolute right-3 top-1/2 -translate-y-1/2 text-xs text-muted-foreground pointer-events-none select-none">
-                                    mΩ
-                                  </span>
-                                </div>
+                                <NumberInputPtBR
+                                  className="h-8 text-xs pr-10"
+                                  value={field.value}
+                                  onChange={field.onChange}
+                                  suffix="mΩ"
+                                />
                               </div>
                               <FormMessage className="text-[10px]" />
                             </FormItem>
@@ -1309,7 +1376,7 @@ export function TestModal({
                             ETS à 75ºC (Média)
                           </FormLabel>
                           <div className="h-8 flex items-center px-3 border rounded-md bg-muted text-xs font-medium text-foreground">
-                            {ets75 !== null ? ets75.toFixed(4) + ' Ω' : '-'}
+                            {ets75 !== null ? formatNumberPtBR(ets75, 2, 2) + ' Ω' : '-'}
                           </div>
                         </div>
                         <div className="space-y-2">
@@ -1317,7 +1384,7 @@ export function TestModal({
                             ETI à 75ºC (Média)
                           </FormLabel>
                           <div className="h-8 flex items-center px-3 border rounded-md bg-muted text-xs font-medium text-foreground">
-                            {eti75 !== null ? eti75.toFixed(4) + ' mΩ' : '-'}
+                            {eti75 !== null ? formatNumberPtBR(eti75, 2, 2) + ' mΩ' : '-'}
                           </div>
                         </div>
                       </>
@@ -1328,7 +1395,7 @@ export function TestModal({
                             ETS à 105ºC (Média)
                           </FormLabel>
                           <div className="h-8 flex items-center px-3 border rounded-md bg-muted text-xs font-medium text-foreground">
-                            {ets105 !== null ? ets105.toFixed(4) + ' Ω' : '-'}
+                            {ets105 !== null ? formatNumberPtBR(ets105, 2, 2) + ' Ω' : '-'}
                           </div>
                         </div>
                         <div className="space-y-2">
@@ -1336,7 +1403,7 @@ export function TestModal({
                             ETI à 105ºC (Média)
                           </FormLabel>
                           <div className="h-8 flex items-center px-3 border rounded-md bg-muted text-xs font-medium text-foreground">
-                            {eti105 !== null ? eti105.toFixed(4) + ' mΩ' : '-'}
+                            {eti105 !== null ? formatNumberPtBR(eti105, 2, 2) + ' mΩ' : '-'}
                           </div>
                         </div>
                       </>
