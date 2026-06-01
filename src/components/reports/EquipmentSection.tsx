@@ -64,6 +64,7 @@ export function EquipmentSection({ equipments, setEquipments, isView }: Props) {
     open: false,
     index: null,
   })
+  const [activeTab, setActiveTab] = useState<string>('Geral')
 
   const handleSaveEquipment = (eq: EquipmentItem) => {
     if (editingIndex !== null) {
@@ -152,12 +153,48 @@ export function EquipmentSection({ equipments, setEquipments, isView }: Props) {
       )
     })
 
-  const toggleAll = () => {
-    if (expandedItems.length === visibleEquipments.length && visibleEquipments.length > 0) {
-      setExpandedItems([])
-    } else {
-      setExpandedItems(visibleEquipments.map((_, i) => i.toString()))
+  const substationsMap = new Map<string, typeof visibleEquipments>()
+  visibleEquipments.forEach((item) => {
+    const sub = item.eq.dados_tecnicos?.subestacao?.trim() || 'Geral'
+    if (!substationsMap.has(sub)) {
+      substationsMap.set(sub, [])
     }
+    substationsMap.get(sub)!.push(item)
+  })
+
+  const substations = Array.from(substationsMap.keys()).sort((a, b) => {
+    if (a === 'Geral') return 1
+    if (b === 'Geral') return -1
+    return a.localeCompare(b)
+  })
+
+  const currentTab = substations.includes(activeTab) ? activeTab : substations[0] || 'Geral'
+
+  const toggleAll = () => {
+    const currentTabEquipments = substationsMap.get(currentTab) || []
+    const allExpanded = currentTabEquipments.every(({ index }) =>
+      expandedItems.includes(index.toString()),
+    )
+
+    if (allExpanded && currentTabEquipments.length > 0) {
+      setExpandedItems((prev) =>
+        prev.filter((id) => !currentTabEquipments.map((e) => e.index.toString()).includes(id)),
+      )
+    } else {
+      setExpandedItems((prev) => {
+        const newSet = new Set([
+          ...prev,
+          ...currentTabEquipments.map(({ index }) => index.toString()),
+        ])
+        return Array.from(newSet)
+      })
+    }
+  }
+
+  const isAllExpandedInCurrentTab = () => {
+    const currentTabEquipments = substationsMap.get(currentTab) || []
+    if (currentTabEquipments.length === 0) return false
+    return currentTabEquipments.every(({ index }) => expandedItems.includes(index.toString()))
   }
 
   const handleUpdateParecer = (index: number, p: ParecerItem) => {
@@ -206,13 +243,13 @@ export function EquipmentSection({ equipments, setEquipments, isView }: Props) {
         <div className="flex gap-2 items-center w-full sm:w-auto justify-end">
           {visibleEquipments.length > 0 && (
             <Button variant="outline" size="sm" onClick={toggleAll} className="hidden sm:flex">
-              {expandedItems.length === visibleEquipments.length ? (
+              {isAllExpandedInCurrentTab() ? (
                 <>
-                  <ChevronUp className="mr-2 h-4 w-4" /> Recolher Todos
+                  <ChevronUp className="mr-2 h-4 w-4" /> Recolher
                 </>
               ) : (
                 <>
-                  <ChevronDown className="mr-2 h-4 w-4" /> Expandir Todos
+                  <ChevronDown className="mr-2 h-4 w-4" /> Expandir
                 </>
               )}
             </Button>
@@ -244,344 +281,355 @@ export function EquipmentSection({ equipments, setEquipments, isView }: Props) {
         </div>
       ) : (
         <div className="pt-2">
-          <Accordion
-            type="multiple"
-            value={expandedItems}
-            onValueChange={setExpandedItems}
-            className="space-y-3"
-          >
-            {visibleEquipments.map(({ eq, index, seq }, i) => (
-              <AccordionItem
-                id={`equipamento-${index}`}
-                key={index}
-                value={i.toString()}
-                className="border-l-4 border-l-primary/60 border rounded-md shadow-sm overflow-hidden bg-card transition-all duration-300"
-              >
-                <div className="flex items-center justify-between pr-3 bg-muted/10 hover:bg-muted/20 transition-colors">
-                  <AccordionTrigger className="hover:no-underline px-3 py-3 flex-1 justify-start gap-3 text-left [&>svg:last-child]:hidden group">
-                    <Tooltip>
-                      <TooltipTrigger asChild>
-                        <ChevronDown className="h-4 w-4 shrink-0 text-muted-foreground transition-transform duration-200 group-data-[state=open]:rotate-180" />
-                      </TooltipTrigger>
-                      <TooltipContent>Expandir/Recolher</TooltipContent>
-                    </Tooltip>
+          <Tabs value={currentTab} onValueChange={setActiveTab} className="w-full">
+            <TabsList className="w-full justify-start rounded-none px-4 py-0 h-auto space-x-6 bg-transparent border-b overflow-x-auto mb-4">
+              {substations.map((sub) => (
+                <TabsTrigger
+                  key={sub}
+                  value={sub}
+                  className="px-1 py-3 border-b-4 border-transparent data-[state=active]:border-primary data-[state=active]:text-foreground text-muted-foreground hover:text-foreground transition-colors rounded-none whitespace-nowrap"
+                >
+                  {sub}
+                  <Badge
+                    variant="secondary"
+                    className="ml-2 font-normal rounded-full h-5 px-1.5 flex items-center justify-center"
+                  >
+                    {substationsMap.get(sub)?.length}
+                  </Badge>
+                </TabsTrigger>
+              ))}
+            </TabsList>
 
-                    <Badge
-                      variant="outline"
-                      className="bg-primary/5 border-primary/20 text-primary px-2 py-0.5 text-xs font-mono shrink-0"
+            {substations.map((sub) => (
+              <TabsContent key={sub} value={sub} className="focus-visible:outline-none">
+                <Accordion
+                  type="multiple"
+                  value={expandedItems}
+                  onValueChange={setExpandedItems}
+                  className="space-y-3"
+                >
+                  {substationsMap.get(sub)!.map(({ eq, index, seq }) => (
+                    <AccordionItem
+                      id={`equipamento-${index}`}
+                      key={index}
+                      value={index.toString()}
+                      className="border-l-4 border-l-primary/60 border rounded-md shadow-sm overflow-hidden bg-card transition-all duration-300"
                     >
-                      #{seq}
-                    </Badge>
-                    <span className="font-semibold text-foreground flex-1 break-words">
-                      {[
-                        eq.tipo_equipamento,
-                        eq.dados_tecnicos?.numero || eq.dados_tecnicos?.identificacao,
-                        eq.dados_tecnicos?.subestacao,
-                        eq.dados_tecnicos?.circuito,
-                      ]
-                        .filter(Boolean)
-                        .join(' — ')}
-                    </span>
-                    {eq.parecer?.parecer && (
-                      <Badge
-                        variant={
-                          eq.parecer.parecer === 'Conforme'
-                            ? 'default'
-                            : eq.parecer.parecer === 'Possui Ressalvas'
-                              ? 'secondary'
-                              : 'destructive'
-                        }
-                        className={cn('ml-auto mr-2', {
-                          'bg-emerald-100 text-emerald-800 hover:bg-emerald-100':
-                            eq.parecer.parecer === 'Conforme',
-                          'bg-[#FEF3C7] text-yellow-800 hover:bg-[#FEF3C7]':
-                            eq.parecer.parecer === 'Possui Ressalvas',
-                          'bg-[#FEE2E2] text-red-800 hover:bg-[#FEE2E2]':
-                            eq.parecer.parecer === 'Não Conforme',
-                        })}
-                      >
-                        {eq.parecer.parecer}
-                      </Badge>
-                    )}
-                  </AccordionTrigger>
-                  {!isView && (
-                    <div className="flex items-center gap-1 ml-2 bg-background/50 shadow-sm p-1 rounded-md border border-border/60">
-                      <Tooltip>
-                        <TooltipTrigger asChild>
-                          <Button
-                            variant="ghost"
-                            size="icon"
-                            className="h-8 w-8 text-muted-foreground hover:text-primary z-10 relative disabled:opacity-30"
-                            disabled={!!searchQuery || seq === 1}
-                            onClick={(e) => handleMoveUp(e, index)}
+                      <div className="flex items-center justify-between pr-3 bg-muted/10 hover:bg-muted/20 transition-colors">
+                        <AccordionTrigger className="hover:no-underline px-3 py-3 flex-1 justify-start gap-3 text-left [&>svg:last-child]:hidden group">
+                          <Tooltip>
+                            <TooltipTrigger asChild>
+                              <ChevronDown className="h-4 w-4 shrink-0 text-muted-foreground transition-transform duration-200 group-data-[state=open]:rotate-180" />
+                            </TooltipTrigger>
+                            <TooltipContent>Expandir/Recolher</TooltipContent>
+                          </Tooltip>
+
+                          <Badge
+                            variant="outline"
+                            className="bg-primary/5 border-primary/20 text-primary px-2 py-0.5 text-xs font-mono shrink-0"
                           >
-                            <ArrowUp className="h-4 w-4" />
-                          </Button>
-                        </TooltipTrigger>
-                        <TooltipContent>Mover para cima</TooltipContent>
-                      </Tooltip>
+                            #{seq}
+                          </Badge>
+                          <span className="font-semibold text-foreground flex-1 break-words">
+                            {[
+                              eq.tipo_equipamento || 'N/A',
+                              eq.dados_tecnicos?.subestacao || 'N/A',
+                              eq.dados_tecnicos?.circuito || 'N/A',
+                              eq.dados_tecnicos?.n_serie ||
+                                eq.dados_tecnicos?.numero_serie ||
+                                'N/A',
+                              eq.parecer?.parecer || 'Pendente',
+                            ].join(' — ')}
+                          </span>
+                        </AccordionTrigger>
+                        {!isView && (
+                          <div className="flex items-center gap-1 ml-2 bg-background/50 shadow-sm p-1 rounded-md border border-border/60">
+                            <Tooltip>
+                              <TooltipTrigger asChild>
+                                <Button
+                                  variant="ghost"
+                                  size="icon"
+                                  className="h-8 w-8 text-muted-foreground hover:text-primary z-10 relative disabled:opacity-30"
+                                  disabled={!!searchQuery || seq === 1}
+                                  onClick={(e) => handleMoveUp(e, index)}
+                                >
+                                  <ArrowUp className="h-4 w-4" />
+                                </Button>
+                              </TooltipTrigger>
+                              <TooltipContent>Mover para cima</TooltipContent>
+                            </Tooltip>
 
-                      <Tooltip>
-                        <TooltipTrigger asChild>
-                          <Button
-                            variant="ghost"
-                            size="icon"
-                            className="h-8 w-8 text-muted-foreground hover:text-primary z-10 relative disabled:opacity-30"
-                            disabled={!!searchQuery || seq === activeEquipmentsCount}
-                            onClick={(e) => handleMoveDown(e, index)}
-                          >
-                            <ArrowDown className="h-4 w-4" />
-                          </Button>
-                        </TooltipTrigger>
-                        <TooltipContent>Mover para baixo</TooltipContent>
-                      </Tooltip>
+                            <Tooltip>
+                              <TooltipTrigger asChild>
+                                <Button
+                                  variant="ghost"
+                                  size="icon"
+                                  className="h-8 w-8 text-muted-foreground hover:text-primary z-10 relative disabled:opacity-30"
+                                  disabled={!!searchQuery || seq === activeEquipmentsCount}
+                                  onClick={(e) => handleMoveDown(e, index)}
+                                >
+                                  <ArrowDown className="h-4 w-4" />
+                                </Button>
+                              </TooltipTrigger>
+                              <TooltipContent>Mover para baixo</TooltipContent>
+                            </Tooltip>
 
-                      <div className="w-[1px] h-6 bg-border/60 mx-1"></div>
+                            <div className="w-[1px] h-6 bg-border/60 mx-1"></div>
 
-                      <Tooltip>
-                        <TooltipTrigger asChild>
-                          <Button
-                            variant="ghost"
-                            size="icon"
-                            className="h-8 w-8 text-muted-foreground hover:text-primary z-10 relative"
-                            onClick={(e) => {
-                              e.stopPropagation()
-                              setEditingIndex(index)
-                              setModalOpen(true)
-                            }}
-                          >
-                            <Edit className="h-4 w-4" />
-                          </Button>
-                        </TooltipTrigger>
-                        <TooltipContent>Editar</TooltipContent>
-                      </Tooltip>
+                            <Tooltip>
+                              <TooltipTrigger asChild>
+                                <Button
+                                  variant="ghost"
+                                  size="icon"
+                                  className="h-8 w-8 text-muted-foreground hover:text-primary z-10 relative"
+                                  onClick={(e) => {
+                                    e.stopPropagation()
+                                    setEditingIndex(index)
+                                    setModalOpen(true)
+                                  }}
+                                >
+                                  <Edit className="h-4 w-4" />
+                                </Button>
+                              </TooltipTrigger>
+                              <TooltipContent>Editar</TooltipContent>
+                            </Tooltip>
 
-                      <Tooltip>
-                        <TooltipTrigger asChild>
-                          <Button
-                            variant="ghost"
-                            size="icon"
-                            className="h-8 w-8 text-muted-foreground hover:text-destructive hover:bg-destructive/10 z-10 relative"
-                            onClick={(e) => {
-                              e.stopPropagation()
-                              setDeleteDialog({ open: true, index })
-                            }}
-                          >
-                            <Trash2 className="h-4 w-4" />
-                          </Button>
-                        </TooltipTrigger>
-                        <TooltipContent>Excluir</TooltipContent>
-                      </Tooltip>
-                    </div>
-                  )}
-                </div>
-                <AccordionContent className="bg-background">
-                  <Tabs defaultValue="dados" className="w-full">
-                    <TabsList className="w-full justify-start rounded-none px-4 py-0 h-auto space-x-6 bg-transparent border-b overflow-x-auto">
-                      <TabsTrigger
-                        value="dados"
-                        className="px-1 py-3 border-b-4 border-transparent data-[state=active]:border-primary data-[state=active]:text-foreground text-muted-foreground hover:text-foreground transition-colors rounded-none"
-                      >
-                        Dados Técnicos
-                      </TabsTrigger>
-                      <TabsTrigger
-                        value="testes"
-                        className="px-1 py-3 border-b-4 border-transparent data-[state=active]:border-primary data-[state=active]:text-foreground text-muted-foreground hover:text-foreground transition-colors rounded-none"
-                      >
-                        Testes Elétricos
-                      </TabsTrigger>
-                      <TabsTrigger
-                        value="fotos"
-                        className="px-1 py-3 border-b-4 border-transparent data-[state=active]:border-primary data-[state=active]:text-foreground text-muted-foreground hover:text-foreground transition-colors rounded-none"
-                      >
-                        Fotos
-                      </TabsTrigger>
-                      <TabsTrigger
-                        value="parecer"
-                        className="px-1 py-3 border-b-4 border-transparent data-[state=active]:border-primary data-[state=active]:text-foreground text-muted-foreground hover:text-foreground transition-colors rounded-none"
-                      >
-                        Parecer Técnico
-                      </TabsTrigger>
-                    </TabsList>
+                            <Tooltip>
+                              <TooltipTrigger asChild>
+                                <Button
+                                  variant="ghost"
+                                  size="icon"
+                                  className="h-8 w-8 text-muted-foreground hover:text-destructive hover:bg-destructive/10 z-10 relative"
+                                  onClick={(e) => {
+                                    e.stopPropagation()
+                                    setDeleteDialog({ open: true, index })
+                                  }}
+                                >
+                                  <Trash2 className="h-4 w-4" />
+                                </Button>
+                              </TooltipTrigger>
+                              <TooltipContent>Excluir</TooltipContent>
+                            </Tooltip>
+                          </div>
+                        )}
+                      </div>
+                      <AccordionContent className="bg-background">
+                        <Tabs defaultValue="dados" className="w-full">
+                          <TabsList className="w-full justify-start rounded-none px-4 py-0 h-auto space-x-6 bg-transparent border-b overflow-x-auto">
+                            <TabsTrigger
+                              value="dados"
+                              className="px-1 py-3 border-b-4 border-transparent data-[state=active]:border-primary data-[state=active]:text-foreground text-muted-foreground hover:text-foreground transition-colors rounded-none"
+                            >
+                              Dados Técnicos
+                            </TabsTrigger>
+                            <TabsTrigger
+                              value="testes"
+                              className="px-1 py-3 border-b-4 border-transparent data-[state=active]:border-primary data-[state=active]:text-foreground text-muted-foreground hover:text-foreground transition-colors rounded-none"
+                            >
+                              Testes Elétricos
+                            </TabsTrigger>
+                            <TabsTrigger
+                              value="fotos"
+                              className="px-1 py-3 border-b-4 border-transparent data-[state=active]:border-primary data-[state=active]:text-foreground text-muted-foreground hover:text-foreground transition-colors rounded-none"
+                            >
+                              Fotos
+                            </TabsTrigger>
+                            <TabsTrigger
+                              value="parecer"
+                              className="px-1 py-3 border-b-4 border-transparent data-[state=active]:border-primary data-[state=active]:text-foreground text-muted-foreground hover:text-foreground transition-colors rounded-none"
+                            >
+                              Parecer Técnico
+                            </TabsTrigger>
+                          </TabsList>
 
-                    <TabsContent value="dados" className="p-4 focus-visible:outline-none">
-                      {(() => {
-                        const fields = getEquipmentFields(eq.tipo_equipamento)
+                          <TabsContent value="dados" className="p-4 focus-visible:outline-none">
+                            {(() => {
+                              const fields = getEquipmentFields(eq.tipo_equipamento)
 
-                        const isFuseField = (f: FieldDef) => {
-                          const name = f.name.toLowerCase()
-                          const label = f.label.toLowerCase()
-                          return (
-                            name.includes('fusivel') ||
-                            name.includes('fusiveis') ||
-                            label.includes('fusível') ||
-                            label.includes('fusíveis')
-                          )
-                        }
+                              const isFuseField = (f: FieldDef) => {
+                                const name = f.name.toLowerCase()
+                                const label = f.label.toLowerCase()
+                                return (
+                                  name.includes('fusivel') ||
+                                  name.includes('fusiveis') ||
+                                  label.includes('fusível') ||
+                                  label.includes('fusíveis')
+                                )
+                              }
 
-                        const fieldsWithoutSectionAndFuse = fields.filter(
-                          (f) => !f.section && !isFuseField(f),
-                        )
-                        const fuseFields = fields.filter((f) => isFuseField(f))
-                        const sections = Array.from(
-                          new Set(fields.filter((f) => f.section).map((f) => f.section)),
-                        )
+                              const fieldsWithoutSectionAndFuse = fields.filter(
+                                (f) => !f.section && !isFuseField(f),
+                              )
+                              const fuseFields = fields.filter((f) => isFuseField(f))
+                              const sections = Array.from(
+                                new Set(fields.filter((f) => f.section).map((f) => f.section)),
+                              )
 
-                        const renderField = (f: FieldDef) => {
-                          if (
-                            f.dependsOn &&
-                            eq.dados_tecnicos[f.dependsOn.field] !== f.dependsOn.value
-                          ) {
-                            return null
-                          }
-                          const val = eq.dados_tecnicos[f.name]
-                          if (val === undefined || val === null || val === '') return null
-                          let displayVal = val
-                          if (typeof val === 'boolean') {
-                            displayVal = val ? 'Sim' : 'Não'
-                          } else if (
-                            eq.tipo_equipamento === 'Estrutura' &&
-                            (f.name === 'temperatura_ambiente' || f.name === 'umidade_relativa')
-                          ) {
-                            const num =
-                              typeof val === 'string' ? parseFloat(val.replace(',', '.')) : val
-                            displayVal =
-                              typeof num === 'number' && !isNaN(num)
-                                ? formatNumberPtBR(num, 1, 1)
-                                : val
-                          } else if (typeof val === 'number') {
-                            displayVal = formatNumberPtBR(val, 4)
-                          }
-                          return (
-                            <div key={f.name} className="flex flex-col">
-                              <span className="font-semibold text-muted-foreground">{f.label}</span>
-                              <span
-                                className="truncate font-medium text-foreground"
-                                title={String(displayVal)}
-                              >
-                                {String(displayVal)}
-                              </span>
-                            </div>
-                          )
-                        }
-
-                        return (
-                          <div className="space-y-4">
-                            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-y-3 gap-x-4 text-[13px] p-3 bg-muted/10 rounded-md border border-dashed">
-                              {fieldsWithoutSectionAndFuse.map(renderField)}
-                            </div>
-
-                            {sections.length > 0 && (
-                              <div className="space-y-3">
-                                {sections.map((section) => {
-                                  const sectionFields = fields.filter((f) => f.section === section)
-                                  const leftFields = sectionFields.filter(
-                                    (f) => f.column === 'left',
-                                  )
-                                  const rightFields = sectionFields.filter(
-                                    (f) => f.column === 'right',
-                                  )
-
-                                  return (
-                                    <div
-                                      key={section!}
-                                      className="rounded-lg border border-border bg-card p-4 shadow-sm"
-                                    >
-                                      <h3 className="mb-3 text-xs font-semibold text-muted-foreground uppercase tracking-wider">
-                                        {section}
-                                      </h3>
-                                      {leftFields.length > 0 || rightFields.length > 0 ? (
-                                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-8 gap-y-4">
-                                          <div className="space-y-2">
-                                            {section === 'Ajustes de Corrente' && (
-                                              <h4 className="text-[11px] font-bold uppercase text-primary border-b pb-1 mb-2">
-                                                Fase
-                                              </h4>
-                                            )}
-                                            <div className="grid grid-cols-2 gap-y-3 gap-x-4 text-[13px]">
-                                              {leftFields.map(renderField)}
-                                            </div>
-                                          </div>
-                                          <div className="space-y-2">
-                                            {section === 'Ajustes de Corrente' && (
-                                              <h4 className="text-[11px] font-bold uppercase text-primary border-b pb-1 mb-2">
-                                                Neutro
-                                              </h4>
-                                            )}
-                                            <div className="grid grid-cols-2 gap-y-3 gap-x-4 text-[13px]">
-                                              {rightFields.map(renderField)}
-                                            </div>
-                                          </div>
-                                        </div>
-                                      ) : (
-                                        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-y-3 gap-x-4 text-[13px]">
-                                          {sectionFields.map(renderField)}
-                                        </div>
-                                      )}
-                                    </div>
-                                  )
-                                })}
-                              </div>
-                            )}
-
-                            {fuseFields.length > 0 &&
-                              fuseFields.some((f) => {
+                              const renderField = (f: FieldDef) => {
                                 if (
                                   f.dependsOn &&
                                   eq.dados_tecnicos[f.dependsOn.field] !== f.dependsOn.value
-                                )
-                                  return false
+                                ) {
+                                  return null
+                                }
                                 const val = eq.dados_tecnicos[f.name]
-                                return val !== undefined && val !== null && val !== ''
-                              }) && (
-                                <div className="rounded-lg border border-border bg-card p-4 shadow-sm">
-                                  <h3 className="mb-3 text-xs font-semibold text-muted-foreground uppercase tracking-wider">
-                                    Informações dos Fusíveis
-                                  </h3>
-                                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-y-3 gap-x-4 text-[13px]">
-                                    {fuseFields.map(renderField)}
+                                if (val === undefined || val === null || val === '') return null
+                                let displayVal = val
+                                if (typeof val === 'boolean') {
+                                  displayVal = val ? 'Sim' : 'Não'
+                                } else if (
+                                  eq.tipo_equipamento === 'Estrutura' &&
+                                  (f.name === 'temperatura_ambiente' ||
+                                    f.name === 'umidade_relativa')
+                                ) {
+                                  const num =
+                                    typeof val === 'string'
+                                      ? parseFloat(val.replace(',', '.'))
+                                      : val
+                                  displayVal =
+                                    typeof num === 'number' && !isNaN(num)
+                                      ? formatNumberPtBR(num, 1, 1)
+                                      : val
+                                } else if (typeof val === 'number') {
+                                  displayVal = formatNumberPtBR(val, 4)
+                                }
+                                return (
+                                  <div key={f.name} className="flex flex-col">
+                                    <span className="font-semibold text-muted-foreground">
+                                      {f.label}
+                                    </span>
+                                    <span
+                                      className="truncate font-medium text-foreground"
+                                      title={String(displayVal)}
+                                    >
+                                      {String(displayVal)}
+                                    </span>
                                   </div>
+                                )
+                              }
+
+                              return (
+                                <div className="space-y-4">
+                                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-y-3 gap-x-4 text-[13px] p-3 bg-muted/10 rounded-md border border-dashed">
+                                    {fieldsWithoutSectionAndFuse.map(renderField)}
+                                  </div>
+
+                                  {sections.length > 0 && (
+                                    <div className="space-y-3">
+                                      {sections.map((section) => {
+                                        const sectionFields = fields.filter(
+                                          (f) => f.section === section,
+                                        )
+                                        const leftFields = sectionFields.filter(
+                                          (f) => f.column === 'left',
+                                        )
+                                        const rightFields = sectionFields.filter(
+                                          (f) => f.column === 'right',
+                                        )
+
+                                        return (
+                                          <div
+                                            key={section!}
+                                            className="rounded-lg border border-border bg-card p-4 shadow-sm"
+                                          >
+                                            <h3 className="mb-3 text-xs font-semibold text-muted-foreground uppercase tracking-wider">
+                                              {section}
+                                            </h3>
+                                            {leftFields.length > 0 || rightFields.length > 0 ? (
+                                              <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-8 gap-y-4">
+                                                <div className="space-y-2">
+                                                  {section === 'Ajustes de Corrente' && (
+                                                    <h4 className="text-[11px] font-bold uppercase text-primary border-b pb-1 mb-2">
+                                                      Fase
+                                                    </h4>
+                                                  )}
+                                                  <div className="grid grid-cols-2 gap-y-3 gap-x-4 text-[13px]">
+                                                    {leftFields.map(renderField)}
+                                                  </div>
+                                                </div>
+                                                <div className="space-y-2">
+                                                  {section === 'Ajustes de Corrente' && (
+                                                    <h4 className="text-[11px] font-bold uppercase text-primary border-b pb-1 mb-2">
+                                                      Neutro
+                                                    </h4>
+                                                  )}
+                                                  <div className="grid grid-cols-2 gap-y-3 gap-x-4 text-[13px]">
+                                                    {rightFields.map(renderField)}
+                                                  </div>
+                                                </div>
+                                              </div>
+                                            ) : (
+                                              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-y-3 gap-x-4 text-[13px]">
+                                                {sectionFields.map(renderField)}
+                                              </div>
+                                            )}
+                                          </div>
+                                        )
+                                      })}
+                                    </div>
+                                  )}
+
+                                  {fuseFields.length > 0 &&
+                                    fuseFields.some((f) => {
+                                      if (
+                                        f.dependsOn &&
+                                        eq.dados_tecnicos[f.dependsOn.field] !== f.dependsOn.value
+                                      )
+                                        return false
+                                      const val = eq.dados_tecnicos[f.name]
+                                      return val !== undefined && val !== null && val !== ''
+                                    }) && (
+                                      <div className="rounded-lg border border-border bg-card p-4 shadow-sm">
+                                        <h3 className="mb-3 text-xs font-semibold text-muted-foreground uppercase tracking-wider">
+                                          Informações dos Fusíveis
+                                        </h3>
+                                        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-y-3 gap-x-4 text-[13px]">
+                                          {fuseFields.map(renderField)}
+                                        </div>
+                                      </div>
+                                    )}
                                 </div>
-                              )}
-                          </div>
-                        )
-                      })()}
-                    </TabsContent>
+                              )
+                            })()}
+                          </TabsContent>
 
-                    <TabsContent value="testes" className="p-4 focus-visible:outline-none">
-                      <EquipmentTestsManager
-                        equipment={eq}
-                        equipmentIndex={index}
-                        displayIndex={i + 1}
-                        setEquipments={setEquipments}
-                        isView={isView}
-                        clienteId={clienteId}
-                        reportDate={reportDate}
-                      />
-                    </TabsContent>
+                          <TabsContent value="testes" className="p-4 focus-visible:outline-none">
+                            <EquipmentTestsManager
+                              equipment={eq}
+                              equipmentIndex={index}
+                              displayIndex={i + 1}
+                              setEquipments={setEquipments}
+                              isView={isView}
+                              clienteId={clienteId}
+                              reportDate={reportDate}
+                            />
+                          </TabsContent>
 
-                    <TabsContent value="fotos" className="p-4 focus-visible:outline-none">
-                      <EquipmentPhotosManager
-                        equipment={eq}
-                        index={index}
-                        setEquipments={setEquipments}
-                        isView={isView}
-                      />
-                    </TabsContent>
+                          <TabsContent value="fotos" className="p-4 focus-visible:outline-none">
+                            <EquipmentPhotosManager
+                              equipment={eq}
+                              index={index}
+                              setEquipments={setEquipments}
+                              isView={isView}
+                            />
+                          </TabsContent>
 
-                    <TabsContent value="parecer" className="p-4 focus-visible:outline-none">
-                      <ParecerForm
-                        equipment={eq}
-                        isView={isView}
-                        clienteId={clienteId}
-                        onUpdate={(p) => handleUpdateParecer(index, p)}
-                      />
-                    </TabsContent>
-                  </Tabs>
-                </AccordionContent>
-              </AccordionItem>
+                          <TabsContent value="parecer" className="p-4 focus-visible:outline-none">
+                            <ParecerForm
+                              equipment={eq}
+                              isView={isView}
+                              clienteId={clienteId}
+                              onUpdate={(p) => handleUpdateParecer(index, p)}
+                            />
+                          </TabsContent>
+                        </Tabs>
+                      </AccordionContent>
+                    </AccordionItem>
+                  ))}
+                </Accordion>
+              </TabsContent>
             ))}
-          </Accordion>
+          </Tabs>
         </div>
       )}
 
