@@ -32,9 +32,13 @@ export default function Layout() {
   return (
     <SidebarProvider>
       <Sidebar>
-        <SidebarHeader className="border-b p-4">
+        <SidebarHeader className="border-b border-sidebar-border p-4">
           <div className="flex items-center h-8">
-            <img src={logoUrl} alt="EletroTeste Logo" className="h-full object-contain" />
+            <img
+              src={logoUrl}
+              alt="EletroTeste Logo"
+              className="h-full object-contain brightness-0 invert"
+            />
           </div>
         </SidebarHeader>
         <SidebarContent>
