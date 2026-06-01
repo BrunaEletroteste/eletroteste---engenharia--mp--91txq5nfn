@@ -437,8 +437,21 @@ export function EquipmentSection({ equipments, setEquipments, isView }: Props) {
                           const val = eq.dados_tecnicos[f.name]
                           if (val === undefined || val === null || val === '') return null
                           let displayVal = val
-                          if (typeof val === 'boolean') displayVal = val ? 'Sim' : 'Não'
-                          else if (typeof val === 'number') displayVal = formatNumberPtBR(val, 4)
+                          if (typeof val === 'boolean') {
+                            displayVal = val ? 'Sim' : 'Não'
+                          } else if (
+                            eq.tipo_equipamento === 'Estrutura' &&
+                            (f.name === 'temperatura_ambiente' || f.name === 'umidade_relativa')
+                          ) {
+                            const num =
+                              typeof val === 'string' ? parseFloat(val.replace(',', '.')) : val
+                            displayVal =
+                              typeof num === 'number' && !isNaN(num)
+                                ? formatNumberPtBR(num, 1, 1)
+                                : val
+                          } else if (typeof val === 'number') {
+                            displayVal = formatNumberPtBR(val, 4)
+                          }
                           return (
                             <div key={f.name} className="flex flex-col">
                               <span className="font-semibold text-muted-foreground">{f.label}</span>

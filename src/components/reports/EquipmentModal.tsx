@@ -36,6 +36,93 @@ import { Check, ChevronsUpDown } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { useRealtime } from '@/hooks/use-realtime'
 
+function EnvFieldInput({
+  field,
+  value,
+  onChange,
+}: {
+  field: FieldDef
+  value: any
+  onChange: (val: any) => void
+}) {
+  const [localVal, setLocalVal] = useState(() => {
+    if (value !== undefined && value !== '') {
+      return formatNumberPtBR(value, 1, 1)
+    }
+    return ''
+  })
+
+  useEffect(() => {
+    if (value === undefined || value === '') {
+      setLocalVal((prev) => (prev === '' ? prev : ''))
+    } else if (typeof value === 'number') {
+      setLocalVal((prev) => {
+        const numLocal = parseFloat(prev.replace(',', '.'))
+        if (isNaN(numLocal) || numLocal !== value) {
+          return formatNumberPtBR(value, 1, 1)
+        }
+        return prev
+      })
+    }
+  }, [value])
+
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    let val = e.target.value.replace(/[^0-9,-]/g, '')
+
+    if (val.includes('-')) {
+      const isNegative = val.startsWith('-')
+      val = val.replace(/-/g, '')
+      if (isNegative) val = '-' + val
+    }
+
+    const parts = val.split(',')
+    if (parts.length > 2) {
+      val = parts[0] + ',' + parts.slice(1).join('')
+    }
+    setLocalVal(val)
+
+    if (val && val !== '-') {
+      const num = parseFloat(val.replace(',', '.'))
+      if (!isNaN(num)) {
+        onChange(Math.round(num * 10) / 10)
+      } else {
+        onChange('')
+      }
+    } else {
+      onChange('')
+    }
+  }
+
+  const handleBlur = () => {
+    if (localVal && localVal !== '-') {
+      const num = parseFloat(localVal.replace(',', '.'))
+      if (!isNaN(num)) {
+        const rounded = Math.round(num * 10) / 10
+        setLocalVal(formatNumberPtBR(rounded, 1, 1))
+        onChange(rounded)
+      } else {
+        setLocalVal('')
+        onChange('')
+      }
+    } else {
+      setLocalVal('')
+      onChange('')
+    }
+  }
+
+  return (
+    <Input
+      type="text"
+      value={localVal}
+      onChange={handleChange}
+      onBlur={handleBlur}
+      placeholder={`Insira ${field.label.toLowerCase()}`}
+      readOnly={field.readOnly}
+      className={field.readOnly ? 'bg-muted cursor-not-allowed' : ''}
+    />
+  )
+}
+
 function ComboboxField({
   field,
   value,
@@ -793,6 +880,13 @@ export function EquipmentModal({ open, onOpenChange, onSave, initialData }: Prop
               onCheckedChange={(checked) => handleFieldChange(field.name, checked)}
             />
           </div>
+        ) : tipo === 'Estrutura' &&
+          (field.name === 'temperatura_ambiente' || field.name === 'umidade_relativa') ? (
+          <EnvFieldInput
+            field={field}
+            value={dados[field.name]}
+            onChange={(val) => handleFieldChange(field.name, val)}
+          />
         ) : field.type === 'number' ? (
           <NumberInput
             value={dados[field.name] ?? ''}
