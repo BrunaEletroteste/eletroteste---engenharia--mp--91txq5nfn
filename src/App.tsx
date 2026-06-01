@@ -11,6 +11,7 @@ import ReportForm from './pages/ReportForm'
 import ReportPrint from './pages/ReportPrint'
 import ConfigOptions from './pages/ConfigOptions'
 import Clientes from './pages/Clientes'
+import Profile from './pages/Profile'
 import NotFound from './pages/NotFound'
 import Login from './pages/Login'
 
@@ -50,6 +51,7 @@ const App = () => (
             <Route path="/relatorio/visualizar/:id" element={<ReportForm />} />
             <Route path="/clientes" element={<Clientes />} />
             <Route path="/configuracoes/opcoes" element={<ConfigOptions />} />
+            <Route path="/perfil" element={<Profile />} />
           </Route>
           <Route
             path="/relatorio/imprimir/:id"
