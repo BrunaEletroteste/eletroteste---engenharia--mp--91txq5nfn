@@ -86,10 +86,10 @@ const extractPhasesData = (t: any, tipoEquipamento: string, subType?: string) =>
       } else {
         const df = t.dados_detalhados?.fechado || {}
         return [
-          { name: 'A-B', value: calcRes(df.ab) },
-          { name: 'B-C', value: calcRes(df.bc) },
-          { name: 'C-A', value: calcRes(df.ac) },
-          { name: 'Massa', value: calcRes(df.abc_massa) },
+          { name: 'A x B', value: calcRes(df.ab) },
+          { name: 'B x C', value: calcRes(df.bc) },
+          { name: 'C x A', value: calcRes(df.ac) },
+          { name: 'A, B, C x Massa', value: calcRes(df.abc_massa) },
         ].filter((p) => p.value !== undefined)
       }
     } else if (tipoEquipamento === 'Transformador') {
@@ -103,10 +103,10 @@ const extractPhasesData = (t: any, tipoEquipamento: string, subType?: string) =>
     } else {
       const d = t.dados_detalhados || {}
       return [
-        { name: 'A-B', value: calcRes(d.ab) },
-        { name: 'B-C', value: calcRes(d.bc) },
-        { name: 'C-A', value: calcRes(d.ac) },
-        { name: 'Massa', value: calcRes(d.abc_massa) },
+        { name: 'A x B', value: calcRes(d.ab) },
+        { name: 'B x C', value: calcRes(d.bc) },
+        { name: 'C x A', value: calcRes(d.ac) },
+        { name: 'A, B, C x Massa', value: calcRes(d.abc_massa) },
       ].filter((p) => p.value !== undefined)
     }
   }
@@ -583,7 +583,7 @@ export function EquipmentTestsManager({
           `A x B: ${f_ab}`,
           `B x C: ${f_bc}`,
           `C x A: ${f_ca}`,
-          `Massa: ${f_massa}`,
+          `A, B, C x Massa: ${f_massa}`,
         ]
         const abertoItems = [`A x A: ${a_aa}`, `B x B: ${a_bb}`, `C x C: ${a_cc}`]
 
@@ -622,7 +622,7 @@ export function EquipmentTestsManager({
         const bc = formatNum((Number(d.bc?.v1) || 0) * (Number(d.bc?.v2) || 0))
         const ac = formatNum((Number(d.ac?.v1) || 0) * (Number(d.ac?.v2) || 0))
         const abcm = formatNum((Number(d.abc_massa?.v1) || 0) * (Number(d.abc_massa?.v2) || 0))
-        return [`AB: ${ab}`, `BC: ${bc}`, `CA: ${ac}`, `ABC-M: ${abcm}`]
+        return [`A x B: ${ab}`, `B x C: ${bc}`, `C x A: ${ac}`, `A, B, C x Massa: ${abcm}`]
       }
     }
     if (t.tipo_teste === 'Resistências dos Enrolamentos') {

@@ -252,7 +252,7 @@ export default function ReportPrint() {
           `A x B: ${f_ab}`,
           `B x C: ${f_bc}`,
           `C x A: ${f_ca}`,
-          `Massa: ${f_massa}`,
+          `A, B, C x Massa: ${f_massa}`,
         ]
         const abertoItems = [`A x A: ${a_aa}`, `B x B: ${a_bb}`, `C x C: ${a_cc}`]
         if (subType === 'Fechado') return fechadoItems
@@ -598,20 +598,25 @@ export default function ReportPrint() {
                       </tbody>
                     </table>
                   </div>
+                </td>
+              </tr>
 
-                  {/* Equipments Body */}
-                  {equipments.map((eq: any, i: number) => {
-                    const isTransformador = eq.tipo_equipamento === 'Transformador'
-                    const containerSpace = isTransformador ? 'space-y-3' : 'space-y-6'
-                    const sectionMargin = isTransformador ? 'mt-4' : 'mt-8'
-                    const textSize = isTransformador ? 'text-[11px]' : 'text-[12px]'
-                    const tablePadding = isTransformador ? 'p-1.5' : 'p-3'
+              {/* Equipments Body */}
+              {equipments.map((eq: any, i: number) => {
+                const isTransformador = eq.tipo_equipamento === 'Transformador'
+                const containerSpace = isTransformador ? 'space-y-3' : 'space-y-6'
+                const sectionMargin = isTransformador ? 'mt-4' : 'mt-8'
+                const textSize = isTransformador ? 'text-[11px]' : 'text-[12px]'
+                const tablePadding = isTransformador ? 'p-1.5' : 'p-3'
 
-                    return (
-                      <div
-                        key={eq.id}
-                        className="mb-8 border border-slate-400 bg-white text-[12px]"
-                      >
+                return (
+                  <tr
+                    key={eq.id}
+                    className="print:break-before-page"
+                    style={{ breakBefore: 'page', pageBreakBefore: 'always' }}
+                  >
+                    <td>
+                      <div className="mb-8 border border-slate-400 bg-white text-[12px]">
                         <div className="bg-slate-200 text-slate-900 p-3 font-semibold text-[14px] border-b border-slate-400 uppercase tracking-wide">
                           {i + 1}. EQUIPAMENTO: {eq.tipo_equipamento}
                         </div>
@@ -863,9 +868,13 @@ export default function ReportPrint() {
                           )}
                         </div>
                       </div>
-                    )
-                  })}
+                    </td>
+                  </tr>
+                )
+              })}
 
+              <tr>
+                <td>
                   {/* Conclusion */}
                   {report.observacoes && (
                     <div className="mb-8 avoid-break border-2 border-slate-800 rounded-sm mt-10">
