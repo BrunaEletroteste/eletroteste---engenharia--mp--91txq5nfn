@@ -67,6 +67,12 @@ export const getEquipmentFields = (type: string): FieldDef[] => {
         },
         { name: 'exatidao', label: 'Exatidão', type: 'combobox' },
         { name: 'isolacao', label: 'Isolação', type: 'select' },
+        {
+          name: 'duplo_secundario',
+          label: 'Duplo Secundário?',
+          type: 'select',
+          options: ['Sim', 'Não'],
+        },
         { name: 'fabricante', label: 'Fabricante', type: 'combobox' },
       ]
     case 'Seccionadora':

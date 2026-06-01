@@ -472,6 +472,7 @@ export function EquipmentModal({ open, onOpenChange, onSave, initialData }: Prop
         'relacao',
         'exatidao',
         'isolacao',
+        'duplo_secundario',
         'fabricante',
       ]
       const missingTC = requiredFieldsTC.filter((f) => dados[f] === undefined || dados[f] === '')
@@ -625,6 +626,7 @@ export function EquipmentModal({ open, onOpenChange, onSave, initialData }: Prop
                 'relacao',
                 'exatidao',
                 'isolacao',
+                'duplo_secundario',
                 'fabricante',
               ].includes(field.name)) ||
             (tipo === 'Transformador de Potencial' &&

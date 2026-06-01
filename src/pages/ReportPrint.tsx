@@ -77,6 +77,7 @@ const labelMap: Record<string, string> = {
   fabricante: 'Fabricante',
   tipo: 'Tipo',
   circuito: 'Circuito',
+  duplo_secundario: 'Duplo Secundário?',
   ajuste_i_fase: 'I> Fase',
   ajuste_curva_fase: 'Curva Fase',
   ajuste_dt_fase: 'Dt Fase',
