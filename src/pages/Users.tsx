@@ -185,7 +185,7 @@ export default function UsersPage() {
                       <SelectItem value="tecnico_campo">Técnico de Campo</SelectItem>
                       <SelectItem value="revisor_interno">Revisor Interno</SelectItem>
                       <SelectItem value="visitante">Visitante</SelectItem>
-                      <SelectItem value="cliente">Cliente</SelectItem>
+                      <SelectItem value="inativo">Inativo</SelectItem>
                     </SelectContent>
                   </Select>
                   {errors.tipo_acesso && (
@@ -244,7 +244,7 @@ export default function UsersPage() {
                             <SelectItem value="tecnico_campo">Técnico de Campo</SelectItem>
                             <SelectItem value="revisor_interno">Revisor Interno</SelectItem>
                             <SelectItem value="visitante">Visitante</SelectItem>
-                            <SelectItem value="cliente">Cliente</SelectItem>
+                            <SelectItem value="inativo">Inativo</SelectItem>
                           </SelectContent>
                         </Select>
                       </TableCell>

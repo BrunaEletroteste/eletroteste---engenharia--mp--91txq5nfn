@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-06-01T15:16:48.527Z",
+  "generatedAt": "2026-06-01T15:23:55.717Z",
   "collections": [
     {
       "name": "users",
@@ -43,13 +43,7 @@
           "type": "select",
           "required": false,
           "system": false,
-          "selectValues": ["admin", "tecnico_campo", "revisor_interno", "cliente"]
-        },
-        {
-          "name": "cnpj_cliente",
-          "type": "text",
-          "required": false,
-          "system": false
+          "selectValues": ["admin", "tecnico_campo", "revisor_interno", "visitante", "inativo"]
         },
         {
           "name": "ativo",
@@ -125,8 +119,8 @@
       "name": "relatorios",
       "type": "base",
       "apiRules": {
-        "list": "@request.auth.tipo_acesso = 'admin' || (@request.auth.tipo_acesso = 'cliente' && cliente_id.cnpj = @request.auth.cnpj_cliente) || criado_por = @request.auth.id",
-        "view": "@request.auth.tipo_acesso = 'admin' || (@request.auth.tipo_acesso = 'cliente' && cliente_id.cnpj = @request.auth.cnpj_cliente) || criado_por = @request.auth.id",
+        "list": "@request.auth.tipo_acesso = 'admin' || criado_por = @request.auth.id",
+        "view": "@request.auth.tipo_acesso = 'admin' || criado_por = @request.auth.id",
         "create": "@request.auth.tipo_acesso = 'admin' || @request.auth.id != ''",
         "update": "@request.auth.id != ''",
         "delete": "@request.auth.tipo_acesso = 'admin' || criado_por = @request.auth.id"
@@ -222,8 +216,8 @@
       "name": "equipamentos_relatorio",
       "type": "base",
       "apiRules": {
-        "list": "@request.auth.tipo_acesso = 'admin' || (@request.auth.tipo_acesso = 'cliente' && relatorio_id.cliente_id.cnpj = @request.auth.cnpj_cliente) || relatorio_id.criado_por = @request.auth.id",
-        "view": "@request.auth.tipo_acesso = 'admin' || (@request.auth.tipo_acesso = 'cliente' && relatorio_id.cliente_id.cnpj = @request.auth.cnpj_cliente) || relatorio_id.criado_por = @request.auth.id",
+        "list": "@request.auth.tipo_acesso = 'admin' || relatorio_id.criado_por = @request.auth.id",
+        "view": "@request.auth.tipo_acesso = 'admin' || relatorio_id.criado_por = @request.auth.id",
         "create": "@request.auth.id != ''",
         "update": "@request.auth.id != ''",
         "delete": "@request.auth.id != ''"
@@ -292,8 +286,8 @@
       "name": "testes_equipamento",
       "type": "base",
       "apiRules": {
-        "list": "@request.auth.tipo_acesso = 'admin' || (@request.auth.tipo_acesso = 'cliente' && equipamento_id.relatorio_id.cliente_id.cnpj = @request.auth.cnpj_cliente) || equipamento_id.relatorio_id.criado_por = @request.auth.id",
-        "view": "@request.auth.tipo_acesso = 'admin' || (@request.auth.tipo_acesso = 'cliente' && equipamento_id.relatorio_id.cliente_id.cnpj = @request.auth.cnpj_cliente) || equipamento_id.relatorio_id.criado_por = @request.auth.id",
+        "list": "@request.auth.tipo_acesso = 'admin' || equipamento_id.relatorio_id.criado_por = @request.auth.id",
+        "view": "@request.auth.tipo_acesso = 'admin' || equipamento_id.relatorio_id.criado_por = @request.auth.id",
         "create": "@request.auth.id != ''",
         "update": "@request.auth.id != ''",
         "delete": "@request.auth.id != ''"
@@ -375,8 +369,8 @@
       "name": "parecer_tecnico",
       "type": "base",
       "apiRules": {
-        "list": "@request.auth.tipo_acesso = 'admin' || (@request.auth.tipo_acesso = 'cliente' && equipamento_id.relatorio_id.cliente_id.cnpj = @request.auth.cnpj_cliente) || equipamento_id.relatorio_id.criado_por = @request.auth.id",
-        "view": "@request.auth.tipo_acesso = 'admin' || (@request.auth.tipo_acesso = 'cliente' && equipamento_id.relatorio_id.cliente_id.cnpj = @request.auth.cnpj_cliente) || equipamento_id.relatorio_id.criado_por = @request.auth.id",
+        "list": "@request.auth.tipo_acesso = 'admin' || equipamento_id.relatorio_id.criado_por = @request.auth.id",
+        "view": "@request.auth.tipo_acesso = 'admin' || equipamento_id.relatorio_id.criado_por = @request.auth.id",
         "create": "@request.auth.id != ''",
         "update": "@request.auth.id != ''",
         "delete": "@request.auth.id != ''"
