@@ -589,15 +589,21 @@ export default function ReportPrint() {
                           Temp. Ambiente
                         </td>
                         <td className="border border-slate-300 p-2 text-slate-900">
-                          {report.temperatura_ambiente
-                            ? `${report.temperatura_ambiente} °C`
+                          {report.temperatura_ambiente !== undefined &&
+                          report.temperatura_ambiente !== null &&
+                          report.temperatura_ambiente !== ''
+                            ? `${formatNumberPtBR(report.temperatura_ambiente, 1, 1)} °C`
                             : 'N/A'}
                         </td>
                         <td className="border border-slate-300 p-2 font-medium bg-slate-100 text-slate-700">
                           Umidade Relativa
                         </td>
                         <td className="border border-slate-300 p-2 text-slate-900">
-                          {report.umidade_relativa ? `${report.umidade_relativa} %` : 'N/A'}
+                          {report.umidade_relativa !== undefined &&
+                          report.umidade_relativa !== null &&
+                          report.umidade_relativa !== ''
+                            ? `${formatNumberPtBR(report.umidade_relativa, 1, 1)} %`
+                            : 'N/A'}
                         </td>
                       </tr>
                       <tr>
@@ -698,7 +704,9 @@ export default function ReportPrint() {
                                         ? value
                                           ? 'Sim'
                                           : 'Não'
-                                        : String(value)}
+                                        : typeof value === 'number'
+                                          ? formatNumberPtBR(value)
+                                          : String(value)}
                                     </span>
                                   </div>
                                 ))

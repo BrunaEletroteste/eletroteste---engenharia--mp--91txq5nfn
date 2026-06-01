@@ -56,6 +56,8 @@ export function ReportGeneralSection({
                   value={field.value ?? ''}
                   onChange={field.onChange}
                   disabled={isView}
+                  decimalScale={1}
+                  minDecimals={1}
                 />
               </FormControl>
               <FormMessage />
@@ -74,6 +76,8 @@ export function ReportGeneralSection({
                   value={field.value ?? ''}
                   onChange={field.onChange}
                   disabled={isView}
+                  decimalScale={1}
+                  minDecimals={1}
                 />
               </FormControl>
               <FormMessage />
