@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-06-01T14:46:05.551Z",
+  "generatedAt": "2026-06-01T14:54:40.494Z",
   "collections": [
     {
       "name": "users",
@@ -266,6 +266,7 @@
           "required": true,
           "system": false,
           "selectValues": [
+            "Estrutura",
             "Condutor Elétrico",
             "Para-raio de Linha",
             "Transformador de Potencial",

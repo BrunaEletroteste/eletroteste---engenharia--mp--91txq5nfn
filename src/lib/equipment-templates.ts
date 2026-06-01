@@ -10,6 +10,7 @@ export type FieldDef = {
 }
 
 export const EQUIPMENT_TYPES = [
+  'Estrutura',
   'Condutor Elétrico',
   'Para-raio de Linha',
   'Transformador de Potencial',
@@ -27,6 +28,11 @@ export const getEquipmentFields = (type: string): FieldDef[] => {
   ]
 
   switch (type) {
+    case 'Estrutura':
+      return [
+        { name: 'temperatura_ambiente', label: 'Temperatura Ambiente (°C)', type: 'number' },
+        { name: 'umidade_relativa', label: 'Umidade Relativa do Ar (%)', type: 'number' },
+      ]
     case 'Transformador de Potencial':
       return [
         { name: 'subestacao', label: 'Subestação', type: 'combobox' },

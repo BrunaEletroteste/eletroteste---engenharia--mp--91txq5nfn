@@ -403,6 +403,21 @@ export function EquipmentModal({ open, onOpenChange, onSave, initialData }: Prop
       return
     }
 
+    if (tipo === 'Estrutura') {
+      const requiredFieldsEstrutura = ['temperatura_ambiente', 'umidade_relativa']
+      const missing = requiredFieldsEstrutura.filter(
+        (f) => dados[f] === undefined || dados[f] === '',
+      )
+      if (missing.length > 0) {
+        toast({
+          title: 'Atenção',
+          description: 'Todos os campos da Estrutura são obrigatórios.',
+          variant: 'destructive',
+        })
+        return
+      }
+    }
+
     if (tipo === 'Condutor Elétrico') {
       const requiredFieldsCE = fields.map((f) => f.name)
       const missingCE = requiredFieldsCE.filter((f) => dados[f] === undefined || dados[f] === '')
@@ -430,7 +445,9 @@ export function EquipmentModal({ open, onOpenChange, onSave, initialData }: Prop
     }
 
     const hasNumeroField = fields.some((f) => f.name === 'numero')
-    if (!dados.subestacao || (hasNumeroField && !dados.numero)) {
+    const requiresSubestacao = tipo !== 'Estrutura'
+
+    if (requiresSubestacao && (!dados.subestacao || (hasNumeroField && !dados.numero))) {
       toast({
         title: 'Atenção',
         description: hasNumeroField
@@ -612,6 +629,8 @@ export function EquipmentModal({ open, onOpenChange, onSave, initialData }: Prop
         <Label>
           {field.label}
           {(['subestacao', 'numero'].includes(field.name) ||
+            (tipo === 'Estrutura' &&
+              ['temperatura_ambiente', 'umidade_relativa'].includes(field.name)) ||
             (tipo === 'Para-raio de Linha' &&
               ['circuito', 'modelo', 'tensao_nominal', 'corrente_descarga', 'fabricante'].includes(
                 field.name,

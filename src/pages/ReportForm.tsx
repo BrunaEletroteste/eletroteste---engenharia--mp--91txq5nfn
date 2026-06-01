@@ -323,6 +323,30 @@ export default function ReportForm() {
 
       const p = eq.parecer
 
+      if (eq.tipo_equipamento === 'Estrutura') {
+        const estFields = getEquipmentFields('Estrutura').map((f) => f.name)
+        const missing = estFields.filter(
+          (f) => eq.dados_tecnicos[f] === undefined || eq.dados_tecnicos[f] === '',
+        )
+        if (missing.length > 0) {
+          toast({
+            title: 'Erro de Validação',
+            description: `Todos os campos de Estrutura são obrigatórios.`,
+            variant: 'destructive',
+          })
+          const el = document.getElementById(`equipamento-${i}`)
+          if (el) {
+            el.scrollIntoView({ behavior: 'smooth', block: 'center' })
+            el.classList.add('ring-2', 'ring-destructive', 'border-destructive')
+            setTimeout(
+              () => el.classList.remove('ring-2', 'ring-destructive', 'border-destructive'),
+              3000,
+            )
+          }
+          return false
+        }
+      }
+
       if (eq.tipo_equipamento === 'Condutor Elétrico') {
         const ceFields = getEquipmentFields('Condutor Elétrico').map((f) => f.name)
         const missing = ceFields.filter(
@@ -518,9 +542,10 @@ export default function ReportForm() {
         }
 
         if (!p || !p.parecer) {
+          const ident = eq.dados_tecnicos?.numero || eq.dados_tecnicos?.identificacao || ''
           toast({
             title: 'Erro de Validação',
-            description: `O parecer é obrigatório para o equipamento: ${eq.tipo_equipamento} - ${eq.dados_tecnicos?.numero || eq.dados_tecnicos?.identificacao || ''}`,
+            description: `O parecer é obrigatório para o equipamento: ${eq.tipo_equipamento}${ident ? ' - ' + ident : ''}`,
             variant: 'destructive',
           })
           const el = document.getElementById(`equipamento-${i}`)
@@ -541,9 +566,10 @@ export default function ReportForm() {
           status === 'finalizado' &&
           (!p.justificativa_mudanca || p.justificativa_mudanca.trim() === '')
         ) {
+          const ident = eq.dados_tecnicos?.numero || eq.dados_tecnicos?.identificacao || ''
           toast({
             title: 'Erro de Validação',
-            description: `Justificativa é obrigatória quando há mudança de status no equipamento: ${eq.tipo_equipamento} - ${eq.dados_tecnicos?.numero || eq.dados_tecnicos?.identificacao || ''}`,
+            description: `Justificativa é obrigatória quando há mudança de status no equipamento: ${eq.tipo_equipamento}${ident ? ' - ' + ident : ''}`,
             variant: 'destructive',
           })
           const el = document.getElementById(`equipamento-${i}`)
