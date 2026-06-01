@@ -597,7 +597,7 @@ export function EquipmentSection({ equipments, setEquipments, isView }: Props) {
                             <EquipmentTestsManager
                               equipment={eq}
                               equipmentIndex={index}
-                              displayIndex={i + 1}
+                              displayIndex={seq}
                               setEquipments={setEquipments}
                               isView={isView}
                               clienteId={clienteId}
