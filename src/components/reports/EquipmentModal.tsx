@@ -491,7 +491,7 @@ export function EquipmentModal({ open, onOpenChange, onSave, initialData }: Prop
     }
 
     if (tipo === 'Estrutura') {
-      const requiredFieldsEstrutura = ['temperatura_ambiente', 'umidade_relativa']
+      const requiredFieldsEstrutura = ['subestacao', 'temperatura_ambiente', 'umidade_relativa']
       const missing = requiredFieldsEstrutura.filter(
         (f) => dados[f] === undefined || dados[f] === '',
       )
@@ -532,7 +532,7 @@ export function EquipmentModal({ open, onOpenChange, onSave, initialData }: Prop
     }
 
     const hasNumeroField = fields.some((f) => f.name === 'numero')
-    const requiresSubestacao = tipo !== 'Estrutura'
+    const requiresSubestacao = true
 
     if (requiresSubestacao && (!dados.subestacao || (hasNumeroField && !dados.numero))) {
       toast({
