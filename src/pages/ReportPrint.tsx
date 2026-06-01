@@ -598,6 +598,124 @@ export default function ReportPrint() {
                       </tbody>
                     </table>
                   </div>
+
+                  {/* Equipment Index */}
+                  {equipments.length > 0 && (
+                    <div className="mb-8 text-[12px] print:mt-10">
+                      <div className="bg-slate-800 text-white p-2 font-medium mb-6 uppercase text-[13px] tracking-wider text-center avoid-break">
+                        Índice de Equipamentos Inspecionados
+                      </div>
+
+                      {Array.from(
+                        new Set(
+                          equipments.map((eq: any) => eq.dados_tecnicos?.subestacao || 'Geral'),
+                        ),
+                      ).map((sub) => {
+                        const subEqs = equipments.filter(
+                          (eq: any) => (eq.dados_tecnicos?.subestacao || 'Geral') === sub,
+                        )
+                        return (
+                          <div key={String(sub)} className="mb-8 avoid-break">
+                            <h3 className="font-semibold text-slate-800 text-[13px] uppercase mb-2 border-b-2 border-blue-900 inline-block pb-1">
+                              Subestação: {String(sub)}
+                            </h3>
+                            <table className="w-full border-collapse border border-slate-300 text-[11px]">
+                              <thead className="bg-slate-100">
+                                <tr>
+                                  <th className="border border-slate-300 p-0 text-center font-semibold text-slate-700 w-12">
+                                    <div className="p-2">#</div>
+                                  </th>
+                                  <th className="border border-slate-300 p-0 text-left font-semibold text-slate-700">
+                                    <div className="p-2">Equipamento</div>
+                                  </th>
+                                  <th className="border border-slate-300 p-0 text-left font-semibold text-slate-700">
+                                    <div className="p-2">Circuito</div>
+                                  </th>
+                                  <th className="border border-slate-300 p-0 text-left font-semibold text-slate-700">
+                                    <div className="p-2">Identificação / Série</div>
+                                  </th>
+                                  <th className="border border-slate-300 p-0 text-center font-semibold text-slate-700">
+                                    <div className="p-2">Status</div>
+                                  </th>
+                                </tr>
+                              </thead>
+                              <tbody>
+                                {subEqs.map((eq: any) => {
+                                  const globalIndex =
+                                    equipments.findIndex((e: any) => e.id === eq.id) + 1
+                                  const numStr =
+                                    eq.dados_tecnicos?.numero ||
+                                    eq.dados_tecnicos?.identificacao ||
+                                    eq.dados_tecnicos?.numero_serie ||
+                                    eq.dados_tecnicos?.serie ||
+                                    eq.dados_tecnicos?.numero_tag ||
+                                    '-'
+                                  const circuitoStr = eq.dados_tecnicos?.circuito || '-'
+                                  const status = eq.parecer?.parecer || '-'
+
+                                  const statusColor =
+                                    status === 'Conforme'
+                                      ? 'text-green-700 bg-green-50'
+                                      : status === 'Não Conforme'
+                                        ? 'text-red-700 bg-red-50'
+                                        : status === 'Possui Ressalvas'
+                                          ? 'text-amber-700 bg-amber-50'
+                                          : ''
+
+                                  return (
+                                    <tr key={eq.id} className="hover:bg-slate-50 transition-colors">
+                                      <td className="border border-slate-300 p-0 text-center font-medium">
+                                        <a
+                                          href={`#equipamento-${eq.id}`}
+                                          className="block p-2 text-inherit no-underline"
+                                        >
+                                          {eq.ordem || globalIndex}
+                                        </a>
+                                      </td>
+                                      <td className="border border-slate-300 p-0 font-semibold text-slate-800">
+                                        <a
+                                          href={`#equipamento-${eq.id}`}
+                                          className="block p-2 text-inherit no-underline"
+                                        >
+                                          {eq.tipo_equipamento}
+                                        </a>
+                                      </td>
+                                      <td className="border border-slate-300 p-0">
+                                        <a
+                                          href={`#equipamento-${eq.id}`}
+                                          className="block p-2 text-inherit no-underline"
+                                        >
+                                          {circuitoStr}
+                                        </a>
+                                      </td>
+                                      <td className="border border-slate-300 p-0">
+                                        <a
+                                          href={`#equipamento-${eq.id}`}
+                                          className="block p-2 text-inherit no-underline"
+                                        >
+                                          {numStr}
+                                        </a>
+                                      </td>
+                                      <td
+                                        className={`border border-slate-300 p-0 text-center font-semibold uppercase text-[10px] tracking-wider ${statusColor}`}
+                                      >
+                                        <a
+                                          href={`#equipamento-${eq.id}`}
+                                          className="block p-2 text-inherit no-underline"
+                                        >
+                                          {status}
+                                        </a>
+                                      </td>
+                                    </tr>
+                                  )
+                                })}
+                              </tbody>
+                            </table>
+                          </div>
+                        )
+                      })}
+                    </div>
+                  )}
                 </td>
               </tr>
 
@@ -608,17 +726,19 @@ export default function ReportPrint() {
                 const sectionMargin = isTransformador ? 'mt-4' : 'mt-8'
                 const textSize = isTransformador ? 'text-[11px]' : 'text-[12px]'
                 const tablePadding = isTransformador ? 'p-1.5' : 'p-3'
+                const displayIndex = eq.ordem || i + 1
 
                 return (
                   <tr
                     key={eq.id}
+                    id={`equipamento-${eq.id}`}
                     className="print:break-before-page"
                     style={{ breakBefore: 'page', pageBreakBefore: 'always' }}
                   >
                     <td>
                       <div className="mb-8 border border-slate-400 bg-white text-[12px]">
                         <div className="bg-slate-200 text-slate-900 p-3 font-semibold text-[14px] border-b border-slate-400 uppercase tracking-wide">
-                          {i + 1}. EQUIPAMENTO: {eq.tipo_equipamento}
+                          {displayIndex}. EQUIPAMENTO: {eq.tipo_equipamento}
                         </div>
 
                         <div className={`p-4 ${containerSpace}`}>
