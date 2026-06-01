@@ -428,8 +428,8 @@ export default function ReportPrint() {
             </div>
 
             <div className="flex flex-col items-center justify-center space-y-4">
-              <Cpu className="w-12 h-12 text-blue-900 stroke-[1.5]" />
-              <h1 className="text-[16px] font-bold text-slate-900 uppercase leading-snug tracking-tight text-center">
+              <Cpu className="w-10 h-10 text-blue-900 stroke-[1.5]" />
+              <h1 className="text-[18px] font-bold text-slate-900 uppercase leading-snug tracking-tight text-center">
                 LAUDO TÉCNICO DE MANUTENÇÃO PREVENTIVA EM CABINE PRIMÁRIA
               </h1>
             </div>
