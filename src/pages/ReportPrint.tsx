@@ -427,8 +427,8 @@ export default function ReportPrint() {
               <img src={logoImg} alt="Eletroteste Logo" className="max-h-full object-contain" />
             </div>
 
-            <div className="flex flex-col items-center justify-center space-y-6">
-              <Cpu className="w-16 h-16 text-blue-900 stroke-[1.5]" />
+            <div className="flex flex-col items-center justify-center space-y-4">
+              <Cpu className="w-12 h-12 text-blue-900 stroke-[1.5]" />
               <h1 className="text-[16px] font-bold text-slate-900 uppercase leading-snug tracking-tight text-center">
                 LAUDO TÉCNICO DE MANUTENÇÃO PREVENTIVA EM CABINE PRIMÁRIA
               </h1>
