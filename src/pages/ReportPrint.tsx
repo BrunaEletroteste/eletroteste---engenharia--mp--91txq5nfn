@@ -590,7 +590,7 @@ export default function ReportPrint() {
                             Responsável Técnico
                           </td>
                           <td className="border border-slate-300 p-2 font-semibold text-slate-900">
-                            {autor.name || 'N/A'}
+                            {report.responsavel_tecnico || autor.name || 'N/A'}
                           </td>
                         </tr>
                         <tr>
@@ -1021,7 +1021,7 @@ export default function ReportPrint() {
                   <div className="mt-16 pt-8 pb-8 flex justify-center avoid-break">
                     <div className="w-80 text-center text-[12px]">
                       <div className="border-t border-black pt-3 font-semibold text-slate-900">
-                        {autor.name || 'Responsável Técnico'}
+                        {report.responsavel_tecnico || autor.name || 'Responsável Técnico'}
                       </div>
                       <div className="text-slate-600 mt-1 font-medium">
                         ELETROTESTE ENGENHARIA E SERVIÇOS

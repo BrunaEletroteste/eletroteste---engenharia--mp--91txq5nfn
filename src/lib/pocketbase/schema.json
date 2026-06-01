@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-06-01T18:07:56.092Z",
+  "generatedAt": "2026-06-01T18:22:07.537Z",
   "collections": [
     {
       "name": "users",
@@ -206,6 +206,12 @@
         {
           "name": "data_fim",
           "type": "date",
+          "required": false,
+          "system": false
+        },
+        {
+          "name": "responsavel_tecnico",
+          "type": "text",
           "required": false,
           "system": false
         }
