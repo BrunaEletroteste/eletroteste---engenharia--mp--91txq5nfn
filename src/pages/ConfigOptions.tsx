@@ -4,6 +4,7 @@ import { useAuth } from '@/hooks/use-auth'
 import {
   getOpcoesPadronizadas,
   createOpcao,
+  updateOpcao,
   deleteOpcao,
   OpcaoPadronizada,
 } from '@/services/opcoes'
@@ -17,8 +18,9 @@ import {
   SelectValue,
 } from '@/components/ui/select'
 import { useToast } from '@/hooks/use-toast'
-import { Trash2, Plus } from 'lucide-react'
+import { Trash2, Plus, Pencil, Check, X } from 'lucide-react'
 import { useRealtime } from '@/hooks/use-realtime'
+import { getErrorMessage } from '@/lib/pocketbase/errors'
 
 export default function ConfigOptions() {
   const { user } = useAuth()
@@ -27,6 +29,8 @@ export default function ConfigOptions() {
   const [loading, setLoading] = useState(true)
   const [selectedCategoria, setSelectedCategoria] = useState<string>('fabricante')
   const [novoValor, setNovoValor] = useState('')
+  const [editingId, setEditingId] = useState<string | null>(null)
+  const [editingValue, setEditingValue] = useState('')
 
   const KNOWN_CATEGORIES = [
     { value: 'fabricante', label: 'Fabricante' },
@@ -84,7 +88,41 @@ export default function ConfigOptions() {
       loadOpcoes()
       toast({ title: 'Sucesso', description: 'Opção adicionada com sucesso.' })
     } catch (error) {
-      toast({ title: 'Erro', description: 'Erro ao adicionar opção', variant: 'destructive' })
+      toast({
+        title: 'Erro',
+        description: getErrorMessage(error) || 'Erro ao adicionar opção',
+        variant: 'destructive',
+      })
+    }
+  }
+
+  const handleEditStart = (opcao: OpcaoPadronizada) => {
+    setEditingId(opcao.id)
+    setEditingValue(opcao.valor)
+  }
+
+  const handleEditCancel = () => {
+    setEditingId(null)
+    setEditingValue('')
+  }
+
+  const handleEditSave = async (id: string) => {
+    if (!editingValue.trim()) {
+      toast({ title: 'Aviso', description: 'O valor não pode ser vazio.', variant: 'destructive' })
+      return
+    }
+    try {
+      await updateOpcao(id, { valor: editingValue.trim() })
+      setEditingId(null)
+      setEditingValue('')
+      loadOpcoes()
+      toast({ title: 'Sucesso', description: 'Opção atualizada com sucesso.' })
+    } catch (error) {
+      toast({
+        title: 'Erro',
+        description: getErrorMessage(error) || 'Erro ao atualizar opção',
+        variant: 'destructive',
+      })
     }
   }
 
@@ -94,7 +132,11 @@ export default function ConfigOptions() {
       loadOpcoes()
       toast({ title: 'Sucesso', description: 'Opção removida com sucesso.' })
     } catch (error) {
-      toast({ title: 'Erro', description: 'Erro ao remover opção', variant: 'destructive' })
+      toast({
+        title: 'Erro',
+        description: getErrorMessage(error) || 'Erro ao remover opção',
+        variant: 'destructive',
+      })
     }
   }
 
@@ -197,15 +239,64 @@ export default function ConfigOptions() {
                 key={opcao.id}
                 className="flex items-center justify-between p-4 hover:bg-muted/50 transition-colors"
               >
-                <span className="font-medium">{opcao.valor}</span>
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  className="text-destructive hover:text-destructive hover:bg-destructive/10"
-                  onClick={() => handleDelete(opcao.id)}
-                >
-                  <Trash2 className="h-4 w-4" />
-                </Button>
+                {editingId === opcao.id ? (
+                  <div className="flex flex-1 items-center gap-2 mr-2">
+                    <Input
+                      autoFocus
+                      value={editingValue}
+                      onChange={(e) => setEditingValue(e.target.value)}
+                      onKeyDown={(e) => {
+                        if (e.key === 'Enter') handleEditSave(opcao.id)
+                        if (e.key === 'Escape') handleEditCancel()
+                      }}
+                      className="h-8"
+                    />
+                  </div>
+                ) : (
+                  <span className="font-medium">{opcao.valor}</span>
+                )}
+
+                <div className="flex items-center gap-1 shrink-0">
+                  {editingId === opcao.id ? (
+                    <>
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        className="h-8 w-8 text-green-600 hover:text-green-700 hover:bg-green-100"
+                        onClick={() => handleEditSave(opcao.id)}
+                      >
+                        <Check className="h-4 w-4" />
+                      </Button>
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        className="h-8 w-8 text-slate-500 hover:text-slate-700 hover:bg-slate-100"
+                        onClick={handleEditCancel}
+                      >
+                        <X className="h-4 w-4" />
+                      </Button>
+                    </>
+                  ) : (
+                    <>
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        className="h-8 w-8 text-blue-600 hover:text-blue-700 hover:bg-blue-100"
+                        onClick={() => handleEditStart(opcao)}
+                      >
+                        <Pencil className="h-4 w-4" />
+                      </Button>
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        className="h-8 w-8 text-destructive hover:text-destructive hover:bg-destructive/10"
+                        onClick={() => handleDelete(opcao.id)}
+                      >
+                        <Trash2 className="h-4 w-4" />
+                      </Button>
+                    </>
+                  )}
+                </div>
               </li>
             ))}
           </ul>

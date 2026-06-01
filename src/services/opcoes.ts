@@ -19,4 +19,7 @@ export const getOpcoesPadronizadas = (categoria?: string) => {
 export const createOpcao = (data: { categoria: string; valor: string }) =>
   pb.collection('opcoes_padronizadas').create(data)
 
+export const updateOpcao = (id: string, data: Partial<{ categoria: string; valor: string }>) =>
+  pb.collection('opcoes_padronizadas').update(id, data)
+
 export const deleteOpcao = (id: string) => pb.collection('opcoes_padronizadas').delete(id)
