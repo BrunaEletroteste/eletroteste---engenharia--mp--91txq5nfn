@@ -393,12 +393,12 @@ export default function ReportPrint() {
       <div className="w-full max-w-[210mm] mx-auto bg-white shadow-xl print:shadow-none mt-24 print:mt-0">
         {/* Cover Page */}
         <div
-          className="w-full min-h-[297mm] flex flex-col justify-center items-center print:max-w-none mb-8 print:mb-0 overflow-hidden box-border p-10 relative"
+          className="w-full min-h-[297mm] flex flex-col justify-center items-center print:max-w-none mb-8 print:mb-0 overflow-hidden box-border p-10 relative print:break-after-page"
           style={{ pageBreakAfter: 'always', breakAfter: 'page' }}
         >
           {/* Background Circuit Pattern (Top Fade-out) */}
           <div
-            className="absolute inset-0 z-0 opacity-50 pointer-events-none"
+            className="absolute inset-0 z-0 opacity-20 pointer-events-none"
             style={{
               backgroundImage:
                 "url(\"data:image/svg+xml,%3Csvg width='100' height='100' xmlns='http://www.w3.org/2000/svg'%3E%3Cg stroke='%23cbd5e1' stroke-width='1.5' fill='none' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M10,10 l20,0 l10,10 l0,20 l10,10 l20,0' /%3E%3Cpath d='M90,10 l-20,0 l-10,10 l0,20 l-10,10 l-20,0' /%3E%3Cpath d='M10,90 l20,0 l10,-10 l0,-20 l10,-10 l20,0' /%3E%3Cpath d='M90,90 l-20,0 l-10,-10 l0,-20 l-10,-10 l-20,0' /%3E%3Cpath d='M50,10 l0,15 l15,15' /%3E%3Cpath d='M50,90 l0,-15 l-15,-15' /%3E%3Cpath d='M10,50 l15,0 l15,15' /%3E%3Cpath d='M90,50 l-15,0 l-15,-15' /%3E%3C/g%3E%3Cg fill='%2394a3b8'%3E%3Ccircle cx='10' cy='10' r='2.5' /%3E%3Ccircle cx='90' cy='10' r='2.5' /%3E%3Ccircle cx='10' cy='90' r='2.5' /%3E%3Ccircle cx='90' cy='90' r='2.5' /%3E%3Ccircle cx='70' cy='50' r='3' fill='white' stroke='%23cbd5e1' stroke-width='1.5'/%3E%3Ccircle cx='30' cy='50' r='3' fill='white' stroke='%23cbd5e1' stroke-width='1.5'/%3E%3Ccircle cx='50' cy='30' r='3' fill='white' stroke='%23cbd5e1' stroke-width='1.5'/%3E%3Ccircle cx='50' cy='70' r='3' fill='white' stroke='%23cbd5e1' stroke-width='1.5'/%3E%3Ccircle cx='10' cy='50' r='2' /%3E%3Ccircle cx='90' cy='50' r='2' /%3E%3Ccircle cx='50' cy='10' r='2' /%3E%3Ccircle cx='50' cy='90' r='2' /%3E%3C/g%3E%3C/svg%3E\")",
@@ -409,7 +409,7 @@ export default function ReportPrint() {
 
           {/* Background Circuit Pattern (Bottom Fade-in) */}
           <div
-            className="absolute inset-0 z-0 opacity-50 pointer-events-none"
+            className="absolute inset-0 z-0 opacity-20 pointer-events-none"
             style={{
               backgroundImage:
                 "url(\"data:image/svg+xml,%3Csvg width='100' height='100' xmlns='http://www.w3.org/2000/svg'%3E%3Cg stroke='%23cbd5e1' stroke-width='1.5' fill='none' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M10,10 l20,0 l10,10 l0,20 l10,10 l20,0' /%3E%3Cpath d='M90,10 l-20,0 l-10,10 l0,20 l-10,10 l-20,0' /%3E%3Cpath d='M10,90 l20,0 l10,-10 l0,-20 l10,-10 l20,0' /%3E%3Cpath d='M90,90 l-20,0 l-10,-10 l0,-20 l-10,-10 l-20,0' /%3E%3Cpath d='M50,10 l0,15 l15,15' /%3E%3Cpath d='M50,90 l0,-15 l-15,-15' /%3E%3Cpath d='M10,50 l15,0 l15,15' /%3E%3Cpath d='M90,50 l-15,0 l-15,-15' /%3E%3C/g%3E%3Cg fill='%2394a3b8'%3E%3Ccircle cx='10' cy='10' r='2.5' /%3E%3Ccircle cx='90' cy='10' r='2.5' /%3E%3Ccircle cx='10' cy='90' r='2.5' /%3E%3Ccircle cx='90' cy='90' r='2.5' /%3E%3Ccircle cx='70' cy='50' r='3' fill='white' stroke='%23cbd5e1' stroke-width='1.5'/%3E%3Ccircle cx='30' cy='50' r='3' fill='white' stroke='%23cbd5e1' stroke-width='1.5'/%3E%3Ccircle cx='50' cy='30' r='3' fill='white' stroke='%23cbd5e1' stroke-width='1.5'/%3E%3Ccircle cx='50' cy='70' r='3' fill='white' stroke='%23cbd5e1' stroke-width='1.5'/%3E%3Ccircle cx='10' cy='50' r='2' /%3E%3Ccircle cx='90' cy='50' r='2' /%3E%3Ccircle cx='50' cy='10' r='2' /%3E%3Ccircle cx='50' cy='90' r='2' /%3E%3C/g%3E%3C/svg%3E\")",
@@ -423,7 +423,7 @@ export default function ReportPrint() {
           <div className="absolute left-4 top-0 bottom-0 w-1 bg-amber-500 z-10"></div>
 
           <div className="flex flex-col items-center justify-center w-full max-w-2xl text-center space-y-12 z-20 relative text-[16px]">
-            <div className="flex items-center justify-center h-40 mb-4 w-full">
+            <div className="flex items-center justify-center h-28 mb-4 w-full">
               <img src={logoImg} alt="Eletroteste Logo" className="max-h-full object-contain" />
             </div>
 
@@ -438,7 +438,7 @@ export default function ReportPrint() {
 
             <div className="w-full text-center space-y-10 mt-16">
               <div>
-                <p className="text-[16px] font-medium text-slate-500 uppercase tracking-widest mb-2 leading-none">
+                <p className="text-[12px] font-medium text-slate-400 uppercase tracking-widest mb-2 leading-none">
                   Cliente
                 </p>
                 <p className="text-[14px] font-semibold text-slate-800 leading-none">
@@ -446,7 +446,7 @@ export default function ReportPrint() {
                 </p>
               </div>
               <div>
-                <p className="text-[16px] font-medium text-slate-500 uppercase tracking-widest mb-2 leading-none mt-6">
+                <p className="text-[12px] font-medium text-slate-400 uppercase tracking-widest mb-2 leading-none mt-6">
                   Relatório Nº
                 </p>
                 <p className="text-[14px] font-normal text-black leading-none">
@@ -556,8 +556,11 @@ export default function ReportPrint() {
                   </div>
 
                   {/* Execution Info */}
-                  <div className="mb-8 avoid-break text-[12px]">
-                    <div className="bg-slate-800 text-white p-2 font-medium mb-2 uppercase text-[13px] tracking-wider">
+                  <div
+                    className="mb-8 text-[12px] print:break-after-page"
+                    style={{ pageBreakAfter: 'always', breakAfter: 'page' }}
+                  >
+                    <div className="bg-slate-800 text-white p-2 font-medium mb-2 uppercase text-[13px] tracking-wider avoid-break">
                       Dados da Execução
                     </div>
                     <table className="w-full border-collapse border border-slate-300">
@@ -604,10 +607,7 @@ export default function ReportPrint() {
 
                   {/* Equipment Index */}
                   {equipments.length > 0 && (
-                    <div
-                      className="mb-8 text-[12px] print:mt-10 print:break-before-page"
-                      style={{ breakBefore: 'page', pageBreakBefore: 'always' }}
-                    >
+                    <div className="mb-8 text-[12px] print:mt-10">
                       <div className="bg-slate-800 text-white p-2 font-medium mb-6 uppercase text-[13px] tracking-wider text-center avoid-break">
                         Índice de Equipamentos Inspecionados
                       </div>
