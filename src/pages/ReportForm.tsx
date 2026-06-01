@@ -111,6 +111,7 @@ export default function ReportForm() {
             cliente_id: res.cliente_id,
             data_execucao: res.data_execucao ? res.data_execucao.substring(0, 10) : '',
             data_fim: res.data_fim ? res.data_fim.substring(0, 10) : '',
+            responsavel_tecnico: res.responsavel_tecnico || '',
             acompanhante: res.acompanhante || '',
             proxima_manutencao: res.proxima_manutencao
               ? res.proxima_manutencao.substring(0, 10)
@@ -200,6 +201,7 @@ export default function ReportForm() {
               cliente_id: res.cliente_id,
               data_execucao: res.data_execucao ? res.data_execucao.substring(0, 10) : '',
               data_fim: res.data_fim ? res.data_fim.substring(0, 10) : '',
+              responsavel_tecnico: res.responsavel_tecnico || '',
               acompanhante: res.acompanhante || '',
               proxima_manutencao: res.proxima_manutencao
                 ? res.proxima_manutencao.substring(0, 10)
@@ -220,6 +222,7 @@ export default function ReportForm() {
             cliente_id: '',
             data_execucao: '',
             data_fim: '',
+            responsavel_tecnico: '',
             acompanhante: '',
             proxima_manutencao: '',
             observacoes: '',
@@ -663,10 +666,12 @@ export default function ReportForm() {
       if (!currentId) {
         payload.criado_por = user?.id || ''
       }
-      if (data.acompanhante) payload.acompanhante = data.acompanhante
-      if (data.proxima_manutencao)
-        payload.proxima_manutencao = `${data.proxima_manutencao} 12:00:00Z`
-      if (data.observacoes) payload.observacoes = data.observacoes
+      payload.responsavel_tecnico = data.responsavel_tecnico || ''
+      payload.acompanhante = data.acompanhante || ''
+      payload.proxima_manutencao = data.proxima_manutencao
+        ? `${data.proxima_manutencao} 12:00:00Z`
+        : ''
+      payload.observacoes = data.observacoes || ''
 
       const formData = new FormData()
       Object.entries(payload).forEach(([key, value]) => {
