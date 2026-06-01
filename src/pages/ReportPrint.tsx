@@ -458,7 +458,7 @@ export default function ReportPrint() {
         </div>
 
         {/* Document Container */}
-        <div className="px-8 pb-8 text-[12px] print:max-w-none print:pt-0 print:px-12 print:pb-24 font-sans bg-white relative z-10">
+        <div className="px-8 pb-8 text-[12px] print:max-w-none print:pt-0 print:px-12 print:pb-[100px] font-sans bg-white relative z-10">
           <table className="w-full">
             <thead className="table-header-group">
               <tr>
@@ -1060,7 +1060,7 @@ export default function ReportPrint() {
                     </div>
                   </div>
                   {/* Spacer for print to prevent overlap with fixed footer on every table page */}
-                  <div className="hidden print:block h-[80px] w-full"></div>
+                  <div className="hidden print:block h-[100px] w-full"></div>
                 </td>
               </tr>
             </tfoot>
@@ -1069,26 +1069,28 @@ export default function ReportPrint() {
       </div>
 
       {/* Fixed Footer - Print Only */}
-      <div className="hidden print:flex fixed bottom-0 left-0 w-full justify-center bg-white z-50">
-        <div className="w-full max-w-[210mm] border-t-2 border-slate-800 pt-4 pb-6 px-12 text-[11px] text-slate-600 leading-relaxed bg-white">
-          <div className="flex justify-between items-start gap-4">
-            <div className="flex flex-col gap-1">
-              <span>
-                <strong className="font-medium">CNPJ:</strong> 64.941.818/0001-91 &nbsp;|&nbsp;{' '}
-                <strong className="font-medium">IE:</strong> 748.001.165.111 &nbsp;|&nbsp;{' '}
-                <strong className="font-medium">IM:</strong> 688
-              </span>
-              <span>Rua Andradina, 262 - Remanso Campineiro - Hortolândia - SP</span>
-            </div>
-            <div className="flex flex-col text-right gap-1">
-              <span>
-                <strong className="font-medium">Tels:</strong> (19) 3865-2942 / 3865-1261
-                &nbsp;|&nbsp; <strong className="font-medium">WhatsApp:</strong> (19) 9 7143-3853
-              </span>
-              <span>
-                <strong className="font-medium">Site:</strong> www.eletroteste.com &nbsp;|&nbsp;{' '}
-                <strong className="font-medium">E-mail:</strong> eletroteste@eletroteste.com
-              </span>
+      <div className="hidden print:flex fixed bottom-0 left-0 w-full justify-center bg-transparent z-50 print:pb-0">
+        <div className="w-full max-w-[210mm] px-12 bg-white">
+          <div className="border-t-2 border-slate-800 pt-4 pb-6 text-[11px] text-slate-600 leading-relaxed bg-white">
+            <div className="flex justify-between items-start gap-4">
+              <div className="flex flex-col gap-1">
+                <span>
+                  <strong className="font-medium">CNPJ:</strong> 64.941.818/0001-91 &nbsp;|&nbsp;{' '}
+                  <strong className="font-medium">IE:</strong> 748.001.165.111 &nbsp;|&nbsp;{' '}
+                  <strong className="font-medium">IM:</strong> 688
+                </span>
+                <span>Rua Andradina, 262 - Remanso Campineiro - Hortolândia - SP</span>
+              </div>
+              <div className="flex flex-col text-right gap-1">
+                <span>
+                  <strong className="font-medium">Tels:</strong> (19) 3865-2942 / 3865-1261
+                  &nbsp;|&nbsp; <strong className="font-medium">WhatsApp:</strong> (19) 9 7143-3853
+                </span>
+                <span>
+                  <strong className="font-medium">Site:</strong> www.eletroteste.com &nbsp;|&nbsp;{' '}
+                  <strong className="font-medium">E-mail:</strong> eletroteste@eletroteste.com
+                </span>
+              </div>
             </div>
           </div>
         </div>
