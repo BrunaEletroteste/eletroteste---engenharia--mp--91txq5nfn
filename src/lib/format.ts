@@ -14,6 +14,11 @@ export function formatNumberPtBR(
 
 export function parseNumberPtBR(value: string): number | '' {
   if (!value) return ''
+  // If user typed using a dot for decimals and no comma, parse it directly
+  if (value.includes('.') && !value.includes(',')) {
+    const num = parseFloat(value)
+    return isNaN(num) ? '' : num
+  }
   const cleanStr = value.replace(/\./g, '').replace(',', '.')
   const num = parseFloat(cleanStr)
   return isNaN(num) ? '' : num

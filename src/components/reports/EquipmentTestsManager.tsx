@@ -351,6 +351,7 @@ export function EquipmentTestsManager({
 
   const renderChart = (data: any[], unidade: string, pYear: number, typeName: string) => {
     const hasData = data.some((d) => d.ano_atual !== null || d.ano_anterior !== null)
+    const isEnrolamentoChart = typeName.includes('Resistências dos Enrolamentos')
 
     if (!hasData) {
       return (
@@ -380,10 +381,22 @@ export function EquipmentTestsManager({
                   <TableRow key={idx}>
                     <TableCell className="py-2 text-sm">{d.phase}</TableCell>
                     <TableCell className="py-2 text-sm text-muted-foreground">
-                      {d.ano_anterior !== null ? formatNumberPtBR(d.ano_anterior, 4) : '-'}
+                      {d.ano_anterior !== null
+                        ? formatNumberPtBR(
+                            d.ano_anterior,
+                            isEnrolamentoChart ? 2 : 4,
+                            isEnrolamentoChart ? 2 : 0,
+                          )
+                        : '-'}
                     </TableCell>
                     <TableCell className="py-2 text-sm font-medium">
-                      {d.ano_atual !== null ? formatNumberPtBR(d.ano_atual, 4) : '-'}
+                      {d.ano_atual !== null
+                        ? formatNumberPtBR(
+                            d.ano_atual,
+                            isEnrolamentoChart ? 2 : 4,
+                            isEnrolamentoChart ? 2 : 0,
+                          )
+                        : '-'}
                     </TableCell>
                   </TableRow>
                 ))}
@@ -428,7 +441,9 @@ export function EquipmentTestsManager({
                   axisLine={false}
                   tickMargin={10}
                   fontSize={12}
-                  tickFormatter={(val) => formatNumberPtBR(val, 4)}
+                  tickFormatter={(val) =>
+                    formatNumberPtBR(val, isEnrolamentoChart ? 2 : 4, isEnrolamentoChart ? 2 : 0)
+                  }
                   width={50}
                 />{' '}
                 <ChartTooltip
@@ -612,7 +627,9 @@ export function EquipmentTestsManager({
       const tRef = t.dados_detalhados?.temperatura_referencia || 75
 
       const formatField = (val: any, unit: string) =>
-        val !== undefined && val !== null && val !== '' ? `${formatNum(val)} ${unit}` : '-'
+        val !== undefined && val !== null && val !== ''
+          ? `${formatNumberPtBR(val, 2, 2)} ${unit}`
+          : '-'
 
       const f_ets = [
         `H1-H3: ${formatField(ets.h1_h3, 'Ω')}`,

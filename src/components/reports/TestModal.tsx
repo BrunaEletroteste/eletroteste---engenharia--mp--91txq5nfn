@@ -526,14 +526,20 @@ const FATOR_CORRECAO_105: Record<number, number> = {
 
 function roundEnrolamento(val: number | null): number | null {
   if (val === null) return null
-  const parts = val.toFixed(4).split('.')
+  const str = val.toFixed(4)
+  const parts = str.split('.')
   if (parts.length < 2) return val
+
+  const intPart = parts[0]
   const decimals = parts[1]
+
   const thirdDigit = parseInt(decimals[2] || '0', 10)
-  const base = Math.floor(val * 100) / 100
-  if (thirdDigit > 5) {
-    return parseFloat((base + 0.01).toFixed(2))
+  let base = parseFloat(`${intPart}.${decimals.slice(0, 2)}`)
+
+  if (thirdDigit >= 5) {
+    base += val >= 0 ? 0.01 : -0.01
   }
+
   return parseFloat(base.toFixed(2))
 }
 
