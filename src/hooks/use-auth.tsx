@@ -24,7 +24,8 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
-    const checkActive = (record: any) => record && record.ativo === true
+    const checkActive = (record: any) =>
+      record && record.ativo === true && record.tipo_acesso !== 'visitante'
 
     const unsubscribe = pb.authStore.onChange((_token, record) => {
       const isValidAndActive = pb.authStore.isValid && checkActive(record)
@@ -76,6 +77,21 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       if (!authData.record || authData.record.ativo !== true) {
         pb.authStore.clear()
         return { error: new Error('Conta inativa') }
+      }
+
+      if (authData.record.tipo_acesso === 'visitante') {
+        pb.authStore.clear()
+        return { error: new Error('Visitante') }
+      }
+
+      try {
+        await pb.collection('audit_logs').create({
+          user: authData.record.id,
+          action_type: 'login',
+          details: 'Login efetuado com sucesso',
+        })
+      } catch (e) {
+        console.error('Falha ao registrar log de auditoria do login', e)
       }
 
       return { error: null }

@@ -133,11 +133,19 @@ export default function Index() {
     )
   }
 
-  const canCreate = user?.tipo_acesso === 'admin' || user?.tipo_acesso === 'tecnico_campo'
+  const canCreate =
+    user?.tipo_acesso === 'admin' ||
+    user?.tipo_acesso === 'tecnico_campo' ||
+    user?.tipo_acesso === 'revisor_interno'
 
-  const canDelete = (report: any) =>
-    report.status === 'rascunho' &&
-    (user?.tipo_acesso === 'admin' || report.criado_por === user?.id)
+  const canDelete = (report: any) => user?.tipo_acesso === 'admin'
+
+  const canEdit = (report: any) => {
+    if (user?.tipo_acesso === 'admin') return true
+    if (user?.tipo_acesso === 'revisor_interno') return true
+    if (user?.tipo_acesso === 'tecnico_campo' && report.status === 'rascunho') return true
+    return false
+  }
 
   const handleDelete = async () => {
     if (!reportToDelete) return
@@ -286,7 +294,7 @@ export default function Index() {
                               <Eye className="mr-2 h-4 w-4" />
                               Visualizar
                             </DropdownMenuItem>
-                            {report.status === 'rascunho' && (
+                            {canEdit(report) && (
                               <DropdownMenuItem
                                 onClick={() => navigate(`/relatorio/editar/${report.id}`)}
                               >
@@ -373,7 +381,7 @@ export default function Index() {
                           <Eye className="mr-2 h-4 w-4" />
                           Visualizar
                         </DropdownMenuItem>
-                        {report.status === 'rascunho' && (
+                        {canEdit(report) && (
                           <DropdownMenuItem
                             onClick={() => navigate(`/relatorio/editar/${report.id}`)}
                           >

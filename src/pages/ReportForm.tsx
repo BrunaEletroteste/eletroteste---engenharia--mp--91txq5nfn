@@ -60,9 +60,14 @@ export default function ReportForm() {
 
   const { reset } = methods
 
-  const canEditRecord = !reportRecord || user?.tipo_acesso !== 'cliente'
+  const canEditRecord =
+    !reportRecord ||
+    user?.tipo_acesso === 'admin' ||
+    user?.tipo_acesso === 'revisor_interno' ||
+    (user?.tipo_acesso === 'tecnico_campo' && reportRecord?.status === 'rascunho')
   const isFinalized = reportRecord?.status === 'finalizado'
-  const isLocked = isFinalized && user?.tipo_acesso !== 'admin'
+  const isLocked =
+    isFinalized && user?.tipo_acesso !== 'admin' && user?.tipo_acesso !== 'revisor_interno'
   const isReadOnly = isViewRoute || !canEditRecord || isLocked
 
   useEffect(() => {

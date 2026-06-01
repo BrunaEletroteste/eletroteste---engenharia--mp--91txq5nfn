@@ -26,8 +26,10 @@ export default function Login() {
         title: 'Erro de Autenticação',
         description:
           (error as Error).message === 'Conta inativa'
-            ? 'Sua conta está inativa. Entre em contato com o administrador.'
-            : 'Verifique seu e-mail e senha e tente novamente.',
+            ? 'A conta está inativa.'
+            : (error as Error).message === 'Visitante'
+              ? 'O acesso ainda não foi liberado pelo administrador. Por favor, aguarde.'
+              : 'Verifique seu e-mail e senha e tente novamente.',
         variant: 'destructive',
       })
     } else {

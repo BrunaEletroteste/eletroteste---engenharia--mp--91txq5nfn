@@ -1,15 +1,15 @@
 {
-  "generatedAt": "2026-06-01T15:09:54.330Z",
+  "generatedAt": "2026-06-01T15:16:48.527Z",
   "collections": [
     {
       "name": "users",
       "type": "auth",
       "apiRules": {
-        "list": "id = @request.auth.id",
-        "view": "id = @request.auth.id",
-        "create": "",
-        "update": "id = @request.auth.id",
-        "delete": "id = @request.auth.id"
+        "list": "@request.auth.tipo_acesso = 'admin' || id = @request.auth.id",
+        "view": "@request.auth.tipo_acesso = 'admin' || id = @request.auth.id",
+        "create": "@request.auth.tipo_acesso = 'admin'",
+        "update": "@request.auth.tipo_acesso = 'admin' || id = @request.auth.id",
+        "delete": "@request.auth.tipo_acesso = 'admin' || id = @request.auth.id"
       },
       "fields": [
         {
@@ -473,6 +473,54 @@
       "indexes": [
         "CREATE UNIQUE INDEX idx_opcoes_padronizadas_cat_val ON opcoes_padronizadas (categoria, valor)"
       ]
+    },
+    {
+      "name": "audit_logs",
+      "type": "base",
+      "apiRules": {
+        "list": "@request.auth.tipo_acesso = 'admin'",
+        "view": "@request.auth.tipo_acesso = 'admin'",
+        "create": "@request.auth.id != '' && user = @request.auth.id",
+        "update": null,
+        "delete": null
+      },
+      "fields": [
+        {
+          "name": "user",
+          "type": "relation",
+          "required": true,
+          "system": false,
+          "collectionRef": "users"
+        },
+        {
+          "name": "action_type",
+          "type": "select",
+          "required": true,
+          "system": false,
+          "selectValues": ["login", "criacao", "edicao", "exclusao"]
+        },
+        {
+          "name": "details",
+          "type": "text",
+          "required": false,
+          "system": false
+        },
+        {
+          "name": "created",
+          "type": "autodate",
+          "required": false,
+          "system": false,
+          "autodateTriggers": ["onCreate"]
+        },
+        {
+          "name": "updated",
+          "type": "autodate",
+          "required": false,
+          "system": false,
+          "autodateTriggers": ["onCreate", "onUpdate"]
+        }
+      ],
+      "indexes": ["CREATE INDEX idx_audit_logs_created ON audit_logs (created DESC)"]
     }
   ]
 }

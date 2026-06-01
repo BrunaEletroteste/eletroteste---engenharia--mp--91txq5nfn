@@ -14,6 +14,8 @@ import Clientes from './pages/Clientes'
 import Profile from './pages/Profile'
 import NotFound from './pages/NotFound'
 import Login from './pages/Login'
+import UsersPage from './pages/Users'
+import AuditLogs from './pages/AuditLogs'
 
 const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
   const { isAuthenticated, loading } = useAuth()
@@ -52,6 +54,8 @@ const App = () => (
             <Route path="/clientes" element={<Clientes />} />
             <Route path="/configuracoes/opcoes" element={<ConfigOptions />} />
             <Route path="/perfil" element={<Profile />} />
+            <Route path="/usuarios" element={<UsersPage />} />
+            <Route path="/auditoria" element={<AuditLogs />} />
           </Route>
           <Route
             path="/relatorio/imprimir/:id"

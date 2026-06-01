@@ -7,6 +7,7 @@ import {
   Bell,
   LogOut,
   User as UserIcon,
+  ShieldCheck,
 } from 'lucide-react'
 import logoUrl from '@/assets/logotransparente-20c57.png'
 import {
@@ -85,6 +86,25 @@ export default function Layout() {
                         <Link to="/clientes">
                           <Users />
                           <span>Clientes</span>
+                        </Link>
+                      </SidebarMenuButton>
+                    </SidebarMenuItem>
+                    <SidebarMenuItem>
+                      <SidebarMenuButton isActive={location.pathname.includes('/usuarios')} asChild>
+                        <Link to="/usuarios">
+                          <Users />
+                          <span>Gestão de Usuários</span>
+                        </Link>
+                      </SidebarMenuButton>
+                    </SidebarMenuItem>
+                    <SidebarMenuItem>
+                      <SidebarMenuButton
+                        isActive={location.pathname.includes('/auditoria')}
+                        asChild
+                      >
+                        <Link to="/auditoria">
+                          <ShieldCheck />
+                          <span>Logs de Auditoria</span>
                         </Link>
                       </SidebarMenuButton>
                     </SidebarMenuItem>
