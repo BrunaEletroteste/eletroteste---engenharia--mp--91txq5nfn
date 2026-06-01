@@ -80,13 +80,13 @@ export const getEquipmentFields = (type: string): FieldDef[] => {
         { name: 'possui_fusivel', label: 'Contém Fusível?', type: 'boolean' },
         {
           name: 'fusivel_tipo',
-          label: 'Tipo',
+          label: 'Tipo dos Fusíveis',
           type: 'text',
           dependsOn: { field: 'possui_fusivel', value: true },
         },
         {
           name: 'fusivel_corrente_nominal',
-          label: 'Corrente Nominal (A)',
+          label: 'Corrente dos Fusíveis (A)',
           type: 'combobox',
           dependsOn: { field: 'possui_fusivel', value: true },
         },

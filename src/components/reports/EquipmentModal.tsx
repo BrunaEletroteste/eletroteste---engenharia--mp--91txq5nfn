@@ -557,7 +557,8 @@ export function EquipmentModal({ open, onOpenChange, onSave, initialData }: Prop
       targetCategory === 'fusivel_corrente_nominal' ||
       targetCategory === 'corrente_primaria' ||
       targetCategory === 'corrente_secundaria' ||
-      field.label.toLowerCase().includes('corrente nominal')
+      field.label.toLowerCase().includes('corrente nominal') ||
+      field.label.toLowerCase().includes('corrente dos fusíveis')
     )
       targetCategory = 'corrente nominal'
     if (
@@ -599,6 +600,7 @@ export function EquipmentModal({ open, onOpenChange, onSave, initialData }: Prop
         'fabricante_fusiveis',
       ].includes(field.name) ||
         field.label.toLowerCase().includes('corrente nominal dos fusíveis') ||
+        field.label.toLowerCase().includes('corrente dos fusíveis') ||
         field.label.toLowerCase().includes('fabricante dos fusíveis'))
     ) {
       isSelect = true
