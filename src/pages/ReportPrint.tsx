@@ -4,6 +4,7 @@ import { Printer, ArrowLeft, Loader2, Cpu } from 'lucide-react'
 import pb from '@/lib/pocketbase/client'
 import { Button } from '@/components/ui/button'
 import { getEquipmentFields } from '@/lib/equipment-templates'
+import { formatNumberPtBR } from '@/lib/format'
 import logoImg from '@/assets/logotransparente-c06b6.png'
 
 const labelMap: Record<string, string> = {
@@ -180,7 +181,7 @@ export default function ReportPrint() {
 
   const formatTestValue = (t: any, tipoEquipamento: string, subType?: string): string[] => {
     const formatNum = (val: any) => {
-      if (typeof val === 'number' && !isNaN(val)) return new Intl.NumberFormat('pt-BR').format(val)
+      if (typeof val === 'number' && !isNaN(val)) return formatNumberPtBR(val, 4)
       return val
     }
 

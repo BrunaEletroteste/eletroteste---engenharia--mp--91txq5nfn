@@ -1,6 +1,7 @@
 import { useFormContext } from 'react-hook-form'
 import { FormField, FormItem, FormLabel, FormControl, FormMessage } from '@/components/ui/form'
 import { Input } from '@/components/ui/input'
+import { NumberInput } from '@/components/ui/number-input'
 import { Textarea } from '@/components/ui/textarea'
 import { X } from 'lucide-react'
 import pb from '@/lib/pocketbase/client'
@@ -50,11 +51,10 @@ export function ReportGeneralSection({
             <FormItem>
               <FormLabel>Temperatura Ambiente (°C)</FormLabel>
               <FormControl>
-                <Input
-                  type="number"
-                  step="any"
+                <NumberInput
                   {...field}
                   value={field.value ?? ''}
+                  onChange={field.onChange}
                   disabled={isView}
                 />
               </FormControl>
@@ -69,11 +69,10 @@ export function ReportGeneralSection({
             <FormItem>
               <FormLabel>Umidade Relativa do Ar (%)</FormLabel>
               <FormControl>
-                <Input
-                  type="number"
-                  step="any"
+                <NumberInput
                   {...field}
                   value={field.value ?? ''}
+                  onChange={field.onChange}
                   disabled={isView}
                 />
               </FormControl>

@@ -18,6 +18,7 @@ import { getEquipmentFields, FieldDef } from '@/lib/equipment-templates'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { Input } from '@/components/ui/input'
+import { formatNumberPtBR } from '@/lib/format'
 import { EquipmentModal } from './EquipmentModal'
 import { EquipmentTestsManager } from './EquipmentTestsManager'
 import { EquipmentPhotosManager } from './EquipmentPhotosManager'
@@ -437,6 +438,7 @@ export function EquipmentSection({ equipments, setEquipments, isView }: Props) {
                           if (val === undefined || val === null || val === '') return null
                           let displayVal = val
                           if (typeof val === 'boolean') displayVal = val ? 'Sim' : 'Não'
+                          else if (typeof val === 'number') displayVal = formatNumberPtBR(val, 4)
                           return (
                             <div key={f.name} className="flex flex-col">
                               <span className="font-semibold text-muted-foreground">{f.label}</span>

@@ -4,6 +4,8 @@ import { getOpcoesPadronizadas, OpcaoPadronizada } from '@/services/opcoes'
 import { getEquipmentFields, FieldDef, EQUIPMENT_TYPES } from '@/lib/equipment-templates'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
+import { NumberInput } from '@/components/ui/number-input'
+import { formatNumberPtBR } from '@/lib/format'
 import { Label } from '@/components/ui/label'
 import {
   Dialog,
@@ -768,21 +770,21 @@ export function EquipmentModal({ open, onOpenChange, onSave, initialData }: Prop
               onCheckedChange={(checked) => handleFieldChange(field.name, checked)}
             />
           </div>
+        ) : field.type === 'number' ? (
+          <NumberInput
+            value={dados[field.name] ?? ''}
+            onChange={(val) => handleFieldChange(field.name, val)}
+            placeholder={
+              field.readOnly ? 'Calculado automaticamente' : `Insira ${field.label.toLowerCase()}`
+            }
+            readOnly={field.readOnly}
+            className={field.readOnly ? 'bg-muted cursor-not-allowed' : ''}
+          />
         ) : (
           <Input
-            type={field.type === 'number' ? 'number' : 'text'}
-            step={field.type === 'number' ? 'any' : undefined}
+            type="text"
             value={dados[field.name] ?? ''}
-            onChange={(e) =>
-              handleFieldChange(
-                field.name,
-                field.type === 'number'
-                  ? e.target.value === ''
-                    ? ''
-                    : Number(e.target.value)
-                  : e.target.value,
-              )
-            }
+            onChange={(e) => handleFieldChange(field.name, e.target.value)}
             placeholder={
               field.readOnly
                 ? 'Calculado automaticamente'

@@ -2,6 +2,7 @@ import { useState, useEffect, useCallback } from 'react'
 import { format, parseISO } from 'date-fns'
 import { Plus, Edit2, Trash2, AlertCircle } from 'lucide-react'
 import { EquipmentItem, TestItem } from '@/types/reports'
+import { formatNumberPtBR } from '@/lib/format'
 import { Button } from '@/components/ui/button'
 import { useToast } from '@/hooks/use-toast'
 import pb from '@/lib/pocketbase/client'
@@ -379,18 +380,10 @@ export function EquipmentTestsManager({
                   <TableRow key={idx}>
                     <TableCell className="py-2 text-sm">{d.phase}</TableCell>
                     <TableCell className="py-2 text-sm text-muted-foreground">
-                      {d.ano_anterior !== null
-                        ? new Intl.NumberFormat('pt-BR', { maximumFractionDigits: 4 }).format(
-                            d.ano_anterior,
-                          )
-                        : '-'}
+                      {d.ano_anterior !== null ? formatNumberPtBR(d.ano_anterior, 4) : '-'}
                     </TableCell>
                     <TableCell className="py-2 text-sm font-medium">
-                      {d.ano_atual !== null
-                        ? new Intl.NumberFormat('pt-BR', { maximumFractionDigits: 4 }).format(
-                            d.ano_atual,
-                          )
-                        : '-'}
+                      {d.ano_atual !== null ? formatNumberPtBR(d.ano_atual, 4) : '-'}
                     </TableCell>
                   </TableRow>
                 ))}
@@ -435,11 +428,9 @@ export function EquipmentTestsManager({
                   axisLine={false}
                   tickMargin={10}
                   fontSize={12}
-                  tickFormatter={(val) =>
-                    new Intl.NumberFormat('pt-BR', { maximumFractionDigits: 4 }).format(val)
-                  }
+                  tickFormatter={(val) => formatNumberPtBR(val, 4)}
                   width={50}
-                />
+                />{' '}
                 <ChartTooltip
                   cursor={{ fill: 'hsl(var(--muted))', opacity: 0.4 }}
                   content={<ChartTooltipContent />}
@@ -498,7 +489,7 @@ export function EquipmentTestsManager({
 
   const formatTestValue = (t: any, tipoEquipamento: string, subType?: string): string[] => {
     const formatNum = (val: any) => {
-      if (typeof val === 'number' && !isNaN(val)) return new Intl.NumberFormat('pt-BR').format(val)
+      if (typeof val === 'number' && !isNaN(val)) return formatNumberPtBR(val, 4)
       return val
     }
 
