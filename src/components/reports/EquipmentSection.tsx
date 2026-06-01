@@ -330,16 +330,37 @@ export function EquipmentSection({ equipments, setEquipments, isView }: Props) {
                           >
                             #{seq}
                           </Badge>
-                          <span className="font-semibold text-foreground flex-1 break-words">
-                            {[
-                              eq.tipo_equipamento || 'N/A',
-                              eq.dados_tecnicos?.subestacao || 'N/A',
-                              eq.dados_tecnicos?.circuito || 'N/A',
-                              eq.dados_tecnicos?.n_serie ||
-                                eq.dados_tecnicos?.numero_serie ||
-                                'N/A',
-                              eq.parecer?.parecer || 'Pendente',
-                            ].join(' — ')}
+                          <span className="font-semibold text-foreground flex-1 flex flex-wrap items-center gap-2 break-words">
+                            <span>
+                              {[
+                                eq.tipo_equipamento || 'N/A',
+                                eq.dados_tecnicos?.subestacao || 'N/A',
+                                eq.dados_tecnicos?.circuito || 'N/A',
+                                eq.dados_tecnicos?.numero ||
+                                  eq.dados_tecnicos?.identificacao ||
+                                  'N/A',
+                              ].join(' — ')}
+                            </span>
+                            {(() => {
+                              const status = eq.parecer?.parecer || 'Pendente'
+                              let badgeClass =
+                                'bg-secondary text-secondary-foreground hover:bg-secondary/80'
+                              if (status === 'Conforme')
+                                badgeClass =
+                                  'bg-green-500 text-white hover:bg-green-600 border-green-600'
+                              if (status === 'Possui Ressalvas')
+                                badgeClass =
+                                  'bg-amber-500 text-white hover:bg-amber-600 border-amber-600'
+                              if (status === 'Não Conforme')
+                                badgeClass =
+                                  'bg-destructive text-destructive-foreground hover:bg-destructive/90'
+
+                              return (
+                                <Badge variant="outline" className={badgeClass}>
+                                  {status}
+                                </Badge>
+                              )
+                            })()}
                           </span>
                         </AccordionTrigger>
                         {!isView && (
