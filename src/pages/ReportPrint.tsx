@@ -862,6 +862,10 @@ export default function ReportPrint() {
                                 />
                               ))}
                             </div>
+                            <p className="mt-3 text-[11px] text-slate-600 italic text-center w-full block">
+                              Detalhe do(s) equipamento(s) durante a execução da(s) atividade(s)
+                              técnica(s).
+                            </p>
                           </div>
                         )}
                       </div>
