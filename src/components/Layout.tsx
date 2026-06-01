@@ -61,8 +61,8 @@ export default function Layout() {
             <SidebarGroupContent>
               <SidebarMenu>
                 <SidebarMenuItem>
-                  <SidebarMenuButton asChild>
-                    <Link to="/">
+                  <SidebarMenuButton isActive={location.pathname === '/dashboard'} asChild>
+                    <Link to="/dashboard">
                       <LayoutDashboard />
                       <span>Dashboard</span>
                     </Link>

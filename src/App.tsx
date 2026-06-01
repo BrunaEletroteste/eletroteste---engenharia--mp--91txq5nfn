@@ -6,6 +6,7 @@ import { AuthProvider, useAuth } from '@/hooks/use-auth'
 import { Loader2 } from 'lucide-react'
 
 import Layout from './components/Layout'
+import Dashboard from './pages/Dashboard'
 import Index from './pages/Index'
 import ReportForm from './pages/ReportForm'
 import ReportPrint from './pages/ReportPrint'
@@ -48,6 +49,7 @@ const App = () => (
             }
           >
             <Route path="/" element={<Index />} />
+            <Route path="/dashboard" element={<Dashboard />} />
             <Route path="/relatorio/novo" element={<ReportForm />} />
             <Route path="/relatorio/editar/:id" element={<ReportForm />} />
             <Route path="/relatorio/visualizar/:id" element={<ReportForm />} />
