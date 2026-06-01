@@ -50,8 +50,8 @@ export default function Layout() {
   return (
     <SidebarProvider>
       <Sidebar>
-        <SidebarHeader className="relative z-10 border-b border-slate-200 bg-white py-5 px-4 shadow-sm">
-          <div className="flex items-center justify-center h-12 w-full">
+        <SidebarHeader className="relative z-10 flex h-16 shrink-0 items-center justify-center border-b border-slate-200 bg-white px-4 py-0 shadow-sm">
+          <div className="flex h-10 w-full items-center justify-center">
             <img src={logoUrl} alt="EletroTeste Logo" className="h-full w-auto object-contain" />
           </div>
         </SidebarHeader>
