@@ -128,7 +128,12 @@ export const getEquipmentFields = (type: string): FieldDef[] => {
         { name: 'volume_oleo', label: 'Volume de Óleo (L)', type: 'number' },
         { name: 'peso_total', label: 'Peso Total (kg)', type: 'number' },
         { name: 'fabricante', label: 'Fabricante', type: 'combobox' },
-        { name: 'buchas', label: 'Buchas de AT e BT', type: 'select', options: ['Sim', 'Não'] },
+        {
+          name: 'buchas',
+          label: 'Buchas de AT e BT (Tampa Superior)',
+          type: 'select',
+          options: ['Sim', 'Não'],
+        },
         { name: 'desl_angular', label: 'Desl. Angular', type: 'text' },
         { name: 'ligado_em', label: 'Ligado em (V)', type: 'text' },
         { name: 'diagrama', label: 'Diagrama', type: 'combobox' },

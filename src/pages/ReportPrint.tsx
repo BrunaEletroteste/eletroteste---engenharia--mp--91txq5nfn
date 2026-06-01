@@ -54,7 +54,7 @@ const labelMap: Record<string, string> = {
   meio_isolante: 'Meio Isolante',
   volume_oleo: 'Volume de Óleo (L)',
   peso_total: 'Peso Total (kg)',
-  buchas: 'Buchas de AT e BT',
+  buchas: 'Buchas de AT e BT (Tampa Superior)',
   desl_angular: 'Desl. Angular',
   ligado_em: 'Ligado em (V)',
   diagrama: 'Diagrama',
