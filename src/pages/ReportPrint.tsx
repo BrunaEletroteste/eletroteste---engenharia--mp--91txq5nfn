@@ -429,7 +429,7 @@ export default function ReportPrint() {
 
             <div className="flex flex-col items-center justify-center space-y-6">
               <Cpu className="w-16 h-16 text-blue-900 stroke-[1.5]" />
-              <h1 className="text-[24px] font-bold text-slate-900 uppercase leading-snug tracking-tight text-center">
+              <h1 className="text-[16px] font-bold text-slate-900 uppercase leading-snug tracking-tight text-center">
                 LAUDO TÉCNICO DE MANUTENÇÃO PREVENTIVA EM CABINE PRIMÁRIA
               </h1>
             </div>
@@ -441,23 +441,15 @@ export default function ReportPrint() {
                 <p className="text-[16px] font-medium text-slate-500 uppercase tracking-widest mb-2 leading-none">
                   Cliente
                 </p>
-                <p className="text-[20px] font-semibold text-slate-800 leading-none">
+                <p className="text-[14px] font-semibold text-slate-800 leading-none">
                   {cliente.nome_empresa || 'N/A'}
-                </p>
-              </div>
-              <div>
-                <p className="text-[16px] font-medium text-slate-500 uppercase tracking-widest mb-2 leading-none mt-6">
-                  Data de Execução
-                </p>
-                <p className="text-[20px] font-semibold text-slate-800 leading-none">
-                  {formatDate(report.data_execucao)}
                 </p>
               </div>
               <div>
                 <p className="text-[16px] font-medium text-slate-500 uppercase tracking-widest mb-2 leading-none mt-6">
                   Relatório Nº
                 </p>
-                <p className="text-[20px] font-semibold text-slate-800 leading-none">
+                <p className="text-[14px] font-normal text-black leading-none">
                   {report.numero_relatorio}
                 </p>
               </div>
@@ -498,7 +490,7 @@ export default function ReportPrint() {
                             <strong className="text-slate-500 block text-[12px] uppercase tracking-widest mb-1 font-medium">
                               Relatório Nº
                             </strong>
-                            <span className="font-semibold text-[14px] text-blue-900 leading-none">
+                            <span className="text-[14px] text-black font-normal leading-none">
                               {report.numero_relatorio}
                             </span>
                           </td>
@@ -547,7 +539,7 @@ export default function ReportPrint() {
                           <td className="border border-slate-300 p-2 font-medium bg-slate-100 text-slate-700">
                             Nº Relatório
                           </td>
-                          <td className="border border-slate-300 p-2 font-semibold text-blue-900">
+                          <td className="border border-slate-300 p-2 font-normal text-black">
                             {report.numero_relatorio}
                           </td>
                         </tr>
@@ -612,7 +604,10 @@ export default function ReportPrint() {
 
                   {/* Equipment Index */}
                   {equipments.length > 0 && (
-                    <div className="mb-8 text-[12px] print:mt-10">
+                    <div
+                      className="mb-8 text-[12px] print:mt-10 print:break-before-page"
+                      style={{ breakBefore: 'page', pageBreakBefore: 'always' }}
+                    >
                       <div className="bg-slate-800 text-white p-2 font-medium mb-6 uppercase text-[13px] tracking-wider text-center avoid-break">
                         Índice de Equipamentos Inspecionados
                       </div>
