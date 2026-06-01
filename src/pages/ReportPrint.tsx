@@ -392,7 +392,10 @@ export default function ReportPrint() {
 
       <div className="w-full max-w-[210mm] mx-auto bg-white shadow-xl print:shadow-none mt-24 print:mt-0">
         {/* Cover Page */}
-        <div className="w-full py-16 flex flex-col justify-center items-center print:max-w-none mb-8 print:mb-0 overflow-hidden box-border p-10 relative">
+        <div
+          className="w-full min-h-[297mm] flex flex-col justify-center items-center print:max-w-none mb-8 print:mb-0 overflow-hidden box-border p-10 relative"
+          style={{ pageBreakAfter: 'always', breakAfter: 'page' }}
+        >
           {/* Background Circuit Pattern (Top Fade-out) */}
           <div
             className="absolute inset-0 z-0 opacity-50 pointer-events-none"
@@ -419,34 +422,42 @@ export default function ReportPrint() {
           <div className="absolute left-0 top-0 bottom-0 w-4 bg-blue-900 z-10"></div>
           <div className="absolute left-4 top-0 bottom-0 w-1 bg-amber-500 z-10"></div>
 
-          <div className="flex flex-col items-center justify-center w-full max-w-2xl text-center space-y-8 z-20 relative text-[16px]">
-            <div className="flex items-center justify-center h-28 mb-4 w-full">
+          <div className="flex flex-col items-center justify-center w-full max-w-2xl text-center space-y-12 z-20 relative text-[16px]">
+            <div className="flex items-center justify-center h-40 mb-4 w-full">
               <img src={logoImg} alt="Eletroteste Logo" className="max-h-full object-contain" />
             </div>
 
-            <div className="flex flex-col items-center justify-center space-y-4">
-              <Cpu className="w-12 h-12 text-blue-900 stroke-[1.5]" />
-              <h1 className="text-[18px] font-semibold text-slate-900 uppercase leading-snug tracking-tight text-center">
+            <div className="flex flex-col items-center justify-center space-y-6">
+              <Cpu className="w-16 h-16 text-blue-900 stroke-[1.5]" />
+              <h1 className="text-[24px] font-bold text-slate-900 uppercase leading-snug tracking-tight text-center">
                 LAUDO TÉCNICO DE MANUTENÇÃO PREVENTIVA EM CABINE PRIMÁRIA
               </h1>
             </div>
 
-            <div className="w-24 h-1 bg-blue-900 my-8 rounded-full"></div>
+            <div className="w-32 h-1.5 bg-blue-900 my-8 rounded-full"></div>
 
-            <div className="w-full text-center space-y-8 mt-8">
+            <div className="w-full text-center space-y-10 mt-16">
               <div>
                 <p className="text-[16px] font-medium text-slate-500 uppercase tracking-widest mb-2 leading-none">
                   Cliente
                 </p>
-                <p className="text-[16px] font-semibold text-slate-800 leading-none">
+                <p className="text-[20px] font-semibold text-slate-800 leading-none">
                   {cliente.nome_empresa || 'N/A'}
+                </p>
+              </div>
+              <div>
+                <p className="text-[16px] font-medium text-slate-500 uppercase tracking-widest mb-2 leading-none mt-6">
+                  Data de Execução
+                </p>
+                <p className="text-[20px] font-semibold text-slate-800 leading-none">
+                  {formatDate(report.data_execucao)}
                 </p>
               </div>
               <div>
                 <p className="text-[16px] font-medium text-slate-500 uppercase tracking-widest mb-2 leading-none mt-6">
                   Relatório Nº
                 </p>
-                <p className="text-[16px] font-semibold text-slate-800 leading-none">
+                <p className="text-[20px] font-semibold text-slate-800 leading-none">
                   {report.numero_relatorio}
                 </p>
               </div>
