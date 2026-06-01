@@ -503,8 +503,10 @@ export function EquipmentTestsManager({
   }
 
   const formatTestValue = (t: any, tipoEquipamento: string, subType?: string): string[] => {
-    const formatNum = (val: any) => {
-      if (typeof val === 'number' && !isNaN(val)) return formatNumberPtBR(val, 4)
+    const formatNum = (val: any, isRelacao = false) => {
+      if (typeof val === 'number' && !isNaN(val)) {
+        return isRelacao ? formatNumberPtBR(val, 3, 3) : formatNumberPtBR(val, 4)
+      }
       return val
     }
 
@@ -683,9 +685,9 @@ export function EquipmentTestsManager({
       const d = t.dados_detalhados || {}
       return [
         `Posição: ${d.posicao || '-'}`,
-        `H1H3/X0X1: ${formatNum(d.h1h3_x0x1) || '-'}`,
-        `H2H1/X0X2: ${formatNum(d.h2h1_x0x2) || '-'}`,
-        `H3H2/X0X3: ${formatNum(d.h3h2_x0x3) || '-'}`,
+        `H1H3/X0X1: ${formatNum(d.h1h3_x0x1, true) || '-'}`,
+        `H2H1/X0X2: ${formatNum(d.h2h1_x0x2, true) || '-'}`,
+        `H3H2/X0X3: ${formatNum(d.h3h2_x0x3, true) || '-'}`,
       ]
     }
     return [`${formatNum(t.valor_teste)}`]

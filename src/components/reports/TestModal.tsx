@@ -548,15 +548,19 @@ const NumberInputPtBR = ({
   onChange,
   className,
   suffix,
+  minDecimals = 2,
+  maxDecimals = 2,
 }: {
   value: any
   onChange: (val: any) => void
   className?: string
   suffix?: string
+  minDecimals?: number
+  maxDecimals?: number
 }) => {
   const [local, setLocal] = useState(() => {
     if (value === null || value === undefined || value === '') return ''
-    return formatNumberPtBR(value, 2, 2)
+    return formatNumberPtBR(value, maxDecimals, minDecimals)
   })
 
   useEffect(() => {
@@ -566,7 +570,7 @@ const NumberInputPtBR = ({
       const parsedLocal = parseNumberPtBR(local)
       const parsedValue = typeof value === 'string' ? parseNumberPtBR(value) : value
       if (parsedLocal !== parsedValue) {
-        setLocal(formatNumberPtBR(value, 2, 2))
+        setLocal(formatNumberPtBR(value, maxDecimals, minDecimals))
       }
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -587,9 +591,11 @@ const NumberInputPtBR = ({
         onBlur={() => {
           const parsed = parseNumberPtBR(local)
           if (parsed !== '') {
-            const formatted = formatNumberPtBR(parsed, 2, 2)
+            const factor = Math.pow(10, maxDecimals)
+            const rounded = Math.round((parsed + Number.EPSILON) * factor) / factor
+            const formatted = formatNumberPtBR(rounded, maxDecimals, minDecimals)
             setLocal(formatted)
-            onChange(parsed)
+            onChange(rounded)
           } else {
             setLocal('')
             onChange('')
@@ -1116,9 +1122,18 @@ export function TestModal({
                 payload.valor_teste = 0
                 payload.dados_detalhados = {
                   ...payload.dados_detalhados,
-                  relacao_teorica: relacaoCalculada,
-                  relacao_mais_05: relacaoMais,
-                  relacao_menos_05: relacaoMenos,
+                  relacao_teorica:
+                    relacaoCalculada !== null
+                      ? Math.round((relacaoCalculada + Number.EPSILON) * 1000) / 1000
+                      : null,
+                  relacao_mais_05:
+                    relacaoMais !== null
+                      ? Math.round((relacaoMais + Number.EPSILON) * 1000) / 1000
+                      : null,
+                  relacao_menos_05:
+                    relacaoMenos !== null
+                      ? Math.round((relacaoMenos + Number.EPSILON) * 1000) / 1000
+                      : null,
                   ligado_em: ligadoEm,
                   tensao_secundaria: tensaoSecundaria,
                 }
@@ -1520,11 +1535,11 @@ export function TestModal({
                       Relação (Teórica) (V)
                     </FormLabel>
                     <div className="text-sm font-medium">
-                      {relacaoCalculada
+                      {relacaoCalculada !== null
                         ? new Intl.NumberFormat('pt-BR', {
-                            minimumFractionDigits: 4,
-                            maximumFractionDigits: 4,
-                          }).format(relacaoCalculada)
+                            minimumFractionDigits: 3,
+                            maximumFractionDigits: 3,
+                          }).format(Math.round((relacaoCalculada + Number.EPSILON) * 1000) / 1000)
                         : '-'}
                     </div>
                   </div>
@@ -1533,11 +1548,11 @@ export function TestModal({
                       Relação +0,50% (V)
                     </FormLabel>
                     <div className="text-sm font-medium">
-                      {relacaoMais
+                      {relacaoMais !== null
                         ? new Intl.NumberFormat('pt-BR', {
-                            minimumFractionDigits: 4,
-                            maximumFractionDigits: 4,
-                          }).format(relacaoMais)
+                            minimumFractionDigits: 3,
+                            maximumFractionDigits: 3,
+                          }).format(Math.round((relacaoMais + Number.EPSILON) * 1000) / 1000)
                         : '-'}
                     </div>
                   </div>
@@ -1546,11 +1561,11 @@ export function TestModal({
                       Relação -0,50% (V)
                     </FormLabel>
                     <div className="text-sm font-medium">
-                      {relacaoMenos
+                      {relacaoMenos !== null
                         ? new Intl.NumberFormat('pt-BR', {
-                            minimumFractionDigits: 4,
-                            maximumFractionDigits: 4,
-                          }).format(relacaoMenos)
+                            minimumFractionDigits: 3,
+                            maximumFractionDigits: 3,
+                          }).format(Math.round((relacaoMenos + Number.EPSILON) * 1000) / 1000)
                         : '-'}
                     </div>
                   </div>
@@ -1584,15 +1599,12 @@ export function TestModal({
                           H1H3/X0X1 <span className="text-destructive">*</span>
                         </FormLabel>
                         <FormControl>
-                          <Input
-                            type="number"
-                            step="any"
-                            {...field}
-                            value={field.value ?? ''}
+                          <NumberInputPtBR
                             className="h-8 text-sm"
-                            onChange={(e) =>
-                              field.onChange(e.target.value === '' ? '' : Number(e.target.value))
-                            }
+                            value={field.value}
+                            onChange={field.onChange}
+                            minDecimals={3}
+                            maxDecimals={3}
                           />
                         </FormControl>
                         <FormMessage className="text-[10px]" />
@@ -1608,15 +1620,12 @@ export function TestModal({
                           H2H1/X0X2 <span className="text-destructive">*</span>
                         </FormLabel>
                         <FormControl>
-                          <Input
-                            type="number"
-                            step="any"
-                            {...field}
-                            value={field.value ?? ''}
+                          <NumberInputPtBR
                             className="h-8 text-sm"
-                            onChange={(e) =>
-                              field.onChange(e.target.value === '' ? '' : Number(e.target.value))
-                            }
+                            value={field.value}
+                            onChange={field.onChange}
+                            minDecimals={3}
+                            maxDecimals={3}
                           />
                         </FormControl>
                         <FormMessage className="text-[10px]" />
@@ -1632,15 +1641,12 @@ export function TestModal({
                           H3H2/X0X3 <span className="text-destructive">*</span>
                         </FormLabel>
                         <FormControl>
-                          <Input
-                            type="number"
-                            step="any"
-                            {...field}
-                            value={field.value ?? ''}
+                          <NumberInputPtBR
                             className="h-8 text-sm"
-                            onChange={(e) =>
-                              field.onChange(e.target.value === '' ? '' : Number(e.target.value))
-                            }
+                            value={field.value}
+                            onChange={field.onChange}
+                            minDecimals={3}
+                            maxDecimals={3}
                           />
                         </FormControl>
                         <FormMessage className="text-[10px]" />
