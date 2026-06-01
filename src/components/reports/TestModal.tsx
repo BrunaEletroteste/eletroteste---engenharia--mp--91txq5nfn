@@ -838,7 +838,7 @@ export function TestModal({
     }
 
     if (watchTipo === 'Resistências dos Contatos') {
-      form.setValue('unidade', 'Micro-Ohm', { shouldValidate: true })
+      form.setValue('unidade', 'Micro-Ohms', { shouldValidate: true })
       form.setValue('valor_teste', 0, { shouldValidate: true })
     } else if (watchTipo === 'Resistências dos Isolamentos') {
       form.setValue('unidade', 'Mega-Ohms', { shouldValidate: true })
@@ -2355,12 +2355,10 @@ export function TestModal({
                           {...field}
                           value={field.value ?? ''}
                           readOnly={
-                            watchTipo === 'Resistências dos Contatos' ||
                             watchTipo === 'Resistências dos Isolamentos' ||
                             watchTipo === 'Relação de Tensões'
                           }
                           className={
-                            watchTipo === 'Resistências dos Contatos' ||
                             watchTipo === 'Resistências dos Isolamentos' ||
                             watchTipo === 'Relação de Tensões'
                               ? 'bg-muted cursor-not-allowed'
