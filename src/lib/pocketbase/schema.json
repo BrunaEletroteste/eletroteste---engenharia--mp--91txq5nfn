@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-06-02T17:50:56.628Z",
+  "generatedAt": "2026-06-02T19:27:47.300Z",
   "collections": [
     {
       "name": "users",
@@ -256,7 +256,8 @@
             "Seccionadora",
             "Transformador",
             "Disjuntor",
-            "Relé de Proteção"
+            "Relé de Proteção",
+            "QGBT"
           ]
         },
         {

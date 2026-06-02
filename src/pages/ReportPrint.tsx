@@ -95,6 +95,11 @@ const labelMap: Record<string, string> = {
   ajuste_v_menor: 'V<',
   ajuste_t_v_menor: 'T.V<',
   padrao: 'Padrão',
+  corrente_ajuste_longo: 'Corrente de Ajuste Longo (A)',
+  temporizacao_longo: 'Temporização Longo (s)',
+  corrente_ajuste_curto: 'Corrente de Ajuste Curto (A)',
+  temporizacao_curto: 'Temporização Curto (s)',
+  corrente_ajuste_instantanea: 'Corrente de Ajuste Instantânea (A)',
 }
 
 const getLabel = (key: string, tipoEquipamento?: string) => {

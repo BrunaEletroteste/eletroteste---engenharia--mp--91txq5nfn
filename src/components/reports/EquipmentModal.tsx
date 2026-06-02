@@ -614,6 +614,21 @@ export function EquipmentModal({ open, onOpenChange, onSave, initialData }: Prop
       }
     }
 
+    if (tipo === 'QGBT') {
+      const requiredFieldsQGBT = fields.map((f) => f.name)
+      const missingQGBT = requiredFieldsQGBT.filter(
+        (f) => dados[f] === undefined || dados[f] === '',
+      )
+      if (missingQGBT.length > 0) {
+        toast({
+          title: 'Atenção',
+          description: 'Todos os campos do QGBT são obrigatórios.',
+          variant: 'destructive',
+        })
+        return
+      }
+    }
+
     onSave({ tipo_equipamento: tipo, dados_tecnicos: dados })
     onOpenChange(false)
   }
@@ -747,7 +762,8 @@ export function EquipmentModal({ open, onOpenChange, onSave, initialData }: Prop
                 'fabricante',
               ].includes(field.name)) ||
             tipo === 'Condutor Elétrico' ||
-            tipo === 'Relé de Proteção') && <span className="text-destructive"> *</span>}
+            tipo === 'Relé de Proteção' ||
+            tipo === 'QGBT') && <span className="text-destructive"> *</span>}
         </Label>
 
         {isCombobox && !opcoesError ? (
@@ -780,6 +796,9 @@ export function EquipmentModal({ open, onOpenChange, onSave, initialData }: Prop
                           'corrente_secundaria',
                           'fusivel_corrente_nominal',
                           'corrente_nominal',
+                          'corrente_ajuste_longo',
+                          'corrente_ajuste_curto',
+                          'corrente_ajuste_instantanea',
                         ].includes(field.name)
                       ? 'Corrente Nominal'
                       : field.name === 'exatidao'

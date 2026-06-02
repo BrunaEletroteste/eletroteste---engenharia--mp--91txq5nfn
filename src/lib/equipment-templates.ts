@@ -19,6 +19,7 @@ export const EQUIPMENT_TYPES = [
   'Transformador',
   'Disjuntor',
   'Relé de Proteção',
+  'QGBT',
 ]
 
 export const getEquipmentFields = (type: string): FieldDef[] => {
@@ -229,6 +230,53 @@ export const getEquipmentFields = (type: string): FieldDef[] => {
           options: ['10'],
         },
         { name: 'fabricante', label: 'Fabricante', type: 'combobox' },
+      ]
+    case 'QGBT':
+      return [
+        ...common,
+        { name: 'circuito', label: 'Circuito', type: 'text' },
+        { name: 'tipo', label: 'Tipo', type: 'text' },
+        { name: 'corrente_nominal', label: 'Corrente Nominal (A)', type: 'combobox' },
+        { name: 'fabricante', label: 'Fabricante', type: 'combobox' },
+        { name: 'rele_minima_tensao', label: 'Relé de Mínima Tensão', type: 'text' },
+        { name: 'rele_abertura', label: 'Relé de Abertura', type: 'text' },
+        { name: 'rele_fechamento', label: 'Relé de Fechamento', type: 'text' },
+        { name: 'motorizacao', label: 'Motorização', type: 'text' },
+        {
+          name: 'corrente_ajuste_longo',
+          label: 'Corrente de Ajuste Longo (A)',
+          type: 'combobox',
+          section: 'Ajuste Longo',
+          column: 'left',
+        },
+        {
+          name: 'temporizacao_longo',
+          label: 'Temporização Longo (s)',
+          type: 'number',
+          section: 'Ajuste Longo',
+          column: 'right',
+        },
+        {
+          name: 'corrente_ajuste_curto',
+          label: 'Corrente de Ajuste Curto (A)',
+          type: 'combobox',
+          section: 'Ajuste Curto',
+          column: 'left',
+        },
+        {
+          name: 'temporizacao_curto',
+          label: 'Temporização Curto (s)',
+          type: 'number',
+          section: 'Ajuste Curto',
+          column: 'right',
+        },
+        {
+          name: 'corrente_ajuste_instantanea',
+          label: 'Corrente de Ajuste Instantânea (A)',
+          type: 'combobox',
+          section: 'Ajuste Instantânea',
+          column: 'left',
+        },
       ]
     case 'Relé de Proteção':
       return [
