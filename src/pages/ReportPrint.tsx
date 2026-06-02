@@ -410,7 +410,7 @@ export default function ReportPrint() {
       <div className="w-full max-w-[210mm] mx-auto bg-white shadow-xl print:shadow-none mt-24 print:mt-0">
         {/* Cover Page */}
         <div
-          className="w-full min-h-[297mm] flex flex-col justify-center items-center print:max-w-none mb-8 print:mb-0 overflow-hidden box-border p-10 relative print:break-after-page"
+          className="w-full min-h-[297mm] flex flex-col justify-center items-center print:max-w-none mb-8 print:mb-0 overflow-hidden box-border px-10 pt-10 pb-[110px] relative print:break-after-page"
           style={{ pageBreakAfter: 'always', breakAfter: 'page' }}
         >
           {/* Background Circuit Pattern (Top Fade-out) */}
@@ -464,7 +464,7 @@ export default function ReportPrint() {
               </div>
               {report.obra && (
                 <div>
-                  <p className="text-[12px] font-medium text-slate-400 uppercase tracking-widest mb-2 leading-none mt-6">
+                  <p className="text-[12px] font-medium text-slate-400 uppercase tracking-widest mb-2 leading-none">
                     Obra
                   </p>
                   <p className="text-[14px] font-semibold text-slate-800 leading-none">
@@ -473,7 +473,7 @@ export default function ReportPrint() {
                 </div>
               )}
               <div>
-                <p className="text-[12px] font-medium text-slate-400 uppercase tracking-widest mb-2 leading-none mt-6">
+                <p className="text-[12px] font-medium text-slate-400 uppercase tracking-widest mb-2 leading-none">
                   Relatório Nº
                 </p>
                 <p className="text-[14px] font-normal text-black leading-none">
@@ -1075,6 +1075,9 @@ export default function ReportPrint() {
                   <div className="print:hidden mt-8 border-t-2 border-slate-800 pt-4 text-[11px] text-slate-600 bg-white leading-relaxed">
                     <div className="flex justify-between items-start gap-4">
                       <div className="flex flex-col gap-1">
+                        <span className="font-bold text-slate-800 text-[12px] uppercase">
+                          ELETROTESTE MANUTENÇÕES ELÉTRICAS LTDA
+                        </span>
                         <span>
                           <strong className="font-medium">CNPJ:</strong> 64.941.818/0001-91
                           &nbsp;|&nbsp; <strong className="font-medium">IE:</strong> 748.001.165.111
@@ -1082,7 +1085,7 @@ export default function ReportPrint() {
                         </span>
                         <span>Rua Andradina, 262 - Remanso Campineiro - Hortolândia - SP</span>
                       </div>
-                      <div className="flex flex-col text-right gap-1">
+                      <div className="flex flex-col text-right gap-1 mt-auto">
                         <span>
                           <strong className="font-medium">Tels:</strong> (19) 3865-2942 / 3865-1261
                           &nbsp;|&nbsp; <strong className="font-medium">WhatsApp:</strong> (19) 9
@@ -1097,7 +1100,7 @@ export default function ReportPrint() {
                     </div>
                   </div>
                   {/* Spacer for print to prevent overlap with fixed footer on every table page */}
-                  <div className="hidden print:block h-[100px] w-full"></div>
+                  <div className="hidden print:block h-[110px] w-full"></div>
                 </td>
               </tr>
             </tfoot>
@@ -1111,6 +1114,9 @@ export default function ReportPrint() {
           <div className="border-t-2 border-slate-800 pt-4 pb-6 text-[11px] text-slate-600 leading-relaxed bg-white">
             <div className="flex justify-between items-start gap-4">
               <div className="flex flex-col gap-1">
+                <span className="font-bold text-slate-800 text-[12px] uppercase">
+                  ELETROTESTE MANUTENÇÕES ELÉTRICAS LTDA
+                </span>
                 <span>
                   <strong className="font-medium">CNPJ:</strong> 64.941.818/0001-91 &nbsp;|&nbsp;{' '}
                   <strong className="font-medium">IE:</strong> 748.001.165.111 &nbsp;|&nbsp;{' '}
@@ -1118,7 +1124,7 @@ export default function ReportPrint() {
                 </span>
                 <span>Rua Andradina, 262 - Remanso Campineiro - Hortolândia - SP</span>
               </div>
-              <div className="flex flex-col text-right gap-1">
+              <div className="flex flex-col text-right gap-1 mt-auto">
                 <span>
                   <strong className="font-medium">Tels:</strong> (19) 3865-2942 / 3865-1261
                   &nbsp;|&nbsp; <strong className="font-medium">WhatsApp:</strong> (19) 9 7143-3853
