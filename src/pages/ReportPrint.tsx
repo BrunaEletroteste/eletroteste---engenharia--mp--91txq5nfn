@@ -1061,7 +1061,7 @@ export default function ReportPrint() {
                         {report.responsavel_tecnico || autor.name || 'Responsável Técnico'}
                       </div>
                       <div className="text-slate-600 mt-1 font-medium">
-                        ELETROTESTE ENGENHARIA E SERVIÇOS
+                        ELETROTESTE MANUTENÇÕES ELÉTRICAS LTDA
                       </div>
                     </div>
                   </div>
