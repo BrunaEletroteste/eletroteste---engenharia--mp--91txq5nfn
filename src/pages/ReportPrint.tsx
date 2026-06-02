@@ -351,11 +351,19 @@ export default function ReportPrint() {
     }
     if (t.tipo_teste === 'Relação de Tensões' && tipoEquipamento === 'Transformador') {
       const d = t.dados_detalhados || {}
+      const formatRatio = (val: any) => {
+        if (val === undefined || val === null || val === '') return '-'
+        const numericVal = typeof val === 'string' ? Number(val.replace(',', '.')) : val
+        if (typeof numericVal === 'number' && !isNaN(numericVal)) {
+          return formatNumberPtBR(numericVal, 3, 3)
+        }
+        return val === '-' ? val : String(val)
+      }
       return [
         `Posição: ${d.posicao || '-'}`,
-        `H1H3/X0X1: ${formatNum(d.h1h3_x0x1, true) || '-'}`,
-        `H2H1/X0X2: ${formatNum(d.h2h1_x0x2, true) || '-'}`,
-        `H3H2/X0X3: ${formatNum(d.h3h2_x0x3, true) || '-'}`,
+        `H1H3/X0X1: ${formatRatio(d.h1h3_x0x1)}`,
+        `H2H1/X0X2: ${formatRatio(d.h2h1_x0x2)}`,
+        `H3H2/X0X3: ${formatRatio(d.h3h2_x0x3)}`,
       ]
     }
     return [`${formatNum(t.valor_teste)}`]
@@ -989,7 +997,7 @@ export default function ReportPrint() {
                                     alt="Equipamento"
                                     className="w-full h-64 object-contain border border-slate-300 rounded shadow-sm avoid-break bg-slate-50 p-2"
                                   />
-                                ))}
+                                ))}{' '}
                               </div>
                               <p className="mt-3 text-[11px] text-slate-600 italic text-center w-full block">
                                 Detalhe do(s) equipamento(s) durante a execução da(s) atividade(s)

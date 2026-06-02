@@ -1532,7 +1532,7 @@ export function TestModal({
                 <div className="grid grid-cols-3 gap-4 mb-4">
                   <div>
                     <FormLabel className="text-xs text-muted-foreground">
-                      Relação (Teórica) (V)
+                      Relação (Teórica)
                     </FormLabel>
                     <div className="text-sm font-medium">
                       {relacaoCalculada !== null
@@ -1544,9 +1544,7 @@ export function TestModal({
                     </div>
                   </div>
                   <div>
-                    <FormLabel className="text-xs text-muted-foreground">
-                      Relação +0,50% (V)
-                    </FormLabel>
+                    <FormLabel className="text-xs text-muted-foreground">Relação +0,50%</FormLabel>
                     <div className="text-sm font-medium">
                       {relacaoMais !== null
                         ? new Intl.NumberFormat('pt-BR', {
@@ -1557,9 +1555,7 @@ export function TestModal({
                     </div>
                   </div>
                   <div>
-                    <FormLabel className="text-xs text-muted-foreground">
-                      Relação -0,50% (V)
-                    </FormLabel>
+                    <FormLabel className="text-xs text-muted-foreground">Relação -0,50%</FormLabel>
                     <div className="text-sm font-medium">
                       {relacaoMenos !== null
                         ? new Intl.NumberFormat('pt-BR', {
