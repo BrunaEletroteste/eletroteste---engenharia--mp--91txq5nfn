@@ -4,6 +4,7 @@ export const reportFormSchema = z.object({
   numero_relatorio: z.string().min(1, 'Número do relatório é obrigatório'),
   numero_proposta: z.string().optional(),
   cliente_id: z.string().min(1, 'Cliente é obrigatório'),
+  obra: z.string().optional(),
   data_execucao: z.string().min(1, 'Data de início é obrigatória'),
   data_fim: z.string().optional(),
   responsavel_tecnico: z.string().optional(),

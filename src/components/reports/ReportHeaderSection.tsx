@@ -130,6 +130,25 @@ export function ReportHeaderSection({ isView }: { isView: boolean }) {
           }}
         />
 
+        <FormField
+          control={control}
+          name="obra"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Obra</FormLabel>
+              <FormControl>
+                <Input
+                  {...field}
+                  disabled={isView}
+                  placeholder="Identificação da obra (opcional)"
+                  className="font-medium"
+                />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+
         <div className="grid grid-cols-2 gap-4">
           <FormField
             control={control}

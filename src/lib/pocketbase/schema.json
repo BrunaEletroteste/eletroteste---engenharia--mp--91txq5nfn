@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-06-01T21:25:28.779Z",
+  "generatedAt": "2026-06-02T17:50:56.628Z",
   "collections": [
     {
       "name": "users",
@@ -211,6 +211,12 @@
         },
         {
           "name": "responsavel_tecnico",
+          "type": "text",
+          "required": false,
+          "system": false
+        },
+        {
+          "name": "obra",
           "type": "text",
           "required": false,
           "system": false
