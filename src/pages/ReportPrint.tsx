@@ -985,7 +985,7 @@ export default function ReportPrint() {
                                 {eq.fotos.map((foto: string) => (
                                   <img
                                     key={foto}
-                                    src={pb.files.getURL(eq, foto)}
+                                    src={pb.files.getURL(eq, foto, { thumb: '800x0' })}
                                     alt="Equipamento"
                                     className="w-full h-64 object-contain border border-slate-300 rounded shadow-sm avoid-break bg-slate-50 p-2"
                                   />
