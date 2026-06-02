@@ -410,7 +410,7 @@ export default function ReportPrint() {
       <div className="w-full max-w-[210mm] mx-auto bg-white shadow-xl print:shadow-none mt-24 print:mt-0">
         {/* Cover Page */}
         <div
-          className="w-full min-h-[297mm] flex flex-col justify-center items-center print:max-w-none mb-8 print:mb-0 overflow-hidden box-border px-10 pt-10 pb-[110px] relative print:break-after-page"
+          className="w-full h-[297mm] flex flex-col justify-center items-center print:max-w-none mb-8 print:mb-0 overflow-hidden box-border px-10 pt-10 pb-[120px] relative print:break-after-page"
           style={{ pageBreakAfter: 'always', breakAfter: 'page' }}
         >
           {/* Background Circuit Pattern (Top Fade-out) */}
