@@ -1075,9 +1075,6 @@ export default function ReportPrint() {
                   <div className="print:hidden mt-8 border-t-2 border-slate-800 pt-4 text-[11px] text-slate-600 bg-white leading-relaxed">
                     <div className="flex justify-between items-start gap-4">
                       <div className="flex flex-col gap-1">
-                        <span className="font-bold text-slate-800 text-[12px] uppercase">
-                          ELETROTESTE MANUTENÇÕES ELÉTRICAS LTDA
-                        </span>
                         <span>
                           <strong className="font-medium">CNPJ:</strong> 64.941.818/0001-91
                           &nbsp;|&nbsp; <strong className="font-medium">IE:</strong> 748.001.165.111
@@ -1114,9 +1111,6 @@ export default function ReportPrint() {
           <div className="border-t-2 border-slate-800 pt-4 pb-6 text-[11px] text-slate-600 leading-relaxed bg-white">
             <div className="flex justify-between items-start gap-4">
               <div className="flex flex-col gap-1">
-                <span className="font-bold text-slate-800 text-[12px] uppercase">
-                  ELETROTESTE MANUTENÇÕES ELÉTRICAS LTDA
-                </span>
                 <span>
                   <strong className="font-medium">CNPJ:</strong> 64.941.818/0001-91 &nbsp;|&nbsp;{' '}
                   <strong className="font-medium">IE:</strong> 748.001.165.111 &nbsp;|&nbsp;{' '}
