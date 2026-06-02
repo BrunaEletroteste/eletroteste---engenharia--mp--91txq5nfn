@@ -193,9 +193,13 @@ export default function ReportPrint() {
         const numStr = isRelacao
           ? formatNumberPtBR(numericVal, 3, 3)
           : formatNumberPtBR(numericVal, 4)
-        return t.unidade ? `${numStr} ${t.unidade}` : numStr
+        return t.unidade && t.unidade !== '-' ? `${numStr} ${t.unidade}` : numStr
       }
-      return val === '-' ? val : t.unidade ? `${val} ${t.unidade}` : String(val)
+      return val === '-'
+        ? val
+        : t.unidade && t.unidade !== '-'
+          ? `${val} ${t.unidade}`
+          : String(val)
     }
 
     if (t.tipo_teste === 'Resistências dos Isolamentos') {

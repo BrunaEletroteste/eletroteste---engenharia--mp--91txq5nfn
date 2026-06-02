@@ -845,10 +845,10 @@ export function TestModal({
       form.setValue('valor_teste', 0, { shouldValidate: true })
     } else if (watchTipo === 'Relação de Tensões') {
       if (equipmentType === 'Transformador') {
-        form.setValue('unidade', 'V', { shouldValidate: true })
+        form.setValue('unidade', '-', { shouldValidate: true })
         form.setValue('valor_teste', 0, { shouldValidate: true })
       } else {
-        form.setValue('unidade', 'V', { shouldValidate: true })
+        form.setValue('unidade', '-', { shouldValidate: true })
       }
     } else if (watchTipo === 'Resistências dos Enrolamentos') {
       form.setValue('unidade', 'Ω / mΩ', { shouldValidate: true })
