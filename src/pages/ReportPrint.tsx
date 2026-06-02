@@ -462,6 +462,16 @@ export default function ReportPrint() {
                   {cliente.nome_empresa || 'N/A'}
                 </p>
               </div>
+              {report.obra && (
+                <div>
+                  <p className="text-[12px] font-medium text-slate-400 uppercase tracking-widest mb-2 leading-none mt-6">
+                    Obra
+                  </p>
+                  <p className="text-[14px] font-semibold text-slate-800 leading-none">
+                    {report.obra}
+                  </p>
+                </div>
+              )}
               <div>
                 <p className="text-[12px] font-medium text-slate-400 uppercase tracking-widest mb-2 leading-none mt-6">
                   Relatório Nº
@@ -552,6 +562,16 @@ export default function ReportPrint() {
                             {cliente.endereco || 'N/A'}
                           </td>
                         </tr>
+                        {report.obra && (
+                          <tr>
+                            <td className="border border-slate-300 p-2 font-medium bg-slate-100 text-slate-700">
+                              Obra
+                            </td>
+                            <td className="border border-slate-300 p-2 text-slate-900">
+                              {report.obra}
+                            </td>
+                          </tr>
+                        )}
                         <tr>
                           <td className="border border-slate-300 p-2 font-medium bg-slate-100 text-slate-700">
                             Nº Relatório
