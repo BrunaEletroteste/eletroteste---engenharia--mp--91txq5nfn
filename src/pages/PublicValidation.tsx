@@ -1,6 +1,15 @@
 import { useEffect, useState } from 'react'
 import { useParams, Link } from 'react-router-dom'
-import { XCircle, Loader2, ShieldCheck, Calendar, Building2, User, Hash } from 'lucide-react'
+import {
+  XCircle,
+  Loader2,
+  ShieldCheck,
+  Calendar,
+  Building2,
+  User,
+  Hash,
+  MapPin,
+} from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import {
   Card,
@@ -138,7 +147,7 @@ export default function PublicValidation() {
 
             {data.obra && (
               <div className="flex items-start gap-3">
-                <Building2 className="h-5 w-5 text-blue-900 mt-0.5 opacity-0" />
+                <MapPin className="h-5 w-5 text-blue-900 mt-0.5" />
                 <div>
                   <p className="text-sm font-medium text-slate-500">Obra</p>
                   <p className="text-base font-medium text-slate-900">{data.obra}</p>

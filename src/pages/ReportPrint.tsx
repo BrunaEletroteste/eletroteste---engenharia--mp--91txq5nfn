@@ -434,11 +434,11 @@ export default function ReportPrint() {
       </div>
 
       {/* Watermark - Fixed to appear on all pages */}
-      <div className="fixed inset-0 z-0 flex items-center justify-center pointer-events-none opacity-[0.06]">
+      <div className="fixed inset-0 z-0 flex items-center justify-center pointer-events-none opacity-[0.06] overflow-hidden">
         <img
           src={logoImg}
           alt="Watermark"
-          className="w-[70%] max-w-[500px] object-contain -rotate-[35deg]"
+          className="w-[80vw] h-[80vh] print:w-[180mm] print:h-[260mm] object-contain -rotate-[55deg]"
         />
       </div>
 
@@ -1125,7 +1125,7 @@ export default function ReportPrint() {
                       <div className="flex items-center gap-4">
                         <div className="flex flex-col items-center shrink-0">
                           <img
-                            src={`https://api.qrserver.com/v1/create-qr-code/?size=60x60&data=${encodeURIComponent(window.location.origin + '/validar/' + report.id)}`}
+                            src={`https://api.qrserver.com/v1/create-qr-code/?size=60x60&data=${encodeURIComponent('https://mp-eletroteste.goskip.app/validar/' + report.id)}`}
                             alt="QR Code de Autenticidade"
                             className="w-12 h-12"
                           />
@@ -1174,7 +1174,7 @@ export default function ReportPrint() {
               <div className="flex items-center gap-4">
                 <div className="flex flex-col items-center shrink-0">
                   <img
-                    src={`https://api.qrserver.com/v1/create-qr-code/?size=60x60&data=${encodeURIComponent(window.location.origin + '/validar/' + report.id)}`}
+                    src={`https://api.qrserver.com/v1/create-qr-code/?size=60x60&data=${encodeURIComponent('https://mp-eletroteste.goskip.app/validar/' + report.id)}`}
                     alt="QR Code de Autenticidade"
                     className="w-12 h-12"
                   />
