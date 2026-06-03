@@ -10,6 +10,7 @@ import Dashboard from './pages/Dashboard'
 import Index from './pages/Index'
 import ReportForm from './pages/ReportForm'
 import ReportPrint from './pages/ReportPrint'
+import PublicValidation from './pages/PublicValidation'
 import ConfigOptions from './pages/ConfigOptions'
 import Clientes from './pages/Clientes'
 import Profile from './pages/Profile'
@@ -41,6 +42,7 @@ const App = () => (
         <Sonner />
         <Routes>
           <Route path="/login" element={<Login />} />
+          <Route path="/validar/:id" element={<PublicValidation />} />
           <Route
             element={
               <ProtectedRoute>

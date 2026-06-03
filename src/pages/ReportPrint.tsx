@@ -417,6 +417,9 @@ export default function ReportPrint() {
               page-break-inside: avoid;
               break-inside: avoid;
             }
+            .print-pagination::after {
+              content: "Página " counter(page);
+            }
           }
         `}
       </style>
@@ -1102,13 +1105,31 @@ export default function ReportPrint() {
 
               <tr>
                 <td>
-                  {/* Signature Line */}
-                  <div className="mt-16 pt-8 pb-8 flex justify-center avoid-break">
-                    <div className="w-80 text-center text-[12px]">
-                      <div className="border-t border-black pt-3 font-semibold text-slate-900">
+                  {/* Signature Line and Autenticity QR */}
+                  <div className="mt-20 pt-8 pb-8 flex items-end justify-between avoid-break px-8 print:px-0">
+                    <div className="flex flex-col items-center w-1/3">
+                      <div className="p-2 bg-white rounded shadow-sm print:shadow-none border border-slate-200">
+                        <img
+                          src={`https://api.qrserver.com/v1/create-qr-code/?size=120x120&data=${encodeURIComponent(window.location.origin + '/validar/' + report.id)}`}
+                          alt="QR Code de Autenticidade"
+                          className="w-24 h-24 print:w-28 print:h-28"
+                        />
+                      </div>
+                      <span className="text-[10px] text-slate-600 mt-2 font-semibold uppercase tracking-wider text-center">
+                        Validação de Autenticidade
+                      </span>
+                      <span className="text-[9px] text-slate-500 font-medium text-center">
+                        Aponte a câmera para verificar
+                      </span>
+                    </div>
+
+                    <div className="w-1/3"></div>
+
+                    <div className="w-1/3 text-center text-[12px] flex flex-col items-center">
+                      <div className="w-full border-t border-black pt-3 font-semibold text-slate-900">
                         {report.responsavel_tecnico || autor.name || 'Responsável Técnico'}
                       </div>
-                      <div className="text-slate-600 mt-1 font-medium">
+                      <div className="text-slate-600 mt-1 font-medium text-[10px]">
                         ELETROTESTE MANUTENÇÕES ELÉTRICAS LTDA
                       </div>
                     </div>
@@ -1120,27 +1141,32 @@ export default function ReportPrint() {
               <tr>
                 <td>
                   {/* Corporate Standardized Footer - Screen only */}
-                  <div className="print:hidden mt-8 border-t-2 border-slate-800 pt-4 text-[11px] text-slate-600 bg-white leading-relaxed">
+                  <div className="print:hidden mt-8 border-t-2 border-slate-800 pt-4 pb-4 text-[11px] text-slate-600 bg-white leading-relaxed relative">
                     <div className="flex justify-between items-start gap-4">
-                      <div className="flex flex-col gap-1">
+                      <div className="flex flex-col gap-1 flex-1">
                         <span>
                           <strong className="font-medium">CNPJ:</strong> 64.941.818/0001-91
                           &nbsp;|&nbsp; <strong className="font-medium">IE:</strong> 748.001.165.111
-                          &nbsp;|&nbsp; <strong className="font-medium">IM:</strong> 688
                         </span>
                         <span>Rua Andradina, 262 - Remanso Campineiro - Hortolândia - SP</span>
                       </div>
-                      <div className="flex flex-col text-right gap-1 mt-auto">
+                      <div className="flex flex-col gap-1 flex-1 text-center border-x border-slate-200 px-2">
+                        <span className="text-slate-800">
+                          <strong className="font-semibold">Relatório Nº:</strong>{' '}
+                          {report.numero_relatorio}
+                        </span>
+                        <span className="text-slate-800">
+                          <strong className="font-semibold">Cliente CNPJ:</strong>{' '}
+                          {cliente.cnpj || 'N/A'}
+                        </span>
+                      </div>
+                      <div className="flex flex-col text-right gap-1 mt-auto flex-1">
                         <span>
-                          <strong className="font-medium">Tels:</strong> (19) 3865-2942 / 3865-1261
+                          <strong className="font-medium">Tels:</strong> (19) 3865-2942
                           &nbsp;|&nbsp; <strong className="font-medium">WhatsApp:</strong> (19) 9
                           7143-3853
                         </span>
-                        <span>
-                          <strong className="font-medium">Site:</strong> www.eletroteste.com
-                          &nbsp;|&nbsp; <strong className="font-medium">E-mail:</strong>{' '}
-                          eletroteste@eletroteste.com
-                        </span>
+                        <span>www.eletroteste.com</span>
                       </div>
                     </div>
                   </div>
@@ -1156,27 +1182,34 @@ export default function ReportPrint() {
       {/* Fixed Footer - Print Only */}
       <div className="hidden print:flex fixed bottom-0 left-0 w-full justify-center bg-transparent z-50 print:pb-0">
         <div className="w-full max-w-[210mm] px-12 bg-white print:bg-white/90">
-          <div className="border-t-2 border-slate-800 pt-4 pb-6 text-[11px] text-slate-600 leading-relaxed bg-transparent">
+          <div className="border-t-2 border-slate-800 pt-3 pb-4 text-[10px] text-slate-600 leading-relaxed bg-transparent relative">
             <div className="flex justify-between items-start gap-4">
-              <div className="flex flex-col gap-1">
+              <div className="flex flex-col gap-0.5 flex-1">
                 <span>
                   <strong className="font-medium">CNPJ:</strong> 64.941.818/0001-91 &nbsp;|&nbsp;{' '}
-                  <strong className="font-medium">IE:</strong> 748.001.165.111 &nbsp;|&nbsp;{' '}
-                  <strong className="font-medium">IM:</strong> 688
+                  <strong className="font-medium">IE:</strong> 748.001.165.111
                 </span>
                 <span>Rua Andradina, 262 - Remanso Campineiro - Hortolândia - SP</span>
               </div>
-              <div className="flex flex-col text-right gap-1 mt-auto">
-                <span>
-                  <strong className="font-medium">Tels:</strong> (19) 3865-2942 / 3865-1261
-                  &nbsp;|&nbsp; <strong className="font-medium">WhatsApp:</strong> (19) 9 7143-3853
+              <div className="flex flex-col gap-0.5 flex-1 text-center border-x border-slate-300 px-2">
+                <span className="text-slate-800">
+                  <strong className="font-bold">Relatório Nº:</strong> {report.numero_relatorio}
                 </span>
-                <span>
-                  <strong className="font-medium">Site:</strong> www.eletroteste.com &nbsp;|&nbsp;{' '}
-                  <strong className="font-medium">E-mail:</strong> eletroteste@eletroteste.com
+                <span className="text-slate-800">
+                  <strong className="font-bold">Cliente CNPJ:</strong> {cliente.cnpj || 'N/A'}
                 </span>
               </div>
+              <div className="flex flex-col text-right gap-0.5 mt-auto flex-1">
+                <span>
+                  <strong className="font-medium">Tels:</strong> (19) 3865-2942 &nbsp;|&nbsp;{' '}
+                  <strong className="font-medium">WA:</strong> (19) 9 7143-3853
+                </span>
+                <span>www.eletroteste.com</span>
+              </div>
             </div>
+
+            {/* Real pagination relies on browser header/footer, but we try a CSS counter trick if supported */}
+            <div className="absolute right-0 -top-6 text-[10px] font-bold text-slate-600 bg-white px-2 py-0.5 rounded-t-md print-pagination"></div>
           </div>
         </div>
       </div>
