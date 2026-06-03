@@ -620,8 +620,10 @@ export default function ReportPrint() {
 
                   {/* Execution Info */}
                   <div
-                    className="mb-8 text-[12px] print:break-after-page"
-                    style={{ pageBreakAfter: 'always', breakAfter: 'page' }}
+                    className={`mb-8 text-[12px] ${!report.observacoes ? 'print:break-after-page' : ''}`}
+                    style={
+                      !report.observacoes ? { pageBreakAfter: 'always', breakAfter: 'page' } : {}
+                    }
                   >
                     <div className="bg-slate-800 text-white p-2 font-medium mb-2 uppercase text-[13px] tracking-wider avoid-break">
                       Dados da Execução
@@ -667,6 +669,29 @@ export default function ReportPrint() {
                       </tbody>
                     </table>
                   </div>
+
+                  {/* Conclusion / Observations */}
+                  {report.observacoes && (
+                    <div
+                      className="mb-8 text-[12px] print:break-after-page"
+                      style={{ pageBreakAfter: 'always', breakAfter: 'page' }}
+                    >
+                      <div className="bg-slate-800 text-white p-2 font-medium mb-2 uppercase text-[13px] tracking-wider text-left avoid-break">
+                        Observações
+                      </div>
+                      <table className="w-full border-collapse border border-slate-300">
+                        <tbody>
+                          <tr>
+                            <td className="border border-slate-300 p-2 text-slate-900 align-top">
+                              <p className="whitespace-pre-wrap leading-relaxed font-normal">
+                                {report.observacoes}
+                              </p>
+                            </td>
+                          </tr>
+                        </tbody>
+                      </table>
+                    </div>
+                  )}
 
                   {/* Equipment Index */}
                   {equipments.length > 0 && (
@@ -1064,22 +1089,6 @@ export default function ReportPrint() {
 
               <tr>
                 <td>
-                  {/* Conclusion */}
-                  {report.observacoes && (
-                    <div className="mb-8 avoid-break border-2 border-slate-800 rounded-sm mt-10">
-                      <div className="bg-slate-800 text-white p-3 font-medium text-[13px] tracking-wide text-center uppercase">
-                        Observações
-                      </div>
-                      <div className="p-6 space-y-6 bg-slate-50 text-[12px]">
-                        <div>
-                          <p className="text-slate-900 whitespace-pre-wrap leading-relaxed italic bg-white p-4 border border-slate-200 rounded">
-                            {report.observacoes}
-                          </p>
-                        </div>
-                      </div>
-                    </div>
-                  )}
-
                   {/* Signature Line */}
                   <div className="mt-16 pt-8 pb-8 flex justify-center avoid-break">
                     <div className="w-80 text-center text-[12px]">
