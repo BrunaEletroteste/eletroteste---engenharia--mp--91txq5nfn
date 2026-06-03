@@ -39,31 +39,20 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     })
 
     const initAuth = async () => {
-      try {
-        await pb.health.check()
-      } catch (err: any) {
-        if (err?.status === 0 || (err?.status && err.status >= 500)) {
-          setError(
-            'Não foi possível conectar ao servidor. Verifique sua conexão e tente novamente.',
-          )
-          setLoading(false)
-          return
-        }
-      }
-
       if (pb.authStore.isValid) {
         if (!checkActive(pb.authStore.record)) {
           pb.authStore.clear()
           setLoading(false)
         } else {
           pb.collection('users')
-            .authRefresh()
+            .authRefresh({ requestKey: null })
             .then((authData) => {
               if (!checkActive(authData.record)) {
                 pb.authStore.clear()
               }
             })
             .catch((err: any) => {
+              console.error('Auth refresh error', err)
               if (err?.status === 0 || (err?.status && err.status >= 500)) {
                 setError(
                   'Não foi possível conectar ao servidor. Verifique sua conexão e tente novamente.',

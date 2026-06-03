@@ -17,7 +17,7 @@ export default function Login() {
   const [loading, setLoading] = useState(false)
   const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({})
 
-  const { signIn, signUp, isAuthenticated, loading: authLoading, error } = useAuth()
+  const { signIn, signUp, isAuthenticated } = useAuth()
   const { toast } = useToast()
   const navigate = useNavigate()
 
@@ -99,25 +99,6 @@ export default function Login() {
     }
   }, [isAuthenticated, navigate])
 
-  if (error) {
-    return (
-      <div className="min-h-screen flex flex-col items-center justify-center bg-slate-50 p-4 text-center">
-        <div className="bg-red-50 text-red-600 p-6 rounded-lg max-w-md shadow-sm border border-red-100">
-          <h2 className="text-lg font-bold mb-2">Erro de Conexão</h2>
-          <p>{error}</p>
-        </div>
-      </div>
-    )
-  }
-
-  if (authLoading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-slate-50">
-        <Loader2 className="h-8 w-8 animate-spin text-amber-500" />
-      </div>
-    )
-  }
-
   return (
     <div className="flex min-h-screen w-full bg-slate-50">
       <div className="hidden lg:flex lg:w-1/2 relative bg-slate-900 overflow-hidden">
@@ -157,7 +138,7 @@ export default function Login() {
         </div>
       </div>
 
-      <div className="flex w-full lg:w-1/2 items-center justify-center p-6 sm:p-12 animate-fade-in relative overflow-y-auto">
+      <div className="flex w-full lg:w-1/2 items-center justify-center p-6 sm:p-12 relative overflow-y-auto">
         <div className="w-full max-w-md space-y-8 my-auto">
           <div className="flex flex-col items-center lg:items-start text-center lg:text-left space-y-2">
             <div className="lg:hidden flex items-center gap-2 text-amber-500 mb-6">
@@ -175,7 +156,7 @@ export default function Login() {
           </div>
 
           {!isRegistering ? (
-            <form onSubmit={handleLogin} className="space-y-6 mt-8 animate-fade-in">
+            <form onSubmit={handleLogin} className="space-y-6 mt-8">
               <div className="space-y-2">
                 <Label htmlFor="login-email" className="text-slate-700 font-medium">
                   E-mail Corporativo
@@ -228,7 +209,7 @@ export default function Login() {
               </div>
             </form>
           ) : (
-            <form onSubmit={handleRegister} className="space-y-5 mt-8 animate-fade-in">
+            <form onSubmit={handleRegister} className="space-y-5 mt-8">
               <div className="space-y-2">
                 <Label htmlFor="reg-name" className="text-slate-700 font-medium">
                   Nome Completo

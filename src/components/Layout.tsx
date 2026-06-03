@@ -190,7 +190,7 @@ export default function Layout() {
         </header>
 
         <main className="flex-1 overflow-auto p-4 md:p-6 lg:p-8">
-          <div className="mx-auto max-w-6xl animate-fade-in">
+          <div className="mx-auto max-w-6xl">
             <Outlet />
           </div>
         </main>

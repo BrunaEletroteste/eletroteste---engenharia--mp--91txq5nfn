@@ -5,6 +5,7 @@ import { TooltipProvider } from '@/components/ui/tooltip'
 import { AuthProvider, useAuth } from '@/hooks/use-auth'
 import { Loader2 } from 'lucide-react'
 
+import { ErrorBoundary } from './components/ErrorBoundary'
 import Layout from './components/Layout'
 import Dashboard from './pages/Dashboard'
 import Index from './pages/Index'
@@ -47,43 +48,45 @@ const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
 
 const App = () => (
   <BrowserRouter future={{ v7_startTransition: false, v7_relativeSplatPath: false }}>
-    <AuthProvider>
-      <TooltipProvider>
-        <Toaster />
-        <Sonner />
-        <Routes>
-          <Route path="/login" element={<Login />} />
-          <Route path="/validar/:id" element={<PublicValidation />} />
-          <Route
-            element={
-              <ProtectedRoute>
-                <Layout />
-              </ProtectedRoute>
-            }
-          >
-            <Route path="/" element={<Index />} />
-            <Route path="/dashboard" element={<Dashboard />} />
-            <Route path="/relatorio/novo" element={<ReportForm />} />
-            <Route path="/relatorio/editar/:id" element={<ReportForm />} />
-            <Route path="/relatorio/visualizar/:id" element={<ReportForm />} />
-            <Route path="/clientes" element={<Clientes />} />
-            <Route path="/configuracoes/opcoes" element={<ConfigOptions />} />
-            <Route path="/perfil" element={<Profile />} />
-            <Route path="/usuarios" element={<UsersPage />} />
-            <Route path="/auditoria" element={<AuditLogs />} />
-          </Route>
-          <Route
-            path="/relatorio/imprimir/:id"
-            element={
-              <ProtectedRoute>
-                <ReportPrint />
-              </ProtectedRoute>
-            }
-          />
-          <Route path="*" element={<NotFound />} />
-        </Routes>
-      </TooltipProvider>
-    </AuthProvider>
+    <ErrorBoundary>
+      <AuthProvider>
+        <TooltipProvider>
+          <Toaster />
+          <Sonner />
+          <Routes>
+            <Route path="/login" element={<Login />} />
+            <Route path="/validar/:id" element={<PublicValidation />} />
+            <Route
+              element={
+                <ProtectedRoute>
+                  <Layout />
+                </ProtectedRoute>
+              }
+            >
+              <Route path="/" element={<Index />} />
+              <Route path="/dashboard" element={<Dashboard />} />
+              <Route path="/relatorio/novo" element={<ReportForm />} />
+              <Route path="/relatorio/editar/:id" element={<ReportForm />} />
+              <Route path="/relatorio/visualizar/:id" element={<ReportForm />} />
+              <Route path="/clientes" element={<Clientes />} />
+              <Route path="/configuracoes/opcoes" element={<ConfigOptions />} />
+              <Route path="/perfil" element={<Profile />} />
+              <Route path="/usuarios" element={<UsersPage />} />
+              <Route path="/auditoria" element={<AuditLogs />} />
+            </Route>
+            <Route
+              path="/relatorio/imprimir/:id"
+              element={
+                <ProtectedRoute>
+                  <ReportPrint />
+                </ProtectedRoute>
+              }
+            />
+            <Route path="*" element={<NotFound />} />
+          </Routes>
+        </TooltipProvider>
+      </AuthProvider>
+    </ErrorBoundary>
   </BrowserRouter>
 )
 

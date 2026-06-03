@@ -223,7 +223,7 @@ export default function Index() {
       </div>
 
       {hasError ? (
-        <Alert variant="destructive" className="animate-fade-in">
+        <Alert variant="destructive">
           <AlertCircle className="h-4 w-4" />
           <AlertTitle>Erro ao carregar dados</AlertTitle>
           <AlertDescription className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mt-2">
@@ -240,7 +240,7 @@ export default function Index() {
           ))}
         </div>
       ) : filteredReports.length === 0 ? (
-        <div className="flex flex-col items-center justify-center py-16 px-4 text-center border rounded-xl bg-background shadow-sm animate-fade-in">
+        <div className="flex flex-col items-center justify-center py-16 px-4 text-center border rounded-xl bg-background shadow-sm">
           <FileSearch className="h-16 w-16 text-muted-foreground/50 mb-4" />
           <h3 className="text-xl font-semibold mb-2">Nenhum relatório encontrado</h3>
           <p className="text-muted-foreground max-w-md mb-6">
@@ -252,7 +252,7 @@ export default function Index() {
           )}
         </div>
       ) : (
-        <div className="animate-fade-in-up">
+        <div>
           {/* Desktop Table */}
           <div className="hidden md:block border rounded-xl bg-background shadow-sm overflow-hidden">
             <Table>
