@@ -1125,7 +1125,7 @@ export default function ReportPrint() {
                       <div className="flex items-center gap-4">
                         <div className="flex flex-col items-center shrink-0">
                           <img
-                            src={`https://api.qrserver.com/v1/create-qr-code/?size=60x60&data=${encodeURIComponent('https://mp-eletroteste.goskip.app/validar/' + report.id)}`}
+                            src={`https://api.qrserver.com/v1/create-qr-code/?size=60x60&data=${encodeURIComponent(window.location.origin + '/validar/' + report.id)}`}
                             alt="QR Code de Autenticidade"
                             className="w-12 h-12"
                           />
@@ -1174,7 +1174,7 @@ export default function ReportPrint() {
               <div className="flex items-center gap-4">
                 <div className="flex flex-col items-center shrink-0">
                   <img
-                    src={`https://api.qrserver.com/v1/create-qr-code/?size=60x60&data=${encodeURIComponent('https://mp-eletroteste.goskip.app/validar/' + report.id)}`}
+                    src={`https://api.qrserver.com/v1/create-qr-code/?size=60x60&data=${encodeURIComponent(window.location.origin + '/validar/' + report.id)}`}
                     alt="QR Code de Autenticidade"
                     className="w-12 h-12"
                   />

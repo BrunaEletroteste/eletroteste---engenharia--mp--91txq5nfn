@@ -29,6 +29,7 @@ routerAdd('GET', '/backend/v1/validar-relatorio/{id}', (e) => {
       data_fim: report.getString('data_fim'),
       status: report.getString('status'),
       responsavel_tecnico: report.getString('responsavel_tecnico'),
+      obra: report.getString('obra'),
       cliente: {
         nome_empresa: clienteName,
         cnpj: clienteCnpj,

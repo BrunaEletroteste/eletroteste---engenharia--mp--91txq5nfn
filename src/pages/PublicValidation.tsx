@@ -111,7 +111,7 @@ export default function PublicValidation() {
             {isFinalizado ? 'Documento Autêntico' : 'Documento em Rascunho'}
           </CardTitle>
           <CardDescription className="text-base mt-2">
-            Este relatório foi emitido pela Eletroteste Engenharia.
+            Este relatório foi emitido pela Eletroteste Manutenções Elétricas Ltda.
           </CardDescription>
         </CardHeader>
 
@@ -135,6 +135,16 @@ export default function PublicValidation() {
                 <p className="text-xs text-slate-500 mt-0.5">CNPJ: {data.cliente?.cnpj}</p>
               </div>
             </div>
+
+            {data.obra && (
+              <div className="flex items-start gap-3">
+                <Building2 className="h-5 w-5 text-blue-900 mt-0.5 opacity-0" />
+                <div>
+                  <p className="text-sm font-medium text-slate-500">Obra</p>
+                  <p className="text-base font-medium text-slate-900">{data.obra}</p>
+                </div>
+              </div>
+            )}
 
             <div className="flex items-start gap-3">
               <Calendar className="h-5 w-5 text-blue-900 mt-0.5" />
@@ -163,6 +173,24 @@ export default function PublicValidation() {
             Qualquer alteração física ou digital neste documento que não conste neste registro o
             invalidará.
           </p>
+
+          <div className="mt-6 pt-4 border-t border-slate-200 w-full flex flex-col gap-1 text-[11px] text-slate-600">
+            <p>
+              <strong className="font-semibold">CNPJ:</strong> 64.941.818/0001-91 |{' '}
+              <strong className="font-semibold">IE:</strong> 748.001.165.111 |{' '}
+              <strong className="font-semibold">IM:</strong> 688
+            </p>
+            <p>Rua Andradina, 262 - Remanso Campineiro - Hortolândia - SP</p>
+            <p>
+              <strong className="font-semibold">Tels:</strong> (19) 3865-2942 / 3865-1261 |{' '}
+              <strong className="font-semibold">WhatsApp:</strong> (19) 9 7143-3853
+            </p>
+            <p>
+              <strong className="font-semibold">Site:</strong> www.eletroteste.com |{' '}
+              <strong className="font-semibold">E-mail:</strong> eletroteste@eletroteste.com
+            </p>
+          </div>
+
           <Button variant="outline" className="mt-4" asChild>
             <Link to="/">Voltar ao Início</Link>
           </Button>
