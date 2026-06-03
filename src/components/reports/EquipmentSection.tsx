@@ -511,6 +511,24 @@ export function EquipmentSection({ equipments, setEquipments, isView }: Props) {
                                     typeof num === 'number' && !isNaN(num)
                                       ? formatNumberPtBR(num, 1, 1)
                                       : val
+                                } else if (
+                                  eq.tipo_equipamento === 'QGBT' &&
+                                  [
+                                    'corrente_ajuste_longo',
+                                    'temporizacao_longo',
+                                    'corrente_ajuste_curto',
+                                    'temporizacao_curto',
+                                    'corrente_ajuste_instantanea',
+                                  ].includes(f.name)
+                                ) {
+                                  const num =
+                                    typeof val === 'string'
+                                      ? parseFloat(val.replace(',', '.'))
+                                      : val
+                                  displayVal =
+                                    typeof num === 'number' && !isNaN(num)
+                                      ? formatNumberPtBR(num, 1, 1)
+                                      : val
                                 } else if (typeof val === 'number') {
                                   displayVal = formatNumberPtBR(val, 4)
                                 }

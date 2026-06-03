@@ -915,6 +915,30 @@ export function EquipmentModal({ open, onOpenChange, onSave, initialData }: Prop
             }
             readOnly={field.readOnly}
             className={field.readOnly ? 'bg-muted cursor-not-allowed' : ''}
+            decimalScale={
+              tipo === 'QGBT' &&
+              [
+                'corrente_ajuste_longo',
+                'temporizacao_longo',
+                'corrente_ajuste_curto',
+                'temporizacao_curto',
+                'corrente_ajuste_instantanea',
+              ].includes(field.name)
+                ? 1
+                : undefined
+            }
+            minDecimals={
+              tipo === 'QGBT' &&
+              [
+                'corrente_ajuste_longo',
+                'temporizacao_longo',
+                'corrente_ajuste_curto',
+                'temporizacao_curto',
+                'corrente_ajuste_instantanea',
+              ].includes(field.name)
+                ? 1
+                : undefined
+            }
           />
         ) : (
           <Input
