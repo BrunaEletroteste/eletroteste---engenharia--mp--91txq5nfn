@@ -1095,7 +1095,7 @@ export default function ReportPrint() {
                                     key={foto}
                                     src={pb.files.getURL(eq, foto, { thumb: '800x0' })}
                                     alt="Equipamento"
-                                    className="w-full h-40 object-contain border border-slate-300 rounded shadow-sm avoid-break bg-slate-50 p-1"
+                                    className="w-full h-48 object-contain border border-slate-300 rounded shadow-sm avoid-break bg-slate-50 p-1"
                                   />
                                 ))}
                               </div>
