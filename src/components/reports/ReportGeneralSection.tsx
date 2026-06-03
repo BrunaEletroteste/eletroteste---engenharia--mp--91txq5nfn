@@ -1,6 +1,13 @@
 import { useFormContext } from 'react-hook-form'
 import { FormField, FormItem, FormLabel, FormControl, FormMessage } from '@/components/ui/form'
 import { Input } from '@/components/ui/input'
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select'
 import { NumberInput } from '@/components/ui/number-input'
 import { Textarea } from '@/components/ui/textarea'
 import { X } from 'lucide-react'
@@ -43,6 +50,37 @@ export function ReportGeneralSection({
   return (
     <div className="space-y-4 border rounded-xl p-6 bg-card shadow-sm relative">
       <h3 className="text-lg font-semibold border-b pb-2">Informações Gerais / Estrutura</h3>
+
+      <FormField
+        control={control}
+        name="tipo_laudo"
+        render={({ field }) => (
+          <FormItem className="mt-4 mb-4">
+            <FormLabel>Tipo de Laudo</FormLabel>
+            <Select
+              disabled={isView}
+              onValueChange={field.onChange}
+              value={field.value || 'PREVENTIVA'}
+            >
+              <FormControl>
+                <SelectTrigger>
+                  <SelectValue placeholder="Selecione o tipo de laudo" />
+                </SelectTrigger>
+              </FormControl>
+              <SelectContent>
+                <SelectItem value="PREVENTIVA">
+                  LAUDO TÉCNICO DE MANUTENÇÃO PREVENTIVA EM CABINE(S) PRIMÁRIA(S)
+                </SelectItem>
+                <SelectItem value="PREVENTIVA_CORRETIVA">
+                  LAUDO TÉCNICO DE MANUTENÇÃO PREVENTIVA E CORRETIVA EM CABINE(S) PRIMÁRIA(S)
+                </SelectItem>
+              </SelectContent>
+            </Select>
+            <FormMessage />
+          </FormItem>
+        )}
+      />
+
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         <FormField
           control={control}

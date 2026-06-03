@@ -102,6 +102,13 @@ const labelMap: Record<string, string> = {
   corrente_ajuste_instantanea: 'Corrente de Ajuste Instantânea (A)',
 }
 
+const getLaudoTitle = (tipo?: string) => {
+  if (tipo === 'PREVENTIVA_CORRETIVA') {
+    return 'LAUDO TÉCNICO DE MANUTENÇÃO PREVENTIVA E CORRETIVA EM CABINE(S) PRIMÁRIA(S)'
+  }
+  return 'LAUDO TÉCNICO DE MANUTENÇÃO PREVENTIVA EM CABINE(S) PRIMÁRIA(S)'
+}
+
 const getLabel = (key: string, tipoEquipamento?: string) => {
   if (tipoEquipamento) {
     const fields = getEquipmentFields(tipoEquipamento)
@@ -482,16 +489,16 @@ export default function ReportPrint() {
               <img src={logoImg} alt="Eletroteste Logo" className="max-h-full object-contain" />
             </div>
 
-            <div className="flex flex-col items-center justify-center space-y-4">
+            <div className="flex flex-col items-center justify-center space-y-4 px-4">
               <Cpu className="w-10 h-10 text-blue-900 stroke-[1.5]" />
               <h1 className="text-[18px] font-bold text-slate-900 uppercase leading-snug tracking-tight text-center">
-                LAUDO TÉCNICO DE MANUTENÇÃO PREVENTIVA EM CABINE PRIMÁRIA
+                {getLaudoTitle(report.tipo_laudo)}
               </h1>
             </div>
 
             <div className="w-32 h-1.5 bg-blue-900 my-8 rounded-full"></div>
 
-            <div className="w-full text-center space-y-10 mt-16">
+            <div className="w-full text-center space-y-6 mt-10">
               <div>
                 <p className="text-[12px] font-medium text-slate-400 uppercase tracking-widest mb-2 leading-none">
                   Cliente
@@ -543,11 +550,10 @@ export default function ReportPrint() {
                             </div>
                           </td>
                           <td className="border border-slate-800 w-[50%] p-3 text-center align-middle">
-                            <div className="font-semibold text-[14px] text-slate-900 uppercase tracking-tight leading-snug">
-                              <div>LAUDO TÉCNICO DE MANUTENÇÃO</div>
-                              <div>PREVENTIVA EM CABINE PRIMÁRIA</div>
+                            <div className="font-semibold text-[12px] text-slate-900 uppercase tracking-tight leading-snug">
+                              {getLaudoTitle(report.tipo_laudo)}
                             </div>
-                            <div className="text-[12px] text-slate-600 mt-1.5 font-medium">
+                            <div className="text-[10px] text-slate-600 mt-1.5 font-medium">
                               Normas de Referência: NBR 14039 / NBR 5410
                             </div>
                           </td>
@@ -570,8 +576,8 @@ export default function ReportPrint() {
               <tr>
                 <td>
                   {/* Client and Report Info */}
-                  <div className="mb-6 avoid-break text-[12px]">
-                    <div className="bg-slate-800 text-white p-2 font-medium mb-2 uppercase text-[13px] tracking-wider">
+                  <div className="mb-4 avoid-break text-[12px]">
+                    <div className="bg-slate-800 text-white p-1.5 font-medium mb-1.5 uppercase text-[13px] tracking-wider">
                       Dados do Cliente e Relatório
                     </div>
                     <table className="w-full border-collapse border border-slate-300">
@@ -632,12 +638,12 @@ export default function ReportPrint() {
 
                   {/* Execution Info */}
                   <div
-                    className={`mb-8 text-[12px] ${!report.observacoes ? 'print:break-after-page' : ''}`}
+                    className={`mb-4 text-[12px] ${!report.observacoes ? 'print:break-after-page' : ''}`}
                     style={
                       !report.observacoes ? { pageBreakAfter: 'always', breakAfter: 'page' } : {}
                     }
                   >
-                    <div className="bg-slate-800 text-white p-2 font-medium mb-2 uppercase text-[13px] tracking-wider avoid-break">
+                    <div className="bg-slate-800 text-white p-1.5 font-medium mb-1.5 uppercase text-[13px] tracking-wider avoid-break">
                       Dados da Execução
                     </div>
                     <table className="w-full border-collapse border border-slate-300">
@@ -685,10 +691,10 @@ export default function ReportPrint() {
                   {/* Conclusion / Observations */}
                   {report.observacoes && (
                     <div
-                      className="mb-8 text-[12px] print:break-after-page"
+                      className="mb-4 text-[12px] print:break-after-page"
                       style={{ pageBreakAfter: 'always', breakAfter: 'page' }}
                     >
-                      <div className="bg-slate-800 text-white p-2 font-medium mb-2 uppercase text-[13px] tracking-wider text-left avoid-break">
+                      <div className="bg-slate-800 text-white p-1.5 font-medium mb-1.5 uppercase text-[13px] tracking-wider text-left avoid-break">
                         Observações
                       </div>
                       <table className="w-full border-collapse border border-slate-300">
@@ -707,8 +713,8 @@ export default function ReportPrint() {
 
                   {/* Equipment Index */}
                   {equipments.length > 0 && (
-                    <div className="mb-8 text-[12px]">
-                      <div className="bg-slate-800 text-white p-2 font-medium mb-2 uppercase text-[13px] tracking-wider avoid-break">
+                    <div className="mb-4 text-[12px]">
+                      <div className="bg-slate-800 text-white p-1.5 font-medium mb-1.5 uppercase text-[13px] tracking-wider avoid-break">
                         Índice de Equipamentos Inspecionados
                       </div>
                       <p className="text-[11px] text-slate-500 italic mb-4">
@@ -725,27 +731,27 @@ export default function ReportPrint() {
                           (eq: any) => (eq.dados_tecnicos?.subestacao || 'Geral') === sub,
                         )
                         return (
-                          <div key={String(sub)} className="mb-8 avoid-break">
-                            <h3 className="font-semibold text-slate-800 text-[13px] uppercase mb-2 border-b-2 border-blue-900 inline-block pb-1">
+                          <div key={String(sub)} className="mb-4 avoid-break">
+                            <h3 className="font-semibold text-slate-800 text-[13px] uppercase mb-1.5 border-b-2 border-blue-900 inline-block pb-0.5">
                               Subestação: {String(sub)}
                             </h3>
                             <table className="w-full border-collapse border border-slate-300 text-[11px]">
                               <thead className="bg-slate-100">
                                 <tr>
                                   <th className="border border-slate-300 p-0 text-center font-semibold text-slate-700 w-12">
-                                    <div className="p-2">#</div>
+                                    <div className="p-1">#</div>
                                   </th>
                                   <th className="border border-slate-300 p-0 text-left font-semibold text-slate-700">
-                                    <div className="p-2">Equipamento</div>
+                                    <div className="p-1">Equipamento</div>
                                   </th>
                                   <th className="border border-slate-300 p-0 text-left font-semibold text-slate-700">
-                                    <div className="p-2">Circuito</div>
+                                    <div className="p-1">Circuito</div>
                                   </th>
                                   <th className="border border-slate-300 p-0 text-left font-semibold text-slate-700">
-                                    <div className="p-2">Identificação / Série</div>
+                                    <div className="p-1">Identificação / Série</div>
                                   </th>
                                   <th className="border border-slate-300 p-0 text-center font-semibold text-slate-700">
-                                    <div className="p-2">Status</div>
+                                    <div className="p-1">Status</div>
                                   </th>
                                 </tr>
                               </thead>
@@ -777,7 +783,7 @@ export default function ReportPrint() {
                                       <td className="border border-slate-300 p-0 text-center font-medium">
                                         <a
                                           href={`#equipamento-${eq.id}`}
-                                          className="block p-2 text-inherit no-underline"
+                                          className="block p-1.5 text-inherit no-underline"
                                         >
                                           {eq.ordem || globalIndex}
                                         </a>
@@ -785,7 +791,7 @@ export default function ReportPrint() {
                                       <td className="border border-slate-300 p-0 font-semibold text-slate-800">
                                         <a
                                           href={`#equipamento-${eq.id}`}
-                                          className="block p-2 text-inherit no-underline"
+                                          className="block p-1.5 text-inherit no-underline"
                                         >
                                           {eq.tipo_equipamento}
                                         </a>
@@ -793,7 +799,7 @@ export default function ReportPrint() {
                                       <td className="border border-slate-300 p-0">
                                         <a
                                           href={`#equipamento-${eq.id}`}
-                                          className="block p-2 text-inherit no-underline"
+                                          className="block p-1.5 text-inherit no-underline"
                                         >
                                           {circuitoStr}
                                         </a>
@@ -801,7 +807,7 @@ export default function ReportPrint() {
                                       <td className="border border-slate-300 p-0">
                                         <a
                                           href={`#equipamento-${eq.id}`}
-                                          className="block p-2 text-inherit no-underline"
+                                          className="block p-1.5 text-inherit no-underline"
                                         >
                                           {numStr}
                                         </a>
@@ -811,7 +817,7 @@ export default function ReportPrint() {
                                       >
                                         <a
                                           href={`#equipamento-${eq.id}`}
-                                          className="block p-2 text-inherit no-underline"
+                                          className="block p-1.5 text-inherit no-underline"
                                         >
                                           {status}
                                         </a>
@@ -831,10 +837,10 @@ export default function ReportPrint() {
 
               {/* Equipments Body */}
               {equipments.map((eq: any, i: number) => {
-                const containerSpace = 'space-y-2'
-                const sectionMargin = 'mt-3'
+                const containerSpace = 'space-y-1.5'
+                const sectionMargin = 'mt-2'
                 const textSize = 'text-[11px]'
-                const tablePadding = 'p-1.5'
+                const tablePadding = 'p-1'
                 const displayIndex = eq.ordem || i + 1
 
                 return (
@@ -845,8 +851,8 @@ export default function ReportPrint() {
                     style={{ breakBefore: 'page', pageBreakBefore: 'always' }}
                   >
                     <td>
-                      <div className="mb-4 border border-slate-400 bg-white print:bg-transparent text-[11px]">
-                        <div className="bg-slate-200 print:bg-slate-200/90 text-slate-900 p-2 font-semibold text-[13px] border-b border-slate-400 uppercase tracking-wide">
+                      <div className="mb-2 border border-slate-400 bg-white print:bg-transparent text-[11px]">
+                        <div className="bg-slate-200 print:bg-slate-200/90 text-slate-900 p-1.5 font-semibold text-[13px] border-b border-slate-400 uppercase tracking-wide">
                           {displayIndex}. EQUIPAMENTO: {eq.tipo_equipamento}
                         </div>
 
@@ -1027,9 +1033,9 @@ export default function ReportPrint() {
                                 Parecer Técnico Específico
                               </div>
                               <div
-                                className={`border-l-4 border-slate-400 pl-4 py-1.5 bg-slate-50 space-y-1`}
+                                className={`border-l-4 border-slate-400 pl-3 py-1 bg-slate-50 space-y-1`}
                               >
-                                <div className={`flex items-center gap-2 mb-1 ${textSize}`}>
+                                <div className={`flex items-center gap-2 mb-0.5 ${textSize}`}>
                                   <span className="font-medium text-slate-700">Status:</span>
                                   <span
                                     className={`font-semibold uppercase px-2 py-0.5 rounded ${textSize} ${
@@ -1077,13 +1083,13 @@ export default function ReportPrint() {
                               <div className="font-semibold text-slate-800 mb-1.5 border-b border-slate-200 pb-0.5 text-[13px] uppercase tracking-wider">
                                 REGISTRO FOTOGRÁFICO
                               </div>
-                              <div className="grid grid-cols-2 gap-3">
+                              <div className="grid grid-cols-2 gap-2">
                                 {eq.fotos.map((foto: string) => (
                                   <img
                                     key={foto}
                                     src={pb.files.getURL(eq, foto, { thumb: '800x0' })}
                                     alt="Equipamento"
-                                    className="w-full h-48 object-contain border border-slate-300 rounded shadow-sm avoid-break bg-slate-50 p-1"
+                                    className="w-full h-36 object-contain border border-slate-300 rounded shadow-sm avoid-break bg-slate-50 p-1"
                                   />
                                 ))}
                               </div>
@@ -1103,7 +1109,7 @@ export default function ReportPrint() {
               <tr>
                 <td>
                   {/* Signature Line */}
-                  <div className="mt-20 pt-8 pb-8 flex items-center justify-center avoid-break px-8 print:px-0">
+                  <div className="mt-12 pt-4 pb-4 flex items-center justify-center avoid-break px-8 print:px-0">
                     <div className="w-1/2 text-center text-[12px] flex flex-col items-center">
                       <div className="w-full border-t border-black pt-3 font-semibold text-slate-900">
                         {report.responsavel_tecnico || autor.name || 'Responsável Técnico'}

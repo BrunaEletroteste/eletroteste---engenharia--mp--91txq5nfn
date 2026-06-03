@@ -12,6 +12,7 @@ export const reportFormSchema = z.object({
   proxima_manutencao: z.string().optional(),
   status: z.enum(['rascunho', 'finalizado']),
   observacoes: z.string().optional(),
+  tipo_laudo: z.enum(['PREVENTIVA', 'PREVENTIVA_CORRETIVA']).optional().default('PREVENTIVA'),
 })
 
 export type FormValues = z.infer<typeof reportFormSchema>

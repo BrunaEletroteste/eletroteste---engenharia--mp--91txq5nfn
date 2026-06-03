@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-06-03T15:02:11.558Z",
+  "generatedAt": "2026-06-03T15:13:59.754Z",
   "collections": [
     {
       "name": "users",
@@ -220,6 +220,13 @@
           "type": "text",
           "required": false,
           "system": false
+        },
+        {
+          "name": "tipo_laudo",
+          "type": "select",
+          "required": false,
+          "system": false,
+          "selectValues": ["PREVENTIVA", "PREVENTIVA_CORRETIVA"]
         }
       ],
       "indexes": ["CREATE UNIQUE INDEX idx_relatorios_numero ON relatorios (numero_relatorio)"]
