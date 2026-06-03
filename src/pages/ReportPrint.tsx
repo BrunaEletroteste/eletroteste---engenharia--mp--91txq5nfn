@@ -831,11 +831,10 @@ export default function ReportPrint() {
 
               {/* Equipments Body */}
               {equipments.map((eq: any, i: number) => {
-                const isTransformador = eq.tipo_equipamento === 'Transformador'
-                const containerSpace = isTransformador ? 'space-y-3' : 'space-y-6'
-                const sectionMargin = isTransformador ? 'mt-4' : 'mt-8'
-                const textSize = isTransformador ? 'text-[11px]' : 'text-[12px]'
-                const tablePadding = isTransformador ? 'p-1.5' : 'p-3'
+                const containerSpace = 'space-y-2'
+                const sectionMargin = 'mt-3'
+                const textSize = 'text-[11px]'
+                const tablePadding = 'p-1.5'
                 const displayIndex = eq.ordem || i + 1
 
                 return (
@@ -846,21 +845,19 @@ export default function ReportPrint() {
                     style={{ breakBefore: 'page', pageBreakBefore: 'always' }}
                   >
                     <td>
-                      <div className="mb-8 border border-slate-400 bg-white print:bg-transparent text-[12px]">
-                        <div className="bg-slate-200 print:bg-slate-200/90 text-slate-900 p-3 font-semibold text-[14px] border-b border-slate-400 uppercase tracking-wide">
+                      <div className="mb-4 border border-slate-400 bg-white print:bg-transparent text-[11px]">
+                        <div className="bg-slate-200 print:bg-slate-200/90 text-slate-900 p-2 font-semibold text-[13px] border-b border-slate-400 uppercase tracking-wide">
                           {displayIndex}. EQUIPAMENTO: {eq.tipo_equipamento}
                         </div>
 
-                        <div className={`p-4 ${containerSpace}`}>
+                        <div className={`p-3 ${containerSpace}`}>
                           {/* Technical Data */}
                           {eq.dados_tecnicos && Object.keys(eq.dados_tecnicos).length > 0 && (
                             <div>
-                              <div className="font-semibold text-slate-800 mb-2 border-b border-slate-200 pb-1 text-[13px] uppercase tracking-wider">
+                              <div className="font-semibold text-slate-800 mb-1.5 border-b border-slate-200 pb-0.5 text-[13px] uppercase tracking-wider">
                                 Características Técnicas
                               </div>
-                              <div
-                                className={`grid grid-cols-3 gap-x-4 ${isTransformador ? 'gap-y-1' : 'gap-y-2'}`}
-                              >
+                              <div className={`grid grid-cols-3 gap-x-4 gap-y-1`}>
                                 {(() => {
                                   const fields = getEquipmentFields(eq.tipo_equipamento)
                                   const mappedKeys = new Set<string>()
@@ -934,7 +931,7 @@ export default function ReportPrint() {
                           {/* Tests */}
                           {eq.testes && eq.testes.length > 0 && (
                             <div className={sectionMargin}>
-                              <div className="font-semibold text-slate-800 mb-2 border-b border-slate-200 pb-1 text-[13px] uppercase tracking-wider">
+                              <div className="font-semibold text-slate-800 mb-1.5 border-b border-slate-200 pb-0.5 text-[13px] uppercase tracking-wider">
                                 Resultados dos Testes
                               </div>
                               <div className="border border-slate-200 rounded overflow-hidden">
@@ -991,7 +988,7 @@ export default function ReportPrint() {
                                           <tr className="avoid-break bg-slate-50/50 border-t border-slate-200">
                                             <td
                                               colSpan={3}
-                                              className={`${isTransformador ? 'px-1.5 py-1' : 'px-3 py-2'} text-slate-600`}
+                                              className={`px-1.5 py-1 text-slate-600`}
                                             >
                                               <span className="font-medium">
                                                 Equipamento Utilizado:
@@ -1003,7 +1000,7 @@ export default function ReportPrint() {
                                             <tr className="avoid-break bg-yellow-50/50 border-t border-slate-200">
                                               <td
                                                 colSpan={3}
-                                                className={`${isTransformador ? 'px-1.5 py-1' : 'px-3 py-2'} text-slate-700 italic`}
+                                                className={`px-1.5 py-1 text-slate-700 italic`}
                                               >
                                                 <span className="font-medium not-italic">
                                                   Observações:
@@ -1026,16 +1023,16 @@ export default function ReportPrint() {
                           {/* Technical Opinion */}
                           {eq.parecer && (
                             <div className={sectionMargin}>
-                              <div className="font-semibold text-slate-800 mb-2 border-b border-slate-200 pb-1 text-[13px] uppercase tracking-wider">
+                              <div className="font-semibold text-slate-800 mb-1.5 border-b border-slate-200 pb-0.5 text-[13px] uppercase tracking-wider">
                                 Parecer Técnico Específico
                               </div>
                               <div
-                                className={`border-l-4 border-slate-400 pl-4 py-2 bg-slate-50 ${isTransformador ? 'space-y-1' : 'space-y-2'}`}
+                                className={`border-l-4 border-slate-400 pl-4 py-1.5 bg-slate-50 space-y-1`}
                               >
-                                <div className={`flex items-center gap-2 mb-2 ${textSize}`}>
+                                <div className={`flex items-center gap-2 mb-1 ${textSize}`}>
                                   <span className="font-medium text-slate-700">Status:</span>
                                   <span
-                                    className={`font-semibold uppercase px-2 py-1 rounded ${textSize} ${
+                                    className={`font-semibold uppercase px-2 py-0.5 rounded ${textSize} ${
                                       eq.parecer.parecer === 'Conforme'
                                         ? 'bg-green-100 text-green-800'
                                         : eq.parecer.parecer === 'Não Conforme'
@@ -1052,7 +1049,7 @@ export default function ReportPrint() {
                                       Justificativa da Mudança:
                                     </span>
                                     <span
-                                      className={`text-slate-900 block bg-white print:bg-transparent ${isTransformador ? 'p-1.5' : 'p-2'} border border-slate-200 rounded`}
+                                      className={`text-slate-900 block bg-white print:bg-transparent p-1.5 border border-slate-200 rounded`}
                                     >
                                       {eq.parecer.justificativa_mudanca}
                                     </span>
@@ -1064,7 +1061,7 @@ export default function ReportPrint() {
                                       Observações:
                                     </span>
                                     <span
-                                      className={`text-slate-900 block whitespace-pre-wrap bg-white print:bg-transparent ${isTransformador ? 'p-1.5' : 'p-2'} border border-slate-200 rounded`}
+                                      className={`text-slate-900 block whitespace-pre-wrap bg-white print:bg-transparent p-1.5 border border-slate-200 rounded`}
                                     >
                                       {eq.parecer.observacoes}
                                     </span>
@@ -1077,20 +1074,20 @@ export default function ReportPrint() {
                           {/* Photos */}
                           {eq.fotos && eq.fotos.length > 0 && (
                             <div className={`avoid-break ${sectionMargin}`}>
-                              <div className="font-semibold text-slate-800 mb-2 border-b border-slate-200 pb-1 text-[13px] uppercase tracking-wider">
+                              <div className="font-semibold text-slate-800 mb-1.5 border-b border-slate-200 pb-0.5 text-[13px] uppercase tracking-wider">
                                 REGISTRO FOTOGRÁFICO
                               </div>
-                              <div className="grid grid-cols-2 gap-4">
+                              <div className="grid grid-cols-2 gap-3">
                                 {eq.fotos.map((foto: string) => (
                                   <img
                                     key={foto}
                                     src={pb.files.getURL(eq, foto, { thumb: '800x0' })}
                                     alt="Equipamento"
-                                    className="w-full h-64 object-contain border border-slate-300 rounded shadow-sm avoid-break bg-slate-50 p-2"
+                                    className="w-full h-48 object-contain border border-slate-300 rounded shadow-sm avoid-break bg-slate-50 p-1"
                                   />
-                                ))}{' '}
+                                ))}
                               </div>
-                              <p className="mt-3 text-[11px] text-slate-600 italic text-center w-full block">
+                              <p className="mt-2 text-[10px] text-slate-600 italic text-center w-full block">
                                 Detalhe do(s) equipamento(s) durante a execução da(s) atividade(s)
                                 técnica(s).
                               </p>
