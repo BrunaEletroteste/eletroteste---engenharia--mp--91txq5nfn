@@ -699,6 +699,10 @@ export default function ReportPrint() {
                       <div className="bg-slate-800 text-white p-2 font-medium mb-2 uppercase text-[13px] tracking-wider avoid-break">
                         Índice de Equipamentos Inspecionados
                       </div>
+                      <p className="text-[11px] text-slate-500 italic mb-4">
+                        Nota: Este índice é interativo. Clique no equipamento ou status para ser
+                        direcionado automaticamente aos detalhes técnicos.
+                      </p>
 
                       {Array.from(
                         new Set(
