@@ -1121,9 +1121,9 @@ export default function ReportPrint() {
                 <td>
                   {/* Corporate Standardized Footer - Screen only */}
                   <div className="print:hidden mt-8 border-t-2 border-slate-800 pt-4 pb-4 text-[11px] text-slate-600 bg-white leading-relaxed relative">
-                    <div className="flex justify-between items-center gap-4">
-                      <div className="flex items-center gap-4 flex-1">
-                        <div className="flex flex-col items-center">
+                    <div className="flex justify-between items-center w-full">
+                      <div className="flex items-center gap-4">
+                        <div className="flex flex-col items-center shrink-0">
                           <img
                             src={`https://api.qrserver.com/v1/create-qr-code/?size=60x60&data=${encodeURIComponent('https://mp-eletroteste.goskip.app/validar/' + report.id)}`}
                             alt="QR Code de Autenticidade"
@@ -1133,7 +1133,7 @@ export default function ReportPrint() {
                             Autenticidade
                           </span>
                         </div>
-                        <div className="flex flex-col gap-1">
+                        <div className="flex flex-col gap-1 text-left">
                           <span>
                             <strong className="font-semibold">CNPJ:</strong> 64.941.818/0001-91
                             &nbsp;|&nbsp; <strong className="font-semibold">IE:</strong>{' '}
@@ -1143,7 +1143,7 @@ export default function ReportPrint() {
                           <span>Rua Andradina, 262 - Remanso Campineiro - Hortolândia - SP</span>
                         </div>
                       </div>
-                      <div className="flex flex-col text-right gap-1 mt-auto flex-1">
+                      <div className="flex flex-col gap-1 text-right">
                         <span>
                           <strong className="font-semibold">Tels:</strong> (19) 3865-2942 /
                           3865-1261 &nbsp;|&nbsp;{' '}
@@ -1170,9 +1170,9 @@ export default function ReportPrint() {
       <div className="hidden print:flex fixed bottom-0 left-0 w-full justify-center bg-transparent z-50 print:pb-0">
         <div className="w-full max-w-[210mm] px-12 bg-white print:bg-white/90">
           <div className="border-t-2 border-slate-800 pt-3 pb-4 text-[10px] text-slate-600 leading-relaxed bg-transparent relative">
-            <div className="flex justify-between items-center gap-4">
-              <div className="flex items-center gap-4 flex-1">
-                <div className="flex flex-col items-center">
+            <div className="flex justify-between items-center w-full">
+              <div className="flex items-center gap-4">
+                <div className="flex flex-col items-center shrink-0">
                   <img
                     src={`https://api.qrserver.com/v1/create-qr-code/?size=60x60&data=${encodeURIComponent('https://mp-eletroteste.goskip.app/validar/' + report.id)}`}
                     alt="QR Code de Autenticidade"
@@ -1182,7 +1182,7 @@ export default function ReportPrint() {
                     Autenticidade
                   </span>
                 </div>
-                <div className="flex flex-col gap-0.5">
+                <div className="flex flex-col gap-0.5 text-left">
                   <span>
                     <strong className="font-semibold">CNPJ:</strong> 64.941.818/0001-91
                     &nbsp;|&nbsp; <strong className="font-semibold">IE:</strong> 748.001.165.111
@@ -1192,7 +1192,7 @@ export default function ReportPrint() {
                 </div>
               </div>
 
-              <div className="flex flex-col text-right gap-0.5 mt-auto flex-1">
+              <div className="flex flex-col gap-0.5 text-right">
                 <span>
                   <strong className="font-semibold">Tels:</strong> (19) 3865-2942 / 3865-1261
                   &nbsp;|&nbsp; <strong className="font-semibold">WhatsApp:</strong> (19) 9
