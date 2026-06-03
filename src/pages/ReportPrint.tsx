@@ -438,7 +438,7 @@ export default function ReportPrint() {
         <img
           src={logoImg}
           alt="Watermark"
-          className="w-[90vw] h-[90vh] print:w-[250mm] print:h-[250mm] object-contain -rotate-[60deg]"
+          className="w-[85vw] h-[85vh] print:w-[170mm] print:h-[250mm] object-contain -rotate-45"
         />
       </div>
 
