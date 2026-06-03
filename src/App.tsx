@@ -20,7 +20,18 @@ import UsersPage from './pages/Users'
 import AuditLogs from './pages/AuditLogs'
 
 const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
-  const { isAuthenticated, loading } = useAuth()
+  const { isAuthenticated, loading, error } = useAuth()
+
+  if (error) {
+    return (
+      <div className="min-h-screen flex flex-col items-center justify-center bg-slate-50 p-4 text-center">
+        <div className="bg-red-50 text-red-600 p-6 rounded-lg max-w-md shadow-sm border border-red-100">
+          <h2 className="text-lg font-bold mb-2">Erro de Conexão</h2>
+          <p>{error}</p>
+        </div>
+      </div>
+    )
+  }
 
   if (loading) {
     return (

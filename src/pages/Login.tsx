@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useAuth } from '@/hooks/use-auth'
 import { useToast } from '@/hooks/use-toast'
@@ -17,7 +17,7 @@ export default function Login() {
   const [loading, setLoading] = useState(false)
   const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({})
 
-  const { signIn, signUp } = useAuth()
+  const { signIn, signUp, isAuthenticated, loading: authLoading, error } = useAuth()
   const { toast } = useToast()
   const navigate = useNavigate()
 
@@ -91,6 +91,31 @@ export default function Login() {
     setFieldErrors({})
     setPassword('')
     setConfirmPassword('')
+  }
+
+  useEffect(() => {
+    if (isAuthenticated) {
+      navigate('/')
+    }
+  }, [isAuthenticated, navigate])
+
+  if (error) {
+    return (
+      <div className="min-h-screen flex flex-col items-center justify-center bg-slate-50 p-4 text-center">
+        <div className="bg-red-50 text-red-600 p-6 rounded-lg max-w-md shadow-sm border border-red-100">
+          <h2 className="text-lg font-bold mb-2">Erro de Conexão</h2>
+          <p>{error}</p>
+        </div>
+      </div>
+    )
+  }
+
+  if (authLoading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-slate-50">
+        <Loader2 className="h-8 w-8 animate-spin text-amber-500" />
+      </div>
+    )
   }
 
   return (

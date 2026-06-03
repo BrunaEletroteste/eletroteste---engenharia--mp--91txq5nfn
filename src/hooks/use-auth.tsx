@@ -8,6 +8,7 @@ interface AuthContextType {
   signIn: (email: string, password: string) => Promise<{ error: any }>
   signOut: () => void
   loading: boolean
+  error: string | null
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined)
@@ -22,6 +23,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [user, setUser] = useState<any>(pb.authStore.isValid ? pb.authStore.record : null)
   const [isAuthenticated, setIsAuthenticated] = useState(pb.authStore.isValid)
   const [loading, setLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
 
   useEffect(() => {
     const checkActive = (record: any) =>
@@ -36,25 +38,50 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       setIsAuthenticated(isValidAndActive)
     })
 
-    if (pb.authStore.isValid) {
-      if (!checkActive(pb.authStore.record)) {
-        pb.authStore.clear()
-        setLoading(false)
-      } else {
-        pb.collection('users')
-          .authRefresh()
-          .then((authData) => {
-            if (!checkActive(authData.record)) {
-              pb.authStore.clear()
-            }
-          })
-          .catch(() => pb.authStore.clear())
-          .finally(() => setLoading(false))
+    const initAuth = async () => {
+      try {
+        await pb.health.check()
+      } catch (err: any) {
+        if (err?.status === 0 || (err?.status && err.status >= 500)) {
+          setError(
+            'Não foi possível conectar ao servidor. Verifique sua conexão e tente novamente.',
+          )
+          setLoading(false)
+          return
+        }
       }
-    } else {
-      if (pb.authStore.record) pb.authStore.clear()
-      setLoading(false)
+
+      if (pb.authStore.isValid) {
+        if (!checkActive(pb.authStore.record)) {
+          pb.authStore.clear()
+          setLoading(false)
+        } else {
+          pb.collection('users')
+            .authRefresh()
+            .then((authData) => {
+              if (!checkActive(authData.record)) {
+                pb.authStore.clear()
+              }
+            })
+            .catch((err: any) => {
+              if (err?.status === 0 || (err?.status && err.status >= 500)) {
+                setError(
+                  'Não foi possível conectar ao servidor. Verifique sua conexão e tente novamente.',
+                )
+              } else {
+                pb.authStore.clear()
+              }
+            })
+            .finally(() => setLoading(false))
+        }
+      } else {
+        if (pb.authStore.record) pb.authStore.clear()
+        setLoading(false)
+      }
     }
+
+    initAuth()
+
     return () => {
       unsubscribe()
     }
