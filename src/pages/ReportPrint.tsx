@@ -433,7 +433,12 @@ export default function ReportPrint() {
         </Button>
       </div>
 
-      <div className="w-full max-w-[210mm] mx-auto bg-white shadow-xl print:shadow-none mt-24 print:mt-0">
+      {/* Watermark - Fixed to appear on all pages */}
+      <div className="fixed inset-0 z-0 flex items-center justify-center pointer-events-none opacity-[0.06]">
+        <img src={logoImg} alt="Watermark" className="w-[70%] max-w-[500px] object-contain" />
+      </div>
+
+      <div className="w-full max-w-[210mm] mx-auto bg-white print:bg-transparent shadow-xl print:shadow-none mt-24 print:mt-0 relative z-10">
         {/* Cover Page */}
         <div
           className="w-full h-[297mm] flex flex-col justify-center items-center print:max-w-none mb-8 print:mb-0 overflow-hidden box-border px-10 pt-10 pb-[120px] relative print:break-after-page"
@@ -511,14 +516,14 @@ export default function ReportPrint() {
         </div>
 
         {/* Document Container */}
-        <div className="px-8 pb-8 text-[12px] print:max-w-none print:pt-0 print:px-12 print:pb-[100px] font-sans bg-white relative z-10">
+        <div className="px-8 pb-8 text-[12px] print:max-w-none print:pt-0 print:px-12 print:pb-[100px] font-sans bg-white print:bg-transparent relative z-10">
           <table className="w-full">
             <thead className="table-header-group">
               <tr>
                 <td>
                   {/* Technical Header (Carimbo) */}
                   <div className="print:mt-8 border-t-[6px] border-blue-900 pb-2 mb-6">
-                    <table className="w-full border-collapse border border-slate-800 mt-2 bg-white">
+                    <table className="w-full border-collapse border border-slate-800 mt-2 bg-white print:bg-white/80">
                       <tbody>
                         <tr>
                           <td className="border border-slate-800 w-[25%] p-3 align-middle text-center">
@@ -834,8 +839,8 @@ export default function ReportPrint() {
                     style={{ breakBefore: 'page', pageBreakBefore: 'always' }}
                   >
                     <td>
-                      <div className="mb-8 border border-slate-400 bg-white text-[12px]">
-                        <div className="bg-slate-200 text-slate-900 p-3 font-semibold text-[14px] border-b border-slate-400 uppercase tracking-wide">
+                      <div className="mb-8 border border-slate-400 bg-white print:bg-transparent text-[12px]">
+                        <div className="bg-slate-200 print:bg-slate-200/90 text-slate-900 p-3 font-semibold text-[14px] border-b border-slate-400 uppercase tracking-wide">
                           {displayIndex}. EQUIPAMENTO: {eq.tipo_equipamento}
                         </div>
 
@@ -1040,7 +1045,7 @@ export default function ReportPrint() {
                                       Justificativa da Mudança:
                                     </span>
                                     <span
-                                      className={`text-slate-900 block bg-white ${isTransformador ? 'p-1.5' : 'p-2'} border border-slate-200 rounded`}
+                                      className={`text-slate-900 block bg-white print:bg-transparent ${isTransformador ? 'p-1.5' : 'p-2'} border border-slate-200 rounded`}
                                     >
                                       {eq.parecer.justificativa_mudanca}
                                     </span>
@@ -1052,7 +1057,7 @@ export default function ReportPrint() {
                                       Observações:
                                     </span>
                                     <span
-                                      className={`text-slate-900 block whitespace-pre-wrap bg-white ${isTransformador ? 'p-1.5' : 'p-2'} border border-slate-200 rounded`}
+                                      className={`text-slate-900 block whitespace-pre-wrap bg-white print:bg-transparent ${isTransformador ? 'p-1.5' : 'p-2'} border border-slate-200 rounded`}
                                     >
                                       {eq.parecer.observacoes}
                                     </span>
@@ -1146,8 +1151,8 @@ export default function ReportPrint() {
 
       {/* Fixed Footer - Print Only */}
       <div className="hidden print:flex fixed bottom-0 left-0 w-full justify-center bg-transparent z-50 print:pb-0">
-        <div className="w-full max-w-[210mm] px-12 bg-white">
-          <div className="border-t-2 border-slate-800 pt-4 pb-6 text-[11px] text-slate-600 leading-relaxed bg-white">
+        <div className="w-full max-w-[210mm] px-12 bg-white print:bg-white/90">
+          <div className="border-t-2 border-slate-800 pt-4 pb-6 text-[11px] text-slate-600 leading-relaxed bg-transparent">
             <div className="flex justify-between items-start gap-4">
               <div className="flex flex-col gap-1">
                 <span>
