@@ -9,6 +9,13 @@ import { Input } from '@/components/ui/input'
 import { Textarea } from '@/components/ui/textarea'
 import { Combobox } from '@/components/ui/combobox'
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip'
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select'
 
 export function ReportHeaderSection({ isView }: { isView: boolean }) {
   const { control, setValue, getValues } = useFormContext<FormValues>()
@@ -128,6 +135,38 @@ export function ReportHeaderSection({ isView }: { isView: boolean }) {
               </FormItem>
             )
           }}
+        />
+
+        <FormField
+          control={control}
+          name="tipo_laudo"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>
+                Tipo de Laudo <span className="text-destructive">*</span>
+              </FormLabel>
+              <Select
+                disabled={isView}
+                onValueChange={field.onChange}
+                value={field.value || 'PREVENTIVA'}
+              >
+                <FormControl>
+                  <SelectTrigger className="font-medium text-left">
+                    <SelectValue placeholder="Selecione o tipo de laudo" />
+                  </SelectTrigger>
+                </FormControl>
+                <SelectContent>
+                  <SelectItem value="PREVENTIVA">
+                    LAUDO TÉCNICO DE MANUTENÇÃO PREVENTIVA EM CABINE(S) PRIMÁRIA(S)
+                  </SelectItem>
+                  <SelectItem value="PREVENTIVA_CORRETIVA">
+                    LAUDO TÉCNICO DE MANUTENÇÃO PREVENTIVA E CORRETIVA EM CABINE(S) PRIMÁRIA(S)
+                  </SelectItem>
+                </SelectContent>
+              </Select>
+              <FormMessage />
+            </FormItem>
+          )}
         />
 
         <FormField
