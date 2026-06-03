@@ -218,8 +218,34 @@ export default function ReportPrint() {
         const b = calcRes(d.fase_b)
         const c = calcRes(d.fase_c)
         const rVal = calcRes(d.reserva)
+
+        let rIsZero = false
+        const rRaw = d.reserva
+        if (rRaw === undefined || rRaw === null || rRaw === '') {
+          rIsZero = true
+        } else if (typeof rRaw !== 'object') {
+          const num = typeof rRaw === 'string' ? Number(rRaw.replace(',', '.')) : Number(rRaw)
+          rIsZero = isNaN(num) || num === 0
+        } else if (
+          rRaw.resultado !== undefined &&
+          rRaw.resultado !== null &&
+          rRaw.resultado !== ''
+        ) {
+          const num =
+            typeof rRaw.resultado === 'string'
+              ? Number(String(rRaw.resultado).replace(',', '.'))
+              : Number(rRaw.resultado)
+          rIsZero = isNaN(num) || num === 0
+        } else if (rRaw.resultado === undefined && rRaw.v1 !== undefined && rRaw.v2 !== undefined) {
+          const v1 = Number(rRaw.v1)
+          const v2 = Number(rRaw.v2)
+          rIsZero = isNaN(v1) || isNaN(v2) || v1 * v2 === 0
+        } else {
+          rIsZero = true
+        }
+
         const items = [`A: ${a}`, `B: ${b}`, `C: ${c}`]
-        if (rVal !== '-') items.push(`R: ${rVal}`)
+        if (!rIsZero && rVal !== '-') items.push(`R: ${rVal}`)
         return items
       } else if (
         tipoEquipamento === 'Transformador de Potencial' ||
