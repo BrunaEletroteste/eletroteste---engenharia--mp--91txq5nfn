@@ -102,11 +102,17 @@ const labelMap: Record<string, string> = {
   corrente_ajuste_instantanea: 'Corrente de Ajuste Instantânea (A)',
 }
 
-const getLaudoTitle = (tipo?: string) => {
+const renderLaudoTitle = (tipo?: string) => {
   if (tipo === 'PREVENTIVA_CORRETIVA') {
     return 'LAUDO TÉCNICO DE MANUTENÇÃO PREVENTIVA E CORRETIVA EM CABINE(S) PRIMÁRIA(S)'
   }
-  return 'LAUDO TÉCNICO DE MANUTENÇÃO PREVENTIVA EM CABINE(S) PRIMÁRIA(S)'
+  return (
+    <>
+      LAUDO TÉCNICO DE MANUTENÇÃO
+      <br />
+      PREVENTIVA EM CABINE(S) PRIMÁRIA(S)
+    </>
+  )
 }
 
 const getLabel = (key: string, tipoEquipamento?: string) => {
@@ -492,7 +498,7 @@ export default function ReportPrint() {
             <div className="flex flex-col items-center justify-center space-y-4 px-4">
               <Cpu className="w-10 h-10 text-blue-900 stroke-[1.5]" />
               <h1 className="text-[18px] font-bold text-slate-900 uppercase leading-snug tracking-tight text-center">
-                {getLaudoTitle(report.tipo_laudo)}
+                {renderLaudoTitle(report.tipo_laudo)}
               </h1>
             </div>
 
@@ -551,7 +557,7 @@ export default function ReportPrint() {
                           </td>
                           <td className="border border-slate-800 w-[50%] p-3 text-center align-middle">
                             <div className="font-semibold text-[12px] text-slate-900 uppercase tracking-tight leading-snug">
-                              {getLaudoTitle(report.tipo_laudo)}
+                              {renderLaudoTitle(report.tipo_laudo)}
                             </div>
                             <div className="text-[10px] text-slate-600 mt-1.5 font-medium">
                               Normas de Referência: NBR 14039 / NBR 5410
@@ -1089,7 +1095,7 @@ export default function ReportPrint() {
                                     key={foto}
                                     src={pb.files.getURL(eq, foto, { thumb: '800x0' })}
                                     alt="Equipamento"
-                                    className="w-full h-36 object-contain border border-slate-300 rounded shadow-sm avoid-break bg-slate-50 p-1"
+                                    className="w-full h-40 object-contain border border-slate-300 rounded shadow-sm avoid-break bg-slate-50 p-1"
                                   />
                                 ))}
                               </div>
