@@ -442,15 +442,18 @@ export default function ReportPrint() {
         />
       </div>
 
-      <div className="w-full max-w-[210mm] mx-auto bg-white print:bg-transparent shadow-xl print:shadow-none mt-24 print:mt-0 relative z-10">
+      <div className="w-full max-w-[210mm] mx-auto bg-white print:bg-transparent shadow-xl print:shadow-none mt-24 print:mt-0 relative z-10 print:z-auto">
         {/* Cover Page */}
         <div
           className="w-full h-[297mm] flex flex-col justify-center items-center print:max-w-none mb-8 print:mb-0 overflow-hidden box-border px-10 pt-10 pb-[120px] relative print:break-after-page"
           style={{ pageBreakAfter: 'always', breakAfter: 'page' }}
         >
+          {/* Solid White Background to cover watermark on cover page */}
+          <div className="absolute inset-0 bg-white z-10 print:bg-white pointer-events-none"></div>
+
           {/* Background Circuit Pattern (Top Fade-out) */}
           <div
-            className="absolute inset-0 z-0 opacity-20 pointer-events-none"
+            className="absolute inset-0 z-10 opacity-20 pointer-events-none"
             style={{
               backgroundImage:
                 "url(\"data:image/svg+xml,%3Csvg width='100' height='100' xmlns='http://www.w3.org/2000/svg'%3E%3Cg stroke='%23cbd5e1' stroke-width='1.5' fill='none' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M10,10 l20,0 l10,10 l0,20 l10,10 l20,0' /%3E%3Cpath d='M90,10 l-20,0 l-10,10 l0,20 l-10,10 l-20,0' /%3E%3Cpath d='M10,90 l20,0 l10,-10 l0,-20 l10,-10 l20,0' /%3E%3Cpath d='M90,90 l-20,0 l-10,-10 l0,-20 l-10,-10 l-20,0' /%3E%3Cpath d='M50,10 l0,15 l15,15' /%3E%3Cpath d='M50,90 l0,-15 l-15,-15' /%3E%3Cpath d='M10,50 l15,0 l15,15' /%3E%3Cpath d='M90,50 l-15,0 l-15,-15' /%3E%3C/g%3E%3Cg fill='%2394a3b8'%3E%3Ccircle cx='10' cy='10' r='2.5' /%3E%3Ccircle cx='90' cy='10' r='2.5' /%3E%3Ccircle cx='10' cy='90' r='2.5' /%3E%3Ccircle cx='90' cy='90' r='2.5' /%3E%3Ccircle cx='70' cy='50' r='3' fill='white' stroke='%23cbd5e1' stroke-width='1.5'/%3E%3Ccircle cx='30' cy='50' r='3' fill='white' stroke='%23cbd5e1' stroke-width='1.5'/%3E%3Ccircle cx='50' cy='30' r='3' fill='white' stroke='%23cbd5e1' stroke-width='1.5'/%3E%3Ccircle cx='50' cy='70' r='3' fill='white' stroke='%23cbd5e1' stroke-width='1.5'/%3E%3Ccircle cx='10' cy='50' r='2' /%3E%3Ccircle cx='90' cy='50' r='2' /%3E%3Ccircle cx='50' cy='10' r='2' /%3E%3Ccircle cx='50' cy='90' r='2' /%3E%3C/g%3E%3C/svg%3E\")",
@@ -461,7 +464,7 @@ export default function ReportPrint() {
 
           {/* Background Circuit Pattern (Bottom Fade-in) */}
           <div
-            className="absolute inset-0 z-0 opacity-20 pointer-events-none"
+            className="absolute inset-0 z-10 opacity-20 pointer-events-none"
             style={{
               backgroundImage:
                 "url(\"data:image/svg+xml,%3Csvg width='100' height='100' xmlns='http://www.w3.org/2000/svg'%3E%3Cg stroke='%23cbd5e1' stroke-width='1.5' fill='none' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M10,10 l20,0 l10,10 l0,20 l10,10 l20,0' /%3E%3Cpath d='M90,10 l-20,0 l-10,10 l0,20 l-10,10 l-20,0' /%3E%3Cpath d='M10,90 l20,0 l10,-10 l0,-20 l10,-10 l20,0' /%3E%3Cpath d='M90,90 l-20,0 l-10,-10 l0,-20 l-10,-10 l-20,0' /%3E%3Cpath d='M50,10 l0,15 l15,15' /%3E%3Cpath d='M50,90 l0,-15 l-15,-15' /%3E%3Cpath d='M10,50 l15,0 l15,15' /%3E%3Cpath d='M90,50 l-15,0 l-15,-15' /%3E%3C/g%3E%3Cg fill='%2394a3b8'%3E%3Ccircle cx='10' cy='10' r='2.5' /%3E%3Ccircle cx='90' cy='10' r='2.5' /%3E%3Ccircle cx='10' cy='90' r='2.5' /%3E%3Ccircle cx='90' cy='90' r='2.5' /%3E%3Ccircle cx='70' cy='50' r='3' fill='white' stroke='%23cbd5e1' stroke-width='1.5'/%3E%3Ccircle cx='30' cy='50' r='3' fill='white' stroke='%23cbd5e1' stroke-width='1.5'/%3E%3Ccircle cx='50' cy='30' r='3' fill='white' stroke='%23cbd5e1' stroke-width='1.5'/%3E%3Ccircle cx='50' cy='70' r='3' fill='white' stroke='%23cbd5e1' stroke-width='1.5'/%3E%3Ccircle cx='10' cy='50' r='2' /%3E%3Ccircle cx='90' cy='50' r='2' /%3E%3Ccircle cx='50' cy='10' r='2' /%3E%3Ccircle cx='50' cy='90' r='2' /%3E%3C/g%3E%3C/svg%3E\")",
@@ -471,8 +474,8 @@ export default function ReportPrint() {
           ></div>
 
           {/* Lateral Frame / Brand Colors */}
-          <div className="absolute left-0 top-0 bottom-0 w-4 bg-blue-900 z-10"></div>
-          <div className="absolute left-4 top-0 bottom-0 w-1 bg-amber-500 z-10"></div>
+          <div className="absolute left-0 top-0 bottom-0 w-4 bg-blue-900 z-40 print:z-[60]"></div>
+          <div className="absolute left-4 top-0 bottom-0 w-1 bg-amber-500 z-40 print:z-[60]"></div>
 
           <div className="flex flex-col items-center justify-center w-full max-w-2xl text-center space-y-12 z-20 relative text-[16px]">
             <div className="flex items-center justify-center h-28 mb-4 w-full">
