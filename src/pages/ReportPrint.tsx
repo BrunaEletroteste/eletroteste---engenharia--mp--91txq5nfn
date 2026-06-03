@@ -644,8 +644,8 @@ export default function ReportPrint() {
 
                   {/* Equipment Index */}
                   {equipments.length > 0 && (
-                    <div className="mb-8 text-[12px] print:mt-10">
-                      <div className="bg-slate-800 text-white p-2 font-medium mb-6 uppercase text-[13px] tracking-wider text-center avoid-break">
+                    <div className="mb-8 text-[12px]">
+                      <div className="bg-slate-800 text-white p-2 font-medium mb-2 uppercase text-[13px] tracking-wider avoid-break">
                         Índice de Equipamentos Inspecionados
                       </div>
 
