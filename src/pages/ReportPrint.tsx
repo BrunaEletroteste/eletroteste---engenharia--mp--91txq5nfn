@@ -435,7 +435,11 @@ export default function ReportPrint() {
 
       {/* Watermark - Fixed to appear on all pages */}
       <div className="fixed inset-0 z-0 flex items-center justify-center pointer-events-none opacity-[0.06]">
-        <img src={logoImg} alt="Watermark" className="w-[70%] max-w-[500px] object-contain" />
+        <img
+          src={logoImg}
+          alt="Watermark"
+          className="w-[70%] max-w-[500px] object-contain -rotate-[35deg]"
+        />
       </div>
 
       <div className="w-full max-w-[210mm] mx-auto bg-white print:bg-transparent shadow-xl print:shadow-none mt-24 print:mt-0 relative z-10">
