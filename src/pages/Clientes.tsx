@@ -151,10 +151,12 @@ export default function Clientes() {
     setDialogOpen(true)
   }
 
-  if (user?.tipo_acesso !== 'admin') {
+  const isAdmin = user?.tipo_acesso === 'admin'
+
+  if (!isAdmin && user?.tipo_acesso !== 'revisor_interno') {
     return (
       <div className="p-8 text-center text-muted-foreground">
-        Acesso restrito a administradores.
+        Acesso restrito a administradores e revisores.
       </div>
     )
   }
@@ -166,9 +168,11 @@ export default function Clientes() {
           <h2 className="text-2xl font-bold tracking-tight">Clientes</h2>
           <p className="text-muted-foreground">Gerencie as empresas cadastradas no sistema.</p>
         </div>
-        <Button onClick={() => handleOpenDialog()}>
-          <Plus className="mr-2 h-4 w-4" /> Novo Cliente
-        </Button>
+        {isAdmin && (
+          <Button onClick={() => handleOpenDialog()}>
+            <Plus className="mr-2 h-4 w-4" /> Novo Cliente
+          </Button>
+        )}
       </div>
 
       <div className="relative max-w-sm">
@@ -189,7 +193,7 @@ export default function Clientes() {
               <TableHead>CNPJ</TableHead>
               <TableHead>Telefone</TableHead>
               <TableHead>E-mail de Contato</TableHead>
-              <TableHead className="w-[100px]"></TableHead>
+              {isAdmin && <TableHead className="w-[100px]"></TableHead>}
             </TableRow>
           </TableHeader>
           <TableBody>
@@ -205,9 +209,11 @@ export default function Clientes() {
                   <div className="flex flex-col items-center">
                     <Building2 className="h-10 w-10 mb-3 opacity-20" />
                     <p>Nenhum cliente encontrado</p>
-                    <Button variant="link" onClick={() => handleOpenDialog()}>
-                      Adicionar o primeiro
-                    </Button>
+                    {isAdmin && (
+                      <Button variant="link" onClick={() => handleOpenDialog()}>
+                        Adicionar o primeiro
+                      </Button>
+                    )}
                   </div>
                 </TableCell>
               </TableRow>
@@ -218,21 +224,23 @@ export default function Clientes() {
                   <TableCell>{c.cnpj}</TableCell>
                   <TableCell>{c.telefone}</TableCell>
                   <TableCell>{c.email_contato}</TableCell>
-                  <TableCell>
-                    <div className="flex items-center justify-end gap-1">
-                      <Button variant="ghost" size="icon" onClick={() => handleOpenDialog(c)}>
-                        <Edit className="h-4 w-4 text-muted-foreground" />
-                      </Button>
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        className="hover:text-destructive hover:bg-destructive/10 text-muted-foreground"
-                        onClick={() => setDeleteId(c.id)}
-                      >
-                        <Trash2 className="h-4 w-4" />
-                      </Button>
-                    </div>
-                  </TableCell>
+                  {isAdmin && (
+                    <TableCell>
+                      <div className="flex items-center justify-end gap-1">
+                        <Button variant="ghost" size="icon" onClick={() => handleOpenDialog(c)}>
+                          <Edit className="h-4 w-4 text-muted-foreground" />
+                        </Button>
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          className="hover:text-destructive hover:bg-destructive/10 text-muted-foreground"
+                          onClick={() => setDeleteId(c.id)}
+                        >
+                          <Trash2 className="h-4 w-4" />
+                        </Button>
+                      </div>
+                    </TableCell>
+                  )}
                 </TableRow>
               ))
             )}

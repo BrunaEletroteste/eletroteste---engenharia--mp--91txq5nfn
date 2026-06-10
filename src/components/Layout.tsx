@@ -79,16 +79,18 @@ export default function Layout() {
                     </Link>
                   </SidebarMenuButton>
                 </SidebarMenuItem>
+                {(user?.tipo_acesso === 'admin' || user?.tipo_acesso === 'revisor_interno') && (
+                  <SidebarMenuItem>
+                    <SidebarMenuButton isActive={location.pathname.includes('/clientes')} asChild>
+                      <Link to="/clientes">
+                        <Users />
+                        <span>Clientes</span>
+                      </Link>
+                    </SidebarMenuButton>
+                  </SidebarMenuItem>
+                )}
                 {user?.tipo_acesso === 'admin' && (
                   <>
-                    <SidebarMenuItem>
-                      <SidebarMenuButton isActive={location.pathname.includes('/clientes')} asChild>
-                        <Link to="/clientes">
-                          <Users />
-                          <span>Clientes</span>
-                        </Link>
-                      </SidebarMenuButton>
-                    </SidebarMenuItem>
                     <SidebarMenuItem>
                       <SidebarMenuButton isActive={location.pathname.includes('/usuarios')} asChild>
                         <Link to="/usuarios">

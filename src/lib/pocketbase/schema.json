@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-06-10T18:02:40.132Z",
+  "generatedAt": "2026-06-10T19:37:41.031Z",
   "collections": [
     {
       "name": "users",
@@ -61,8 +61,8 @@
       "name": "clientes",
       "type": "base",
       "apiRules": {
-        "list": "@request.auth.tipo_acesso = 'admin'",
-        "view": "@request.auth.tipo_acesso = 'admin'",
+        "list": "@request.auth.tipo_acesso = 'admin' || @request.auth.tipo_acesso = 'revisor_interno'",
+        "view": "@request.auth.tipo_acesso = 'admin' || @request.auth.tipo_acesso = 'revisor_interno'",
         "create": "@request.auth.tipo_acesso = 'admin'",
         "update": "@request.auth.tipo_acesso = 'admin'",
         "delete": "@request.auth.tipo_acesso = 'admin'"
@@ -119,8 +119,8 @@
       "name": "relatorios",
       "type": "base",
       "apiRules": {
-        "list": "@request.auth.tipo_acesso = 'admin' || criado_por = @request.auth.id",
-        "view": "@request.auth.tipo_acesso = 'admin' || criado_por = @request.auth.id",
+        "list": "@request.auth.tipo_acesso = 'admin' || @request.auth.tipo_acesso = 'revisor_interno' || criado_por = @request.auth.id",
+        "view": "@request.auth.tipo_acesso = 'admin' || @request.auth.tipo_acesso = 'revisor_interno' || criado_por = @request.auth.id",
         "create": "@request.auth.tipo_acesso = 'admin' || @request.auth.id != ''",
         "update": "@request.auth.id != ''",
         "delete": "@request.auth.tipo_acesso = 'admin' || criado_por = @request.auth.id"
@@ -235,8 +235,8 @@
       "name": "equipamentos_relatorio",
       "type": "base",
       "apiRules": {
-        "list": "@request.auth.tipo_acesso = 'admin' || relatorio_id.criado_por = @request.auth.id",
-        "view": "@request.auth.tipo_acesso = 'admin' || relatorio_id.criado_por = @request.auth.id",
+        "list": "@request.auth.tipo_acesso = 'admin' || @request.auth.tipo_acesso = 'revisor_interno' || relatorio_id.criado_por = @request.auth.id",
+        "view": "@request.auth.tipo_acesso = 'admin' || @request.auth.tipo_acesso = 'revisor_interno' || relatorio_id.criado_por = @request.auth.id",
         "create": "@request.auth.id != ''",
         "update": "@request.auth.id != ''",
         "delete": "@request.auth.id != ''"
@@ -306,8 +306,8 @@
       "name": "testes_equipamento",
       "type": "base",
       "apiRules": {
-        "list": "@request.auth.tipo_acesso = 'admin' || equipamento_id.relatorio_id.criado_por = @request.auth.id",
-        "view": "@request.auth.tipo_acesso = 'admin' || equipamento_id.relatorio_id.criado_por = @request.auth.id",
+        "list": "@request.auth.tipo_acesso = 'admin' || @request.auth.tipo_acesso = 'revisor_interno' || equipamento_id.relatorio_id.criado_por = @request.auth.id",
+        "view": "@request.auth.tipo_acesso = 'admin' || @request.auth.tipo_acesso = 'revisor_interno' || equipamento_id.relatorio_id.criado_por = @request.auth.id",
         "create": "@request.auth.id != ''",
         "update": "@request.auth.id != ''",
         "delete": "@request.auth.id != ''"
@@ -389,8 +389,8 @@
       "name": "parecer_tecnico",
       "type": "base",
       "apiRules": {
-        "list": "@request.auth.tipo_acesso = 'admin' || equipamento_id.relatorio_id.criado_por = @request.auth.id",
-        "view": "@request.auth.tipo_acesso = 'admin' || equipamento_id.relatorio_id.criado_por = @request.auth.id",
+        "list": "@request.auth.tipo_acesso = 'admin' || @request.auth.tipo_acesso = 'revisor_interno' || equipamento_id.relatorio_id.criado_por = @request.auth.id",
+        "view": "@request.auth.tipo_acesso = 'admin' || @request.auth.tipo_acesso = 'revisor_interno' || equipamento_id.relatorio_id.criado_por = @request.auth.id",
         "create": "@request.auth.id != ''",
         "update": "@request.auth.id != ''",
         "delete": "@request.auth.id != ''"
