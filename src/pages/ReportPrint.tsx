@@ -1,6 +1,6 @@
 import { useEffect, useState, Fragment } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
-import { Printer, ArrowLeft, Loader2, Cpu } from 'lucide-react'
+import { Printer, ArrowLeft, Loader2, Cpu, FileText } from 'lucide-react'
 import pb from '@/lib/pocketbase/client'
 import { Button } from '@/components/ui/button'
 import { getEquipmentFields } from '@/lib/equipment-templates'
@@ -1113,18 +1113,81 @@ export default function ReportPrint() {
               })}
 
               <tr>
-                <td>
-                  {/* Signature Line */}
-                  <div className="mt-12 pt-4 pb-4 flex items-center justify-center avoid-break px-8 print:px-0">
-                    <div className="w-1/2 text-center text-[12px] flex flex-col items-center">
-                      <div className="w-full border-t border-black pt-3 font-semibold text-slate-900">
-                        {report.responsavel_tecnico || autor.name || 'Responsável Técnico'}
-                      </div>
-                      <div className="text-slate-600 mt-1 font-medium text-[10px]">
-                        ELETROTESTE MANUTENÇÕES ELÉTRICAS LTDA
+                <td
+                  className="print:break-before-page"
+                  style={{ breakBefore: 'page', pageBreakBefore: 'always' }}
+                >
+                  {/* Signature Section */}
+                  <div className="mb-4 text-[12px]">
+                    <div className="bg-slate-800 text-white p-1.5 font-medium mb-1.5 uppercase text-[13px] tracking-wider avoid-break">
+                      Assinatura
+                    </div>
+                    <div className="mt-20 pt-4 pb-4 flex items-center justify-center avoid-break px-8 print:px-0">
+                      <div className="w-1/2 text-center text-[12px] flex flex-col items-center">
+                        <div className="w-full border-t border-black pt-3 font-semibold text-slate-900">
+                          {report.responsavel_tecnico || autor.name || 'Responsável Técnico'}
+                        </div>
+                        <div className="text-slate-600 mt-1 font-medium text-[10px]">
+                          ELETROTESTE MANUTENÇÕES ELÉTRICAS LTDA
+                        </div>
                       </div>
                     </div>
                   </div>
+
+                  {/* Attachments Section */}
+                  {report.anexos && report.anexos.length > 0 && (
+                    <div className="mb-4 text-[12px] mt-8">
+                      <div className="bg-slate-800 text-white p-1.5 font-medium mb-4 uppercase text-[13px] tracking-wider avoid-break">
+                        Anexos
+                      </div>
+                      <div className="grid grid-cols-2 gap-4">
+                        {(Array.isArray(report.anexos) ? report.anexos : [report.anexos]).map(
+                          (anexo: string) => {
+                            if (!anexo) return null
+                            const isImage = anexo.toLowerCase().match(/\.(jpg|jpeg|png|gif|webp)$/i)
+                            const url = pb.files.getURL(report, anexo)
+
+                            if (isImage) {
+                              return (
+                                <div
+                                  key={anexo}
+                                  className="avoid-break border border-slate-300 rounded p-1 bg-slate-50"
+                                >
+                                  <img
+                                    src={url}
+                                    alt="Anexo"
+                                    className="w-full h-auto object-contain max-h-[300px]"
+                                  />
+                                  <p className="text-center text-[10px] text-slate-600 mt-1 break-all px-1">
+                                    {anexo}
+                                  </p>
+                                </div>
+                              )
+                            } else {
+                              return (
+                                <div
+                                  key={anexo}
+                                  className="avoid-break border border-slate-300 rounded p-4 bg-slate-50 flex items-center justify-center flex-col min-h-[120px]"
+                                >
+                                  <div className="text-slate-400 mb-2">
+                                    <FileText className="w-8 h-8" />
+                                  </div>
+                                  <a
+                                    href={url}
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    className="text-blue-600 font-medium text-[11px] text-center break-all"
+                                  >
+                                    {anexo}
+                                  </a>
+                                </div>
+                              )
+                            }
+                          },
+                        )}
+                      </div>
+                    </div>
+                  )}
                 </td>
               </tr>
             </tbody>
