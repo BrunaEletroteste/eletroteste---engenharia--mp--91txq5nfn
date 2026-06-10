@@ -1,6 +1,6 @@
 import { useEffect, useState, Fragment } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
-import { Printer, ArrowLeft, Loader2, Cpu, FileText } from 'lucide-react'
+import { Printer, ArrowLeft, Loader2, Cpu } from 'lucide-react'
 import pb from '@/lib/pocketbase/client'
 import { Button } from '@/components/ui/button'
 import { getEquipmentFields } from '@/lib/equipment-templates'
@@ -1118,7 +1118,10 @@ export default function ReportPrint() {
                   style={{ breakBefore: 'page', pageBreakBefore: 'always' }}
                 >
                   {/* Signature Section */}
-                  <div className="mb-4 text-[12px]">
+                  <div
+                    className="mb-4 text-[12px] print:break-before-page"
+                    style={{ breakBefore: 'page', pageBreakBefore: 'always' }}
+                  >
                     <div className="bg-slate-800 text-white p-1.5 font-bold mb-1.5 uppercase text-[13px] tracking-wider avoid-break">
                       ASSINATURA
                     </div>
@@ -1139,60 +1142,13 @@ export default function ReportPrint() {
                     <div className="bg-slate-800 text-white p-1.5 font-bold mb-4 uppercase text-[13px] tracking-wider avoid-break">
                       ANEXOS
                     </div>
-                    {report.anexos && report.anexos.length > 0 ? (
-                      <div className="grid grid-cols-2 gap-4">
-                        {(Array.isArray(report.anexos) ? report.anexos : [report.anexos]).map(
-                          (anexo: string) => {
-                            if (!anexo) return null
-                            const isImage = anexo.toLowerCase().match(/\.(jpg|jpeg|png|gif|webp)$/i)
-                            const url = pb.files.getURL(report, anexo)
-
-                            if (isImage) {
-                              return (
-                                <div
-                                  key={anexo}
-                                  className="avoid-break border border-slate-300 rounded p-1 bg-slate-50"
-                                >
-                                  <img
-                                    src={url}
-                                    alt="Anexo"
-                                    className="w-full h-auto object-contain max-h-[300px]"
-                                  />
-                                  <p className="text-center text-[10px] text-slate-600 mt-1 break-all px-1">
-                                    {anexo}
-                                  </p>
-                                </div>
-                              )
-                            } else {
-                              return (
-                                <div
-                                  key={anexo}
-                                  className="avoid-break border border-slate-300 rounded p-4 bg-slate-50 flex items-center justify-center flex-col min-h-[120px]"
-                                >
-                                  <div className="text-slate-400 mb-2">
-                                    <FileText className="w-8 h-8" />
-                                  </div>
-                                  <a
-                                    href={url}
-                                    target="_blank"
-                                    rel="noopener noreferrer"
-                                    className="text-blue-600 font-medium text-[11px] text-center break-all"
-                                  >
-                                    {anexo}
-                                  </a>
-                                </div>
-                              )
-                            }
-                          },
-                        )}
-                      </div>
-                    ) : (
-                      <div className="avoid-break border border-slate-300 rounded p-6 bg-slate-50 flex items-center justify-center">
-                        <span className="text-slate-500 italic">
-                          Nenhum anexo adicionado a este relatório.
-                        </span>
-                      </div>
-                    )}
+                    <div className="avoid-break border border-slate-300 rounded p-6 bg-slate-50 flex items-center justify-center text-center">
+                      <span className="text-slate-700 font-medium">
+                        Os documentos complementares e certificados correspondentes a este relatório
+                        técnico encontram-se anexados nas páginas subsequentes para consulta e
+                        conferência.
+                      </span>
+                    </div>
                   </div>
                 </td>
               </tr>
