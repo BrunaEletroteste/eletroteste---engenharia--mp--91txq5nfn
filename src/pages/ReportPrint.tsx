@@ -1119,8 +1119,8 @@ export default function ReportPrint() {
                 >
                   {/* Signature Section */}
                   <div className="mb-4 text-[12px]">
-                    <div className="bg-slate-800 text-white p-1.5 font-medium mb-1.5 uppercase text-[13px] tracking-wider avoid-break">
-                      Assinatura
+                    <div className="bg-slate-800 text-white p-1.5 font-bold mb-1.5 uppercase text-[13px] tracking-wider avoid-break">
+                      ASSINATURA
                     </div>
                     <div className="mt-20 pt-4 pb-4 flex items-center justify-center avoid-break px-8 print:px-0">
                       <div className="w-1/2 text-center text-[12px] flex flex-col items-center">
@@ -1135,11 +1135,11 @@ export default function ReportPrint() {
                   </div>
 
                   {/* Attachments Section */}
-                  {report.anexos && report.anexos.length > 0 && (
-                    <div className="mb-4 text-[12px] mt-8">
-                      <div className="bg-slate-800 text-white p-1.5 font-medium mb-4 uppercase text-[13px] tracking-wider avoid-break">
-                        Anexos
-                      </div>
+                  <div className="mb-4 text-[12px] mt-8">
+                    <div className="bg-slate-800 text-white p-1.5 font-bold mb-4 uppercase text-[13px] tracking-wider avoid-break">
+                      ANEXOS
+                    </div>
+                    {report.anexos && report.anexos.length > 0 ? (
                       <div className="grid grid-cols-2 gap-4">
                         {(Array.isArray(report.anexos) ? report.anexos : [report.anexos]).map(
                           (anexo: string) => {
@@ -1186,8 +1186,14 @@ export default function ReportPrint() {
                           },
                         )}
                       </div>
-                    </div>
-                  )}
+                    ) : (
+                      <div className="avoid-break border border-slate-300 rounded p-6 bg-slate-50 flex items-center justify-center">
+                        <span className="text-slate-500 italic">
+                          Nenhum anexo adicionado a este relatório.
+                        </span>
+                      </div>
+                    )}
+                  </div>
                 </td>
               </tr>
             </tbody>
