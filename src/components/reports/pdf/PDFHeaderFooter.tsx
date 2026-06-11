@@ -8,16 +8,14 @@ export const ReportHeader = ({ report }: { report: any }) => (
       <tbody>
         <tr>
           <td className="border border-slate-800 w-[25%] p-3 align-middle text-center">
-            <div className="flex flex-col items-center justify-center">
+            <div className="flex flex-col items-center justify-center h-full min-h-[4rem]">
               <img
                 src={logoImg}
                 alt="Eletroteste Logo"
-                className="max-h-12 w-auto object-contain block"
+                className="max-h-12 w-auto object-contain block mb-2"
                 crossOrigin="anonymous"
               />
-              <span className="text-[10px] font-bold text-black -mt-0.5 leading-none">
-                - Desde 1990 -
-              </span>
+              <span className="text-[10px] font-bold text-black leading-none">- Desde 1990 -</span>
             </div>
           </td>
           <td className="border border-slate-800 w-[50%] p-3 text-center align-middle">

@@ -93,13 +93,13 @@ export default function ReportPreview() {
 
       <div className="bg-white w-full max-w-[210mm] mx-auto min-h-[297mm] p-[20mm] shadow-lg print:shadow-none print:max-w-none print:w-auto print:min-h-auto print:p-0 print:m-0">
         <header className="border-b-2 border-slate-800 pb-4 mb-8 flex justify-between items-center">
-          <div className="flex flex-col items-center">
+          <div className="flex flex-col items-center justify-center">
             <img
               src={logoImg}
               alt="Eletroteste Logo"
-              className="max-h-12 w-auto object-contain block"
+              className="max-h-12 w-auto object-contain block mb-2"
             />
-            <span className="text-[10px] font-bold text-slate-600 -mt-0.5 leading-none">
+            <span className="text-[10px] font-bold text-slate-600 leading-none">
               - Desde 1990 -
             </span>
           </div>

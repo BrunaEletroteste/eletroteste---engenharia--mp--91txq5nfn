@@ -495,11 +495,9 @@ export default function ReportPrint() {
               <img
                 src={logoImg}
                 alt="Eletroteste Logo"
-                className="max-h-24 w-auto object-contain block"
+                className="max-h-24 w-auto object-contain block mb-3"
               />
-              <span className="text-[14px] font-bold text-black -mt-1 leading-none">
-                - Desde 1990 -
-              </span>
+              <span className="text-[14px] font-bold text-black leading-none">- Desde 1990 -</span>
             </div>
 
             <div className="flex flex-col items-center justify-center space-y-4 px-4">
@@ -554,13 +552,13 @@ export default function ReportPrint() {
                       <tbody>
                         <tr>
                           <td className="border border-slate-800 w-[25%] p-3 align-middle text-center">
-                            <div className="flex flex-col items-center justify-center">
+                            <div className="flex flex-col items-center justify-center h-full min-h-[4rem]">
                               <img
                                 src={logoImg}
                                 alt="Eletroteste Logo"
-                                className="max-h-12 w-auto object-contain block"
+                                className="max-h-12 w-auto object-contain block mb-2"
                               />
-                              <span className="text-[10px] font-bold text-black -mt-0.5 leading-none">
+                              <span className="text-[10px] font-bold text-black leading-none">
                                 - Desde 1990 -
                               </span>
                             </div>
