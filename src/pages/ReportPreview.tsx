@@ -4,6 +4,7 @@ import { Printer, ArrowLeft, Loader2 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import pb from '@/lib/pocketbase/client'
 import { format } from 'date-fns'
+import logoImg from '@/assets/logotransparente-c06b6.png'
 
 function getBadgeClass(status: string) {
   if (status === 'Conforme')
@@ -94,11 +95,11 @@ export default function ReportPreview() {
         <header className="border-b-2 border-slate-800 pb-4 mb-8 flex justify-between items-center">
           <div className="flex flex-col items-center">
             <img
-              src="https://img.usecurling.com/i?q=electric&color=blue&shape=fill"
-              alt="Eletroteste"
-              className="h-10"
+              src={logoImg}
+              alt="Eletroteste Logo"
+              className="max-h-12 w-auto object-contain block"
             />
-            <span className="text-xs font-bold text-slate-600 mt-0 leading-none">
+            <span className="text-[10px] font-bold text-slate-600 -mt-0.5 leading-none">
               - Desde 1990 -
             </span>
           </div>

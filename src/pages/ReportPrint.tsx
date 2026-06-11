@@ -491,13 +491,15 @@ export default function ReportPrint() {
           <div className="absolute left-4 top-0 bottom-0 w-1 bg-amber-500 z-40 print:z-[60]"></div>
 
           <div className="flex flex-col items-center justify-center w-full max-w-2xl text-center space-y-12 z-20 relative text-[16px]">
-            <div className="flex flex-col items-center justify-center h-32 mb-4 w-full">
+            <div className="flex flex-col items-center justify-center w-full mb-6">
               <img
                 src={logoImg}
                 alt="Eletroteste Logo"
-                className="max-h-20 w-auto object-contain"
+                className="max-h-24 w-auto object-contain block"
               />
-              <span className="text-[13px] font-bold text-black mt-2">Desde 1990</span>
+              <span className="text-[14px] font-bold text-black -mt-1 leading-none">
+                - Desde 1990 -
+              </span>
             </div>
 
             <div className="flex flex-col items-center justify-center space-y-4 px-4">
@@ -552,14 +554,14 @@ export default function ReportPrint() {
                       <tbody>
                         <tr>
                           <td className="border border-slate-800 w-[25%] p-3 align-middle text-center">
-                            <div className="flex flex-col items-center justify-center h-full min-h-[4rem]">
+                            <div className="flex flex-col items-center justify-center">
                               <img
                                 src={logoImg}
                                 alt="Eletroteste Logo"
-                                className="max-h-10 w-auto object-contain"
+                                className="max-h-12 w-auto object-contain block"
                               />
-                              <span className="text-[9px] font-bold text-black mt-1">
-                                Desde 1990
+                              <span className="text-[10px] font-bold text-black -mt-0.5 leading-none">
+                                - Desde 1990 -
                               </span>
                             </div>
                           </td>
