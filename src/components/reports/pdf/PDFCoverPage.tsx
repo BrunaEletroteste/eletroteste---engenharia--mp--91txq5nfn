@@ -17,7 +17,7 @@ export const PDFCoverPage = ({ report, cliente }: { report: any; cliente: any })
             <img
               src={logoImg}
               alt="Eletroteste Logo"
-              className="max-h-24 w-auto object-contain block mb-3"
+              className="max-h-24 w-auto object-contain block mb-1.5"
               crossOrigin="anonymous"
             />
             <span className="text-[14px] font-bold text-black leading-none">- Desde 1990 -</span>

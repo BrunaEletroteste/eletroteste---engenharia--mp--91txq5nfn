@@ -12,7 +12,7 @@ export const ReportHeader = ({ report }: { report: any }) => (
               <img
                 src={logoImg}
                 alt="Eletroteste Logo"
-                className="max-h-12 w-auto object-contain block mb-2"
+                className="max-h-12 w-auto object-contain block mb-0.5"
                 crossOrigin="anonymous"
               />
               <span className="text-[10px] font-bold text-black leading-none">- Desde 1990 -</span>

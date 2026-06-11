@@ -97,7 +97,7 @@ export default function ReportPreview() {
             <img
               src={logoImg}
               alt="Eletroteste Logo"
-              className="max-h-12 w-auto object-contain block mb-2"
+              className="max-h-12 w-auto object-contain block mb-0.5"
             />
             <span className="text-[10px] font-bold text-slate-600 leading-none">
               - Desde 1990 -
