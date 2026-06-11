@@ -509,6 +509,26 @@ export default function ReportForm() {
                     return false
                   }
                 }
+              } else if (eq.tipo_equipamento === 'Transformador') {
+                const m = d.medicoes || d
+                const rows = ['alta_baixa', 'alta_massa', 'baixa_massa']
+                for (const r of rows) {
+                  if (
+                    !m ||
+                    !m[r] ||
+                    m[r].v1 === undefined ||
+                    m[r].v2 === undefined ||
+                    String(m[r].v1) === '' ||
+                    String(m[r].v2) === ''
+                  ) {
+                    toast({
+                      title: 'Erro de Validação',
+                      description: `Os valores de testes de resistências de isolamento são obrigatórios (equipamento: transformador)`,
+                      variant: 'destructive',
+                    })
+                    return false
+                  }
+                }
               } else {
                 const rows = ['ab', 'bc', 'ac', 'abc_massa']
                 for (const r of rows) {
