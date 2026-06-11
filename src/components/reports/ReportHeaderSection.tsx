@@ -1,6 +1,9 @@
 import { useEffect, useState } from 'react'
 import { useFormContext } from 'react-hook-form'
+import { useParams, Link } from 'react-router-dom'
 import { addYears, format } from 'date-fns'
+import { Printer } from 'lucide-react'
+import { Button } from '@/components/ui/button'
 import pb from '@/lib/pocketbase/client'
 import { FormValues } from '@/types/reports'
 import { useAuth } from '@/hooks/use-auth'
@@ -20,6 +23,7 @@ import {
 export function ReportHeaderSection({ isView }: { isView: boolean }) {
   const { control, setValue, getValues } = useFormContext<FormValues>()
   const { user } = useAuth()
+  const { id } = useParams()
   const [clientes, setClientes] = useState<any[]>([])
 
   useEffect(() => {
@@ -48,8 +52,16 @@ export function ReportHeaderSection({ isView }: { isView: boolean }) {
 
   return (
     <div className="space-y-6">
-      <div className="pb-2 border-b">
+      <div className="pb-2 border-b flex justify-between items-center">
         <h3 className="text-lg font-semibold text-primary">1. Cabeçalho do Relatório</h3>
+        {isView && id && (
+          <Button variant="outline" size="sm" asChild className="print:hidden">
+            <Link to={`/relatorio/preview/${id}`}>
+              <Printer className="h-4 w-4 mr-2" />
+              Visualizar Impressão
+            </Link>
+          </Button>
+        )}
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">

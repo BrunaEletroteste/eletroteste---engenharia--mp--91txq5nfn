@@ -11,6 +11,7 @@ import Dashboard from './pages/Dashboard'
 import Index from './pages/Index'
 import ReportForm from './pages/ReportForm'
 import ReportPrint from './pages/ReportPrint'
+import ReportPreview from './pages/ReportPreview'
 import PublicValidation from './pages/PublicValidation'
 import ConfigOptions from './pages/ConfigOptions'
 import Clientes from './pages/Clientes'
@@ -79,6 +80,14 @@ const App = () => (
               element={
                 <ProtectedRoute>
                   <ReportPrint />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/relatorio/preview/:id"
+              element={
+                <ProtectedRoute>
+                  <ReportPreview />
                 </ProtectedRoute>
               }
             />
