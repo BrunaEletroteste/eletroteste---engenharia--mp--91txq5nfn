@@ -1120,7 +1120,7 @@ export default function ReportPrint() {
                                 <div className="font-semibold text-slate-800 mb-1.5 border-b border-slate-200 pb-0.5 text-[13px] uppercase tracking-wider">
                                   ANÁLISE DE ÓLEO
                                 </div>
-                                <div className="border-l-4 border-blue-400 pl-3 py-1.5 bg-blue-50/50">
+                                <div className="border-l-4 border-slate-400 pl-3 py-1.5 bg-slate-50">
                                   <span
                                     className={`text-slate-800 ${textSize} font-medium leading-relaxed`}
                                   >

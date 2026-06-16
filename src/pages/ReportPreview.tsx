@@ -290,7 +290,7 @@ export default function ReportPreview() {
                         <h4 className="text-sm font-semibold text-slate-700 mb-2 uppercase tracking-wider">
                           ANÁLISE DE ÓLEO
                         </h4>
-                        <div className="border-l-4 border-blue-400 pl-3 py-2 bg-blue-50/50">
+                        <div className="border-l-4 border-slate-400 pl-3 py-2 bg-slate-50">
                           <span className="text-slate-800 text-xs font-medium leading-relaxed">
                             As análises de óleo correspondentes a este transformador foram
                             realizadas e os respectivos laudos encontram-se anexados ao final deste

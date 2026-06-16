@@ -190,7 +190,7 @@ export const PDFEquipmentDetails = ({
                 <div className="font-semibold text-slate-800 mb-1.5 border-b border-slate-200 pb-0.5 text-[13px] uppercase tracking-wider">
                   ANÁLISE DE ÓLEO
                 </div>
-                <div className="border-l-4 border-blue-400 pl-3 py-2 bg-blue-50/50">
+                <div className="border-l-4 border-slate-400 pl-3 py-2 bg-slate-50">
                   <span className="text-slate-800 text-[11px] font-medium leading-relaxed">
                     As análises de óleo correspondentes a este transformador foram realizadas e os
                     respectivos laudos encontram-se anexados ao final deste documento técnico.
