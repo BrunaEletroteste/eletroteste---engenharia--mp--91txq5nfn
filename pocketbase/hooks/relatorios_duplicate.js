@@ -7,7 +7,10 @@ routerAdd(
     let newReportId = ''
 
     try {
-      let filesToCopy = []
+      const instanceUrl = $secrets.get('PB_INSTANCE_URL') || 'http://127.0.0.1:8090'
+      const token = $secrets.get('PB_SUPERUSER_TOKEN') || ''
+      let baseUrl = instanceUrl
+      if (baseUrl.endsWith('/')) baseUrl = baseUrl.slice(0, -1)
 
       $app.runInTransaction((txApp) => {
         const original = txApp.findRecordById('relatorios', id)
@@ -67,19 +70,45 @@ routerAdd(
           newEq.set('dados_tecnicos', eq.get('dados_tecnicos'))
           newEq.set('ordem', eq.get('ordem'))
 
-          txApp.save(newEq)
-          const newEqId = newEq.id
-
           let fotos = eq.get('fotos')
           let filenames = Array.isArray(fotos) ? fotos : fotos ? [fotos] : []
           if (filenames.length > 0) {
-            filesToCopy.push({
-              newEqId: newEqId,
-              originalEqId: eq.id,
-              originalCollectionId: eq.collectionId,
-              filenames: filenames,
-            })
+            const downloadedFiles = []
+            for (const filename of filenames) {
+              if (!filename) continue
+              const url = `${baseUrl}/api/files/${eq.collectionId}/${eq.id}/${filename}`
+
+              const headers = {}
+              if (token) {
+                headers['Authorization'] = 'Bearer ' + token
+              }
+
+              const res = $http.send({
+                url: url,
+                method: 'GET',
+                headers: headers,
+                timeout: 30,
+              })
+
+              if (res.statusCode === 200 && res.body) {
+                const file = $filesystem.fileFromBytes(res.body, filename)
+                downloadedFiles.push(file)
+              } else {
+                throw new Error(
+                  'Falha ao copiar foto do equipamento (' +
+                    filename +
+                    '). Status: ' +
+                    res.statusCode,
+                )
+              }
+            }
+            if (downloadedFiles.length > 0) {
+              newEq.set('fotos', downloadedFiles)
+            }
           }
+
+          txApp.save(newEq)
+          const newEqId = newEq.id
 
           const testes = txApp.findRecordsByFilter(
             'testes_equipamento',
@@ -112,77 +141,16 @@ routerAdd(
           for (const p of pareceres) {
             const newParecer = new Record(txApp.findCollectionByNameOrId('parecer_tecnico'))
             newParecer.set('equipamento_id', newEqId)
-            newParecer.set('parecer_anterior', p.getString('parecer'))
+            newParecer.set('parecer_anterior', p.getString('parecer_anterior'))
             newParecer.set('parecer', p.getString('parecer'))
-            newParecer.set('justificativa_mudanca', '')
+            newParecer.set('justificativa_mudanca', p.getString('justificativa_mudanca'))
             newParecer.set('observacoes', p.getString('observacoes'))
-            newParecer.set('observacoes_anteriores', p.getString('observacoes'))
+            newParecer.set('observacoes_anteriores', p.getString('observacoes_anteriores'))
 
             txApp.saveNoValidate(newParecer)
           }
         }
       })
-
-      if (filesToCopy.length > 0) {
-        const instanceUrl = $secrets.get('PB_INSTANCE_URL') || 'http://127.0.0.1:8090'
-        const token = $secrets.get('PB_SUPERUSER_TOKEN') || ''
-        let baseUrl = instanceUrl
-        if (baseUrl.endsWith('/')) baseUrl = baseUrl.slice(0, -1)
-
-        for (const task of filesToCopy) {
-          try {
-            const newEq = $app.findRecordById('equipamentos_relatorio', task.newEqId)
-            const downloadedFiles = []
-
-            for (const filename of task.filenames) {
-              if (!filename) continue
-              const url = `${baseUrl}/api/files/${task.originalCollectionId}/${task.originalEqId}/${filename}`
-
-              const headers = {}
-              if (token) {
-                headers['Authorization'] = 'Bearer ' + token
-              }
-
-              const res = $http.send({
-                url: url,
-                method: 'GET',
-                headers: headers,
-                timeout: 30,
-              })
-
-              if (res.statusCode === 200 && res.body) {
-                const file = $filesystem.fileFromBytes(res.body, filename)
-                downloadedFiles.push(file)
-              } else {
-                $app
-                  .logger()
-                  .warn(
-                    'Failed to download photo during duplication',
-                    'url',
-                    url,
-                    'status',
-                    res.statusCode,
-                  )
-              }
-            }
-
-            if (downloadedFiles.length > 0) {
-              newEq.set('fotos', downloadedFiles)
-              $app.saveNoValidate(newEq)
-            }
-          } catch (err) {
-            $app
-              .logger()
-              .error(
-                'Error copying photos for equipment',
-                'newEqId',
-                task.newEqId,
-                'error',
-                err.message,
-              )
-          }
-        }
-      }
 
       return e.json(200, { id: newReportId })
     } catch (err) {
