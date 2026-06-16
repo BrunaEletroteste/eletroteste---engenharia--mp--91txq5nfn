@@ -35,6 +35,7 @@ export type ParecerItem = {
   parecer_anterior?: string
   justificativa_mudanca?: string
   observacoes?: string
+  observacoes_anteriores?: string
 }
 
 export type EquipmentItem = {

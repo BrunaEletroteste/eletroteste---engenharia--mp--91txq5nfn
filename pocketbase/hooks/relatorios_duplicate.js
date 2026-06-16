@@ -116,6 +116,7 @@ routerAdd(
             newParecer.set('parecer', '')
             newParecer.set('justificativa_mudanca', '')
             newParecer.set('observacoes', '')
+            newParecer.set('observacoes_anteriores', p.getString('observacoes'))
 
             txApp.saveNoValidate(newParecer)
           }

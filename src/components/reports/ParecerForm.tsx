@@ -5,7 +5,7 @@ import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group'
 import { Textarea } from '@/components/ui/textarea'
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert'
 import { Skeleton } from '@/components/ui/skeleton'
-import { AlertTriangle, XCircle } from 'lucide-react'
+import { AlertTriangle, XCircle, Info } from 'lucide-react'
 import pb from '@/lib/pocketbase/client'
 import { cn } from '@/lib/utils'
 
@@ -201,6 +201,18 @@ export function ParecerForm({
             placeholder={`Explique por que o parecer mudou de "${p.parecer_anterior}" para "${p.parecer}"`}
             className="min-h-[100px] resize-none"
           />
+        </div>
+      )}
+
+      {p.observacoes_anteriores && (
+        <div className="space-y-2 animate-fade-in-up duration-200">
+          <Label className="text-base font-semibold text-muted-foreground flex items-center gap-1.5">
+            <Info className="h-4 w-4" />
+            Observações Anteriores
+          </Label>
+          <div className="bg-muted p-3 rounded-md border border-border text-sm text-muted-foreground whitespace-pre-wrap">
+            {p.observacoes_anteriores}
+          </div>
         </div>
       )}
 
