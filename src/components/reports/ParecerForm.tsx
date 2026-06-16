@@ -5,9 +5,10 @@ import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group'
 import { Textarea } from '@/components/ui/textarea'
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert'
 import { Skeleton } from '@/components/ui/skeleton'
-import { AlertTriangle, XCircle, Info } from 'lucide-react'
+import { AlertTriangle, XCircle, Info, Copy } from 'lucide-react'
 import pb from '@/lib/pocketbase/client'
 import { cn } from '@/lib/utils'
+import { Button } from '@/components/ui/button'
 
 export function ParecerForm({
   equipment,
@@ -61,8 +62,15 @@ export function ParecerForm({
 
         if (active && match) {
           setHistoryParecer(match)
-          if (!p.id && !p.parecer_anterior) {
-            onUpdate({ ...p, parecer_anterior: match.parecer as any })
+          if (!p.id && (!p.parecer_anterior || p.observacoes_anteriores === undefined)) {
+            onUpdate({
+              ...p,
+              parecer_anterior: p.parecer_anterior || (match.parecer as any),
+              observacoes_anteriores:
+                p.observacoes_anteriores !== undefined
+                  ? p.observacoes_anteriores
+                  : match.observacoes,
+            })
           }
         }
       } catch (error) {
@@ -217,7 +225,33 @@ export function ParecerForm({
       )}
 
       <div className="space-y-2">
-        <Label className="text-base font-semibold">Observações</Label>
+        <div className="flex items-center justify-between">
+          <Label className="text-base font-semibold">Observações</Label>
+          {p.observacoes_anteriores && !isView && (
+            <Button
+              type="button"
+              variant={p.parecer && p.parecer === p.parecer_anterior ? 'default' : 'outline'}
+              size="sm"
+              onClick={() => {
+                if (p.observacoes && p.observacoes !== p.observacoes_anteriores) {
+                  if (
+                    !window.confirm('Deseja substituir as observações atuais pelas anteriores?')
+                  ) {
+                    return
+                  }
+                }
+                handleChange('observacoes', p.observacoes_anteriores)
+              }}
+              className={cn(
+                'h-8 flex items-center gap-1.5 transition-colors',
+                p.parecer && p.parecer === p.parecer_anterior && 'animate-pulse-once',
+              )}
+            >
+              <Copy className="h-4 w-4" />
+              Manter observação anterior
+            </Button>
+          )}
+        </div>
         <Textarea
           value={p.observacoes || ''}
           onChange={(e) => handleChange('observacoes', e.target.value)}
