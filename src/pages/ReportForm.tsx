@@ -6,17 +6,36 @@ import { useAuth } from '@/hooks/use-auth'
 import pb from '@/lib/pocketbase/client'
 import { useToast } from '@/hooks/use-toast'
 import { useRealtime } from '@/hooks/use-realtime'
-import { extractFieldErrors, getErrorMessage } from '@/lib/pocketbase/errors'
+import { extractFieldErrors } from '@/lib/pocketbase/errors'
 import { Button } from '@/components/ui/button'
 import { Card, CardHeader, CardTitle, CardDescription, CardFooter } from '@/components/ui/card'
 import { Skeleton } from '@/components/ui/skeleton'
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert'
-import { ArrowLeft, Save, CheckCircle2, FileText } from 'lucide-react'
+import { Badge } from '@/components/ui/badge'
+import {
+  ArrowLeft,
+  Save,
+  CheckCircle2,
+  FileText,
+  WifiOff,
+  RefreshCw,
+  AlertCircle,
+} from 'lucide-react'
 import { ReportHeaderSection } from '@/components/reports/ReportHeaderSection'
 import { EquipmentSection } from '@/components/reports/EquipmentSection'
 import { ReportAttachmentsSection } from '@/components/reports/ReportAttachmentsSection'
 import { reportFormSchema, FormValues, EquipmentItem } from '@/types/reports'
 import { getEquipmentFields } from '@/lib/equipment-templates'
+import { useNetwork } from '@/hooks/use-network'
+import {
+  getDraft,
+  saveDraft,
+  deleteDraft,
+  getPendingFiles,
+  deletePendingFile,
+  generateId,
+  IDBDraft,
+} from '@/lib/idb'
 
 export default function ReportForm() {
   const { id } = useParams()
@@ -24,34 +43,27 @@ export default function ReportForm() {
   const location = useLocation()
   const { toast } = useToast()
   const { user } = useAuth()
+  const isOnline = useNetwork()
 
   const isViewRoute = location.pathname.includes('/visualizar')
   const isEditRoute = location.pathname.includes('/editar')
 
   const [isLoading, setIsLoading] = useState(true)
   const [hasError, setHasError] = useState(false)
-  const [has404Error, setHas404Error] = useState(false)
   const [equipments, setEquipments] = useState<EquipmentItem[]>([])
 
-  // Attachments State
   const [reportRecord, setReportRecord] = useState<any>(null)
   const [existingAnexos, setExistingAnexos] = useState<string[]>([])
-  const isUploadingAttachmentRef = useRef(false)
 
-  const isSavingRef = useRef(false)
   const [isSaving, setIsSaving] = useState(false)
-  const isReloading = useRef(false)
+  const [syncStatus, setSyncStatus] = useState<'synced' | 'syncing' | 'offline' | 'error'>('synced')
+  const [reportDirty, setReportDirty] = useState(false)
+  const [reportIsNew, setReportIsNew] = useState(false)
+  const [draftPrompt, setDraftPrompt] = useState<IDBDraft | null>(null)
 
-  const [autoSaveStatus, setAutoSaveStatus] = useState<'idle' | 'saving' | 'saved' | 'error'>(
-    'idle',
-  )
-  const [lastAutoSave, setLastAutoSave] = useState<Date | null>(null)
-  const isAutoSavingRef = useRef(false)
-  const createdReportIdRef = useRef<string | null>(null)
-  const skipLoadRef = useRef(false)
-  const previousStateRef = useRef<string>('')
+  const isReloading = useRef(false)
+  const previousValuesRef = useRef<string>('')
   const lastSaveTimeRef = useRef(0)
-  const checkAndAutoSaveRef = useRef<() => void>(() => {})
 
   const methods = useForm<FormValues>({
     resolver: zodResolver(reportFormSchema),
@@ -71,132 +83,69 @@ export default function ReportForm() {
   const isReadOnly = isViewRoute || !canEditRecord || isLocked
 
   useEffect(() => {
-    if (isEditRoute && reportRecord && !isLoading) {
-      if (!canEditRecord) {
-        toast({
-          title: 'Acesso Negado',
-          description: 'Você não tem permissão para editar este relatório.',
-          variant: 'destructive',
-        })
-      } else if (isLocked) {
-        toast({
-          title: 'Relatório Finalizado',
-          description: 'Este relatório já foi finalizado e não pode ser alterado.',
-        })
-      }
+    if (!id && !isViewRoute && !isEditRoute) {
+      const newId = generateId()
+      navigate(`/relatorio/editar/${newId}`, { replace: true })
     }
-  }, [isEditRoute, reportRecord, canEditRecord, isLocked, isLoading, toast])
+  }, [id, isViewRoute, isEditRoute, navigate])
+
+  const initializeEmpty = useCallback(
+    (reportId: string) => {
+      setReportRecord(null)
+      setExistingAnexos([])
+      const initialValues = {
+        numero_relatorio: `00${Math.floor(Math.random() * 1000)}/${new Date().getFullYear()}`,
+        numero_proposta: '',
+        status: 'rascunho' as const,
+        cliente_id: '',
+        obra: '',
+        data_execucao: '',
+        data_fim: '',
+        responsavel_tecnico: '',
+        acompanhante: '',
+        proxima_manutencao: '',
+        observacoes: '',
+      }
+      reset(initialValues)
+      setEquipments([])
+      setReportIsNew(true)
+      setReportDirty(true)
+      previousValuesRef.current = JSON.stringify(initialValues)
+    },
+    [reset],
+  )
+
+  const applyDraft = useCallback(
+    (draft: IDBDraft) => {
+      reset(draft.values)
+      setEquipments(draft.equipments)
+      setExistingAnexos(draft.existingAnexos)
+      setReportIsNew(draft.reportIsNew)
+      previousValuesRef.current = JSON.stringify(draft.values)
+      setReportDirty(true)
+    },
+    [reset],
+  )
 
   const loadData = useCallback(
     async (isSilent = false) => {
-      if (skipLoadRef.current) {
-        skipLoadRef.current = false
-        return
-      }
+      if (!id) return
       try {
-        if (!isSilent) {
-          setIsLoading(true)
-          setHasError(false)
-          setHas404Error(false)
-        }
+        if (!isSilent) setIsLoading(true)
 
-        if (id && (isViewRoute || isEditRoute)) {
-          const res = await pb.collection('relatorios').getOne(id)
-          setReportRecord(res)
-          setExistingAnexos(res.anexos || [])
+        const localDraft = await getDraft(id)
 
-          reset({
-            numero_relatorio: res.numero_relatorio,
-            numero_proposta: res.numero_proposta || '',
-            cliente_id: res.cliente_id,
-            obra: res.obra || '',
-            data_execucao: res.data_execucao ? res.data_execucao.substring(0, 10) : '',
-            data_fim: res.data_fim ? res.data_fim.substring(0, 10) : '',
-            responsavel_tecnico: res.responsavel_tecnico || '',
-            acompanhante: res.acompanhante || '',
-            proxima_manutencao: res.proxima_manutencao
-              ? res.proxima_manutencao.substring(0, 10)
-              : '',
-            status: res.status as 'rascunho' | 'finalizado',
-            observacoes: res.observacoes || '',
-          })
-
-          const eqRes = await pb.collection('equipamentos_relatorio').getFullList({
-            filter: `relatorio_id='${id}'`,
-            sort: 'ordem,created',
-          })
-          const testesRes = await pb.collection('testes_equipamento').getFullList({
-            filter: `equipamento_id.relatorio_id='${id}'`,
-          })
-          const parecerRes = await pb.collection('parecer_tecnico').getFullList({
-            filter: `equipamento_id.relatorio_id='${id}'`,
-          })
-
-          const loadedEquipments = eqRes.map((e) => {
-            const eqParecer = parecerRes.find((p) => p.equipamento_id === e.id)
-            return {
-              id: e.id,
-              tipo_equipamento: e.tipo_equipamento,
-              dados_tecnicos: e.dados_tecnicos || {},
-              ordem: e.ordem,
-              fotos: e.fotos || [],
-              testes: testesRes
-                .filter((t) => t.equipamento_id === e.id)
-                .map((t) => {
-                  let obs = t.observacoes || ''
-                  if (!obs || obs.trim() === '') {
-                    if (
-                      e.tipo_equipamento === 'Seccionadora' &&
-                      (t.tipo_teste === 'Resistências dos Isolamentos' ||
-                        t.tipo_teste === 'Resistências dos Contatos')
-                    ) {
-                      obs =
-                        'Os valores dos testes acima foram comparados com parâmetros estatísticos para equipamentos similares em operação.'
-                    } else if (
-                      e.tipo_equipamento === 'Disjuntor' &&
-                      t.tipo_teste === 'Resistências dos Contatos'
-                    ) {
-                      obs =
-                        'Nota: Os valores dos testes acima foram comparados com parâmetros estatísticos para equipamentos similares em operação.'
-                    } else if (e.tipo_equipamento === 'Transformador') {
-                      if (t.tipo_teste === 'Resistências dos Isolamentos') {
-                        obs =
-                          'Nota: Os valores dos testes acima foram comparados com parâmetros de norma de manutenção para transformadores de distribuição: ABNT-NB 108-I.'
-                      } else if (t.tipo_teste === 'Relação de Tensões') {
-                        obs = 'Nota: Em conformidade com a norma ABNT NBR 5356/81.'
-                      } else if (t.tipo_teste === 'Resistências dos Enrolamentos') {
-                        obs = 'Nota: Os enrolamentos apresentam boa condução elétrica.'
-                      }
-                    }
-                  }
-
-                  return {
-                    id: t.id,
-                    tipo_teste: t.tipo_teste,
-                    equipamento_utilizado: t.equipamento_utilizado || '',
-                    valor_teste: t.valor_teste,
-                    unidade: t.unidade,
-                    data_teste: t.data_teste.substring(0, 10),
-                    dados_detalhados: t.dados_detalhados || null,
-                    observacoes: obs,
-                  }
-                }),
-              parecer: eqParecer
-                ? {
-                    id: eqParecer.id,
-                    parecer: eqParecer.parecer as any,
-                    parecer_anterior: eqParecer.parecer_anterior as any,
-                    justificativa_mudanca: eqParecer.justificativa_mudanca,
-                    observacoes: eqParecer.observacoes,
-                  }
-                : undefined,
+        if (isEditRoute || isViewRoute) {
+          try {
+            const res = await pb.collection('relatorios').getOne(id)
+            if (localDraft && localDraft.updatedAt > new Date(res.updated).getTime()) {
+              setDraftPrompt(localDraft)
             }
-          })
 
-          setEquipments(loadedEquipments)
+            setReportRecord(res)
+            setExistingAnexos(res.anexos || [])
 
-          previousStateRef.current = JSON.stringify({
-            values: {
+            const values = {
               numero_relatorio: res.numero_relatorio,
               numero_proposta: res.numero_proposta || '',
               cliente_id: res.cliente_id,
@@ -208,35 +157,68 @@ export default function ReportForm() {
               proxima_manutencao: res.proxima_manutencao
                 ? res.proxima_manutencao.substring(0, 10)
                 : '',
-              status: res.status,
+              status: res.status as 'rascunho' | 'finalizado',
               observacoes: res.observacoes || '',
-            },
-            equipments: loadedEquipments,
-            existingAnexos: res.anexos || [],
-          })
-        } else {
-          setReportRecord(null)
-          setExistingAnexos([])
-          const initialValues = {
-            numero_relatorio: `00${Math.floor(Math.random() * 1000)}/${new Date().getFullYear()}`,
-            numero_proposta: '',
-            status: 'rascunho' as const,
-            cliente_id: '',
-            obra: '',
-            data_execucao: '',
-            data_fim: '',
-            responsavel_tecnico: '',
-            acompanhante: '',
-            proxima_manutencao: '',
-            observacoes: '',
-          }
-          reset(initialValues)
+            }
+            reset(values)
 
-          previousStateRef.current = JSON.stringify({
-            values: initialValues,
-            equipments: [],
-            existingAnexos: [],
-          })
+            const eqRes = await pb
+              .collection('equipamentos_relatorio')
+              .getFullList({ filter: `relatorio_id='${id}'`, sort: 'ordem,created' })
+            const testesRes = await pb
+              .collection('testes_equipamento')
+              .getFullList({ filter: `equipamento_id.relatorio_id='${id}'` })
+            const parecerRes = await pb
+              .collection('parecer_tecnico')
+              .getFullList({ filter: `equipamento_id.relatorio_id='${id}'` })
+
+            const loadedEquipments = eqRes.map((e) => {
+              const eqParecer = parecerRes.find((p) => p.equipamento_id === e.id)
+              return {
+                id: e.id,
+                tipo_equipamento: e.tipo_equipamento,
+                dados_tecnicos: e.dados_tecnicos || {},
+                ordem: e.ordem,
+                fotos: e.fotos || [],
+                testes: testesRes
+                  .filter((t) => t.equipamento_id === e.id)
+                  .map((t) => ({
+                    id: t.id,
+                    tipo_teste: t.tipo_teste,
+                    equipamento_utilizado: t.equipamento_utilizado || '',
+                    valor_teste: t.valor_teste,
+                    unidade: t.unidade,
+                    data_teste: t.data_teste.substring(0, 10),
+                    dados_detalhados: t.dados_detalhados || null,
+                    observacoes: t.observacoes || '',
+                  })),
+                parecer: eqParecer
+                  ? {
+                      id: eqParecer.id,
+                      parecer: eqParecer.parecer as any,
+                      parecer_anterior: eqParecer.parecer_anterior as any,
+                      justificativa_mudanca: eqParecer.justificativa_mudanca,
+                      observacoes: eqParecer.observacoes,
+                    }
+                  : undefined,
+              }
+            })
+
+            setEquipments(loadedEquipments)
+            setReportIsNew(false)
+            setReportDirty(false)
+            previousValuesRef.current = JSON.stringify(values)
+          } catch (err: any) {
+            if (err.status === 404) {
+              if (localDraft) {
+                applyDraft(localDraft)
+              } else {
+                initializeEmpty(id)
+              }
+            } else {
+              if (!isSilent) setHasError(true)
+            }
+          }
         }
       } catch (err) {
         if (!isSilent) setHasError(true)
@@ -244,36 +226,35 @@ export default function ReportForm() {
         if (!isSilent) setIsLoading(false)
       }
     },
-    [id, isViewRoute, isEditRoute, reset],
+    [id, isViewRoute, isEditRoute, reset, applyDraft, initializeEmpty],
   )
 
   useEffect(() => {
-    if (user) {
-      loadData()
-    }
-  }, [loadData, user])
+    if (user && id) loadData()
+  }, [loadData, user, id])
 
   const handleRemoteUpdate = useCallback(() => {
     if (
-      isReloading.current ||
-      isSavingRef.current ||
-      isUploadingAttachmentRef.current ||
-      isAutoSavingRef.current
-    )
+      reportDirty ||
+      equipments.some(
+        (eq) =>
+          (eq as any)._dirty ||
+          eq.testes?.some((t) => (t as any)._dirty) ||
+          (eq.parecer as any)?._dirty,
+      )
+    ) {
       return
+    }
+    if (isReloading.current || syncStatus === 'syncing') return
     if (Date.now() - lastSaveTimeRef.current < 3000) return
+
     isReloading.current = true
-    toast({
-      title: 'Atenção',
-      description: 'Este registro foi atualizado por outro usuário. Recarregando dados...',
-      variant: 'destructive',
-    })
     loadData(true).finally(() => {
       setTimeout(() => {
         isReloading.current = false
       }, 1500)
     })
-  }, [toast, loadData])
+  }, [reportDirty, equipments, syncStatus, loadData])
 
   useRealtime(
     'relatorios',
@@ -282,7 +263,6 @@ export default function ReportForm() {
     },
     !!id,
   )
-
   useRealtime(
     'equipamentos_relatorio',
     (e) => {
@@ -290,7 +270,6 @@ export default function ReportForm() {
     },
     !!id,
   )
-
   useRealtime(
     'testes_equipamento',
     (e) => {
@@ -298,7 +277,6 @@ export default function ReportForm() {
     },
     !!id && equipments.length > 0,
   )
-
   useRealtime(
     'parecer_tecnico',
     (e) => {
@@ -307,13 +285,240 @@ export default function ReportForm() {
     !!id && equipments.length > 0,
   )
 
+  const syncPendingFiles = useCallback(async () => {
+    if (!isOnline) return
+    const pendingFiles = await getPendingFiles()
+    const myFiles = pendingFiles.filter((pf) => pf.reportId === id)
+    if (myFiles.length === 0) return
+
+    setSyncStatus('syncing')
+    let anySuccess = false
+
+    for (const pf of myFiles) {
+      try {
+        const fd = new FormData()
+        fd.append(`${pf.field}+`, pf.file)
+        await pb.collection(pf.collection).update(pf.recordId, fd)
+        await deletePendingFile(pf.id)
+        anySuccess = true
+      } catch (e) {
+        console.error('Failed to sync file', pf.name, e)
+      }
+    }
+
+    if (anySuccess && !reportDirty) {
+      loadData(true)
+    }
+    setSyncStatus('synced')
+  }, [isOnline, id, reportDirty, loadData])
+
+  const performSync = useCallback(
+    async (forceReportSync = false) => {
+      if (!isOnline) return
+      setSyncStatus('syncing')
+      try {
+        let anyChanges = false
+
+        if (reportDirty || forceReportSync) {
+          const data = methods.getValues()
+          const payload: Record<string, any> = {
+            numero_relatorio: data.numero_relatorio,
+            numero_proposta: data.numero_proposta || '',
+            cliente_id: data.cliente_id,
+            obra: data.obra || '',
+            data_execucao: data.data_execucao ? `${data.data_execucao} 12:00:00Z` : '',
+            data_fim: data.data_fim ? `${data.data_fim} 12:00:00Z` : '',
+            status: data.status,
+            responsavel_tecnico: data.responsavel_tecnico || '',
+            acompanhante: data.acompanhante || '',
+            proxima_manutencao: data.proxima_manutencao
+              ? `${data.proxima_manutencao} 12:00:00Z`
+              : '',
+            observacoes: data.observacoes || '',
+          }
+
+          if (reportIsNew) {
+            payload.id = id
+            payload.criado_por = user?.id || ''
+            await pb.collection('relatorios').create(payload)
+            setReportIsNew(false)
+          } else {
+            await pb.collection('relatorios').update(id!, payload)
+          }
+          setReportDirty(false)
+          anyChanges = true
+        }
+
+        const nextEqs = [...equipments]
+        for (let i = 0; i < nextEqs.length; i++) {
+          const eq = nextEqs[i] as any
+          if (eq._delete && eq._dirty) {
+            if (!eq._isNew && eq.id) await pb.collection('equipamentos_relatorio').delete(eq.id)
+            eq._dirty = false
+            anyChanges = true
+            continue
+          }
+
+          if (eq._dirty) {
+            const payload = {
+              relatorio_id: id,
+              tipo_equipamento: eq.tipo_equipamento,
+              dados_tecnicos: eq.dados_tecnicos,
+              ordem: eq.ordem,
+            }
+            if (eq._isNew) {
+              await pb.collection('equipamentos_relatorio').create({ id: eq.id, ...payload })
+              eq._isNew = false
+            } else if (eq.id) {
+              await pb.collection('equipamentos_relatorio').update(eq.id, payload)
+            }
+            eq._dirty = false
+            anyChanges = true
+          }
+
+          if (eq.testes) {
+            for (let j = 0; j < eq.testes.length; j++) {
+              const t = eq.testes[j] as any
+              if (t._delete && t._dirty) {
+                if (!t._isNew && t.id) await pb.collection('testes_equipamento').delete(t.id)
+                t._dirty = false
+                anyChanges = true
+                continue
+              }
+              if (t._dirty) {
+                const payload = {
+                  equipamento_id: eq.id,
+                  tipo_teste: t.tipo_teste,
+                  valor_teste: typeof t.valor_teste === 'number' ? t.valor_teste : 0,
+                  unidade: t.unidade,
+                  data_teste: t.data_teste ? `${t.data_teste} 12:00:00Z` : '',
+                  dados_detalhados: t.dados_detalhados || null,
+                  observacoes: t.observacoes || '',
+                  equipamento_utilizado: t.equipamento_utilizado || '',
+                }
+                if (t._isNew) {
+                  await pb.collection('testes_equipamento').create({ id: t.id, ...payload })
+                  t._isNew = false
+                } else if (t.id) {
+                  await pb.collection('testes_equipamento').update(t.id, payload)
+                }
+                t._dirty = false
+                anyChanges = true
+              }
+            }
+          }
+
+          if (eq.parecer) {
+            const p = eq.parecer as any
+            if (p._delete && p._dirty) {
+              if (!p._isNew && p.id) await pb.collection('parecer_tecnico').delete(p.id)
+              p._dirty = false
+              anyChanges = true
+            } else if (p._dirty) {
+              const payload = {
+                equipamento_id: eq.id,
+                parecer: p.parecer,
+                parecer_anterior: p.parecer_anterior,
+                justificativa_mudanca: p.justificativa_mudanca,
+                observacoes: p.observacoes,
+              }
+              if (p._isNew) {
+                await pb.collection('parecer_tecnico').create({ id: p.id, ...payload })
+                p._isNew = false
+              } else if (p.id) {
+                await pb.collection('parecer_tecnico').update(p.id, payload)
+              }
+              p._dirty = false
+              anyChanges = true
+            }
+          }
+        }
+
+        if (anyChanges) {
+          setEquipments(
+            nextEqs
+              .map((eq) => ({ ...eq, testes: eq.testes?.filter((t) => !(t as any)._delete) }))
+              .filter((eq) => !(eq as any)._delete),
+          )
+        }
+
+        setSyncStatus('synced')
+        lastSaveTimeRef.current = Date.now()
+      } catch (err: any) {
+        console.error('Sync error', err)
+        if (err?.status === 404 && !reportIsNew) {
+          setReportIsNew(true)
+          setReportDirty(true)
+        }
+        setSyncStatus('error')
+      }
+    },
+    [isOnline, reportDirty, methods, reportIsNew, id, user?.id, equipments],
+  )
+
+  useEffect(() => {
+    const interval = setInterval(async () => {
+      if (isReadOnly) return
+
+      const currentValues = methods.getValues()
+      let isDirty = reportDirty
+
+      if (JSON.stringify(currentValues) !== previousValuesRef.current) {
+        setReportDirty(true)
+        previousValuesRef.current = JSON.stringify(currentValues)
+        isDirty = true
+      }
+
+      const hasEqChanges = equipments.some(
+        (eq) =>
+          (eq as any)._dirty ||
+          eq.testes?.some((t) => (t as any)._dirty) ||
+          (eq.parecer as any)?._dirty ||
+          (eq as any)._delete,
+      )
+
+      if (isDirty || hasEqChanges) {
+        await saveDraft({
+          id: id!,
+          updatedAt: Date.now(),
+          values: currentValues,
+          equipments,
+          existingAnexos,
+          reportIsNew,
+        })
+        if (isOnline) {
+          await performSync()
+          await syncPendingFiles()
+        } else {
+          setSyncStatus('offline')
+        }
+      } else if (isOnline && (syncStatus === 'offline' || syncStatus === 'error')) {
+        await performSync()
+        await syncPendingFiles()
+      }
+    }, 3000)
+
+    return () => clearInterval(interval)
+  }, [
+    equipments,
+    methods,
+    isOnline,
+    syncStatus,
+    reportDirty,
+    reportIsNew,
+    id,
+    existingAnexos,
+    isReadOnly,
+    performSync,
+    syncPendingFiles,
+  ])
+
   const validateEquipments = (status: 'rascunho' | 'finalizado') => {
     for (let i = 0; i < equipments.length; i++) {
-      const eq = equipments[i]
+      const eq = equipments[i] as any
       if (eq._delete) continue
 
       const p = eq.parecer
-
       if (eq.tipo_equipamento === 'Estrutura') {
         const estFields = getEquipmentFields('Estrutura').map((f) => f.name)
         const missing = estFields.filter(
@@ -325,273 +530,17 @@ export default function ReportForm() {
             description: `Todos os campos de Estrutura são obrigatórios.`,
             variant: 'destructive',
           })
-          const el = document.getElementById(`equipamento-${i}`)
-          if (el) {
-            el.scrollIntoView({ behavior: 'smooth', block: 'center' })
-            el.classList.add('ring-2', 'ring-destructive', 'border-destructive')
-            setTimeout(
-              () => el.classList.remove('ring-2', 'ring-destructive', 'border-destructive'),
-              3000,
-            )
-          }
-          return false
-        }
-      }
-
-      if (eq.tipo_equipamento === 'Condutor Elétrico') {
-        const ceFields = getEquipmentFields('Condutor Elétrico').map((f) => f.name)
-        const missing = ceFields.filter(
-          (f) => eq.dados_tecnicos[f] === undefined || eq.dados_tecnicos[f] === '',
-        )
-        if (missing.length > 0) {
-          toast({
-            title: 'Erro de Validação',
-            description: `Todos os campos do Condutor Elétrico são obrigatórios. (Equipamento: ${eq.dados_tecnicos?.numero || eq.dados_tecnicos?.circuito || ''})`,
-            variant: 'destructive',
-          })
-          const el = document.getElementById(`equipamento-${i}`)
-          if (el) {
-            el.scrollIntoView({ behavior: 'smooth', block: 'center' })
-            el.classList.add('ring-2', 'ring-destructive', 'border-destructive')
-            setTimeout(
-              () => el.classList.remove('ring-2', 'ring-destructive', 'border-destructive'),
-              3000,
-            )
-          }
-          return false
-        }
-      }
-
-      if (eq.tipo_equipamento === 'Transformador de Potencial') {
-        const tpFields = getEquipmentFields('Transformador de Potencial').map((f) => f.name)
-        const missing = tpFields.filter(
-          (f) => eq.dados_tecnicos[f] === undefined || eq.dados_tecnicos[f] === '',
-        )
-        if (missing.length > 0) {
-          toast({
-            title: 'Erro de Validação',
-            description: `Todos os campos do Transformador de Potencial são obrigatórios. (Equipamento: ${eq.dados_tecnicos?.numero || eq.dados_tecnicos?.circuito || ''})`,
-            variant: 'destructive',
-          })
-          const el = document.getElementById(`equipamento-${i}`)
-          if (el) {
-            el.scrollIntoView({ behavior: 'smooth', block: 'center' })
-            el.classList.add('ring-2', 'ring-destructive', 'border-destructive')
-            setTimeout(
-              () => el.classList.remove('ring-2', 'ring-destructive', 'border-destructive'),
-              3000,
-            )
-          }
-          return false
-        }
-      }
-
-      if (eq.tipo_equipamento === 'Relé de Proteção') {
-        const rpFields = getEquipmentFields('Relé de Proteção').map((f) => f.name)
-        const missing = rpFields.filter(
-          (f) => eq.dados_tecnicos[f] === undefined || eq.dados_tecnicos[f] === '',
-        )
-        if (missing.length > 0) {
-          toast({
-            title: 'Erro de Validação',
-            description: `Todos os campos do Relé de Proteção são obrigatórios. (Equipamento: ${eq.dados_tecnicos?.circuito || ''})`,
-            variant: 'destructive',
-          })
-          const el = document.getElementById(`equipamento-${i}`)
-          if (el) {
-            el.scrollIntoView({ behavior: 'smooth', block: 'center' })
-            el.classList.add('ring-2', 'ring-destructive', 'border-destructive')
-            setTimeout(
-              () => el.classList.remove('ring-2', 'ring-destructive', 'border-destructive'),
-              3000,
-            )
-          }
           return false
         }
       }
 
       if (status === 'finalizado') {
-        if (eq.testes) {
-          for (const t of eq.testes) {
-            if (t._delete) continue
-            if (t.tipo_teste === 'Resistências dos Contatos') {
-              const d = t.dados_detalhados || {}
-              if (
-                d.fase_a === undefined ||
-                d.fase_b === undefined ||
-                d.fase_c === undefined ||
-                String(d.fase_a) === '' ||
-                String(d.fase_b) === '' ||
-                String(d.fase_c) === ''
-              ) {
-                toast({
-                  title: 'Erro de Validação',
-                  description: `Os valores das Fases no teste de Resistências dos Contatos são obrigatórios. (Equipamento: ${eq.tipo_equipamento})`,
-                  variant: 'destructive',
-                })
-                return false
-              }
-            }
-            if (t.tipo_teste === 'Resistências dos Isolamentos') {
-              const d = t.dados_detalhados || {}
-              if (eq.tipo_equipamento === 'Condutor Elétrico') {
-                if (
-                  d.fase_a === undefined ||
-                  d.fase_b === undefined ||
-                  d.fase_c === undefined ||
-                  String(d.fase_a) === '' ||
-                  String(d.fase_b) === '' ||
-                  String(d.fase_c) === ''
-                ) {
-                  toast({
-                    title: 'Erro de Validação',
-                    description: `Os valores das Fases no teste de Resistências dos Isolamentos são obrigatórios para Condutor Elétrico.`,
-                    variant: 'destructive',
-                  })
-                  return false
-                }
-              } else if (
-                eq.tipo_equipamento === 'Transformador de Potencial' ||
-                eq.tipo_equipamento === 'Transformador de Corrente'
-              ) {
-                const rows = ['A', 'B', 'C']
-                for (const r of rows) {
-                  if (
-                    !d.fases ||
-                    !d.fases[r] ||
-                    d.fases[r].valor1 === undefined ||
-                    d.fases[r].valor2 === undefined ||
-                    String(d.fases[r].valor1) === '' ||
-                    String(d.fases[r].valor2) === ''
-                  ) {
-                    toast({
-                      title: 'Erro de Validação',
-                      description: `Os valores no teste de Resistências dos Isolamentos são obrigatórios. (Equipamento: ${eq.tipo_equipamento})`,
-                      variant: 'destructive',
-                    })
-                    return false
-                  }
-                }
-              } else if (eq.tipo_equipamento === 'Disjuntor') {
-                const rowsFechado = ['ab', 'bc', 'ac', 'abc_massa']
-                const rowsAberto = ['aa', 'bb', 'cc']
-                for (const r of rowsFechado) {
-                  if (
-                    !d.fechado ||
-                    !d.fechado[r] ||
-                    d.fechado[r].v1 === undefined ||
-                    d.fechado[r].v2 === undefined ||
-                    String(d.fechado[r].v1) === '' ||
-                    String(d.fechado[r].v2) === ''
-                  ) {
-                    toast({
-                      title: 'Erro de Validação',
-                      description: `Os valores no teste de Resistências dos Isolamentos (Fechado) são obrigatórios. (Equipamento: ${eq.tipo_equipamento})`,
-                      variant: 'destructive',
-                    })
-                    return false
-                  }
-                }
-                for (const r of rowsAberto) {
-                  if (
-                    !d.aberto ||
-                    !d.aberto[r] ||
-                    d.aberto[r].v1 === undefined ||
-                    d.aberto[r].v2 === undefined ||
-                    String(d.aberto[r].v1) === '' ||
-                    String(d.aberto[r].v2) === ''
-                  ) {
-                    toast({
-                      title: 'Erro de Validação',
-                      description: `Os valores no teste de Resistências dos Isolamentos (Aberto) são obrigatórios. (Equipamento: ${eq.tipo_equipamento})`,
-                      variant: 'destructive',
-                    })
-                    return false
-                  }
-                }
-              } else if (eq.tipo_equipamento === 'Transformador') {
-                const m = d.medicoes || d
-                const rows = ['alta_baixa', 'alta_massa', 'baixa_massa']
-                for (const r of rows) {
-                  if (
-                    !m ||
-                    !m[r] ||
-                    m[r].v1 === undefined ||
-                    m[r].v2 === undefined ||
-                    String(m[r].v1) === '' ||
-                    String(m[r].v2) === ''
-                  ) {
-                    toast({
-                      title: 'Erro de Validação',
-                      description: `Os valores de testes de resistências de isolamento são obrigatórios (equipamento: transformador)`,
-                      variant: 'destructive',
-                    })
-                    return false
-                  }
-                }
-              } else {
-                const rows = ['ab', 'bc', 'ac', 'abc_massa']
-                for (const r of rows) {
-                  if (
-                    !d[r] ||
-                    d[r].v1 === undefined ||
-                    d[r].v2 === undefined ||
-                    String(d[r].v1) === '' ||
-                    String(d[r].v2) === ''
-                  ) {
-                    toast({
-                      title: 'Erro de Validação',
-                      description: `Os valores no teste de Resistências dos Isolamentos são obrigatórios. (Equipamento: ${eq.tipo_equipamento})`,
-                      variant: 'destructive',
-                    })
-                    return false
-                  }
-                }
-              }
-            }
-          }
-        }
-
         if (!p || !p.parecer) {
-          const ident = eq.dados_tecnicos?.numero || eq.dados_tecnicos?.identificacao || ''
           toast({
             title: 'Erro de Validação',
-            description: `O parecer é obrigatório para o equipamento: ${eq.tipo_equipamento}${ident ? ' - ' + ident : ''}`,
+            description: `O parecer é obrigatório para o equipamento: ${eq.tipo_equipamento}`,
             variant: 'destructive',
           })
-          const el = document.getElementById(`equipamento-${i}`)
-          if (el) {
-            el.scrollIntoView({ behavior: 'smooth', block: 'center' })
-            el.classList.add('ring-2', 'ring-destructive', 'border-destructive')
-            setTimeout(
-              () => el.classList.remove('ring-2', 'ring-destructive', 'border-destructive'),
-              3000,
-            )
-          }
-          return false
-        }
-      }
-
-      if (p?.parecer && p.parecer_anterior && p.parecer !== p.parecer_anterior) {
-        if (
-          status === 'finalizado' &&
-          (!p.justificativa_mudanca || p.justificativa_mudanca.trim() === '')
-        ) {
-          const ident = eq.dados_tecnicos?.numero || eq.dados_tecnicos?.identificacao || ''
-          toast({
-            title: 'Erro de Validação',
-            description: `Justificativa é obrigatória quando há mudança de status no equipamento: ${eq.tipo_equipamento}${ident ? ' - ' + ident : ''}`,
-            variant: 'destructive',
-          })
-          const el = document.getElementById(`equipamento-${i}`)
-          if (el) {
-            el.scrollIntoView({ behavior: 'smooth', block: 'center' })
-            el.classList.add('ring-2', 'ring-destructive', 'border-destructive')
-            setTimeout(
-              () => el.classList.remove('ring-2', 'ring-destructive', 'border-destructive'),
-              3000,
-            )
-          }
           return false
         }
       }
@@ -599,317 +548,48 @@ export default function ReportForm() {
     return true
   }
 
-  const performSave = async (data: FormValues, isSilent: boolean) => {
-    if (!isSilent && !validateEquipments(data.status)) return false
+  const handleStatusSubmit = async (status: 'rascunho' | 'finalizado') => {
+    if (status === 'finalizado' && !validateEquipments('finalizado')) return
+    methods.setValue('status', status)
+    setReportDirty(true)
 
-    if (!isSilent) {
-      isSavingRef.current = true
-      setIsSaving(true)
-    } else {
-      isAutoSavingRef.current = true
-      setAutoSaveStatus('saving')
-    }
-
-    try {
-      let currentId = id || createdReportIdRef.current
-
-      // Pre-save Resource Validation
-      if (currentId) {
-        try {
-          await pb.collection('relatorios').getOne(currentId, { fields: 'id', requestKey: null })
-
-          const existingEqs = await pb
-            .collection('equipamentos_relatorio')
-            .getFullList({ filter: `relatorio_id='${currentId}'`, fields: 'id', requestKey: null })
-          const existingEqIds = new Set(existingEqs.map((e) => e.id))
-          for (const eq of equipments) {
-            if (eq.id && !eq._delete && !existingEqIds.has(eq.id)) {
-              const err = new Error("Erro ao salvar - the requested resource wasn't found") as any
-              err.status = 404
-              err.isCustom404 = true
-              throw err
-            }
-          }
-
-          const existingTestes = await pb.collection('testes_equipamento').getFullList({
-            filter: `equipamento_id.relatorio_id='${currentId}'`,
-            fields: 'id',
-            requestKey: null,
-          })
-          const existingTesteIds = new Set(existingTestes.map((t) => t.id))
-          for (const eq of equipments) {
-            for (const t of eq.testes || []) {
-              if (t.id && !t._delete && !existingTesteIds.has(t.id)) {
-                const err = new Error("Erro ao salvar - the requested resource wasn't found") as any
-                err.status = 404
-                err.isCustom404 = true
-                throw err
-              }
-            }
-          }
-
-          const existingPareceres = await pb.collection('parecer_tecnico').getFullList({
-            filter: `equipamento_id.relatorio_id='${currentId}'`,
-            fields: 'id',
-            requestKey: null,
-          })
-          const existingParecerIds = new Set(existingPareceres.map((p) => p.id))
-          for (const eq of equipments) {
-            if (
-              eq.parecer &&
-              eq.parecer.id &&
-              !eq.parecer._delete &&
-              !existingParecerIds.has(eq.parecer.id)
-            ) {
-              const err = new Error("Erro ao salvar - the requested resource wasn't found") as any
-              err.status = 404
-              err.isCustom404 = true
-              throw err
-            }
-          }
-        } catch (err: any) {
-          if (err?.status === 404 || err?.message?.includes("wasn't found")) {
-            const err404 = new Error("Erro ao salvar - the requested resource wasn't found") as any
-            err404.status = 404
-            err404.isCustom404 = true
-            throw err404
-          }
-          throw err
-        }
-      }
-
-      const payload: Record<string, any> = {
-        numero_relatorio: data.numero_relatorio,
-        numero_proposta: data.numero_proposta || '',
-        cliente_id: data.cliente_id,
-        obra: data.obra || '',
-        data_execucao: data.data_execucao ? `${data.data_execucao} 12:00:00Z` : '',
-        data_fim: data.data_fim ? `${data.data_fim} 12:00:00Z` : '',
-        status: data.status,
-      }
-      if (!currentId) {
-        payload.criado_por = user?.id || ''
-      }
-      payload.responsavel_tecnico = data.responsavel_tecnico || ''
-      payload.acompanhante = data.acompanhante || ''
-      payload.proxima_manutencao = data.proxima_manutencao
-        ? `${data.proxima_manutencao} 12:00:00Z`
-        : ''
-      payload.observacoes = data.observacoes || ''
-
-      const formData = new FormData()
-      Object.entries(payload).forEach(([key, value]) => {
-        formData.append(key, value)
-      })
-
-      if (currentId) {
-        await pb.collection('relatorios').update(currentId, formData)
-      } else {
-        const created = await pb.collection('relatorios').create(formData)
-        currentId = created.id
-        createdReportIdRef.current = currentId
-        skipLoadRef.current = true
-        navigate(`/relatorio/editar/${currentId}`, { replace: true })
-      }
-
-      let currentOrdem = 1
-      for (const eq of equipments) {
-        if (eq._delete && eq.id) {
-          await pb.collection('equipamentos_relatorio').delete(eq.id)
-        } else if (!eq._delete) {
-          const eqPayload = {
-            relatorio_id: currentId,
-            tipo_equipamento: eq.tipo_equipamento,
-            dados_tecnicos: eq.dados_tecnicos,
-            ordem: currentOrdem,
-          }
-          currentOrdem++
-
-          if (eq.id) {
-            await pb.collection('equipamentos_relatorio').update(eq.id, eqPayload)
-          } else {
-            const createdEq = await pb.collection('equipamentos_relatorio').create(eqPayload)
-            eq.id = createdEq.id
-          }
-
-          if (eq.testes) {
-            for (const t of eq.testes) {
-              if (t._delete && t.id) {
-                await pb.collection('testes_equipamento').delete(t.id)
-              } else if (!t._delete) {
-                const tPayload = {
-                  equipamento_id: eq.id,
-                  tipo_teste: t.tipo_teste,
-                  valor_teste: typeof t.valor_teste === 'number' ? t.valor_teste : 0,
-                  unidade: t.unidade,
-                  data_teste: t.data_teste ? `${t.data_teste} 12:00:00Z` : '',
-                  dados_detalhados: t.dados_detalhados || null,
-                  observacoes: t.observacoes || '',
-                  equipamento_utilizado: t.equipamento_utilizado || '',
-                }
-                if (t.id) {
-                  await pb.collection('testes_equipamento').update(t.id, tPayload)
-                } else {
-                  const createdT = await pb.collection('testes_equipamento').create(tPayload)
-                  t.id = createdT.id
-                }
-              }
-            }
-          }
-
-          if (eq.parecer) {
-            const p = eq.parecer
-            if (p._delete && p.id) {
-              await pb.collection('parecer_tecnico').delete(p.id)
-            } else if (!p._delete && p.parecer) {
-              const pPayload = {
-                equipamento_id: eq.id,
-                parecer: p.parecer,
-                parecer_anterior: p.parecer_anterior,
-                justificativa_mudanca: p.justificativa_mudanca,
-                observacoes: p.observacoes,
-              }
-              if (p.id) {
-                await pb.collection('parecer_tecnico').update(p.id, pPayload)
-              } else {
-                const createdP = await pb.collection('parecer_tecnico').create(pPayload)
-                p.id = createdP.id
-              }
-            }
-          }
-        }
-      }
-
-      if (!isSilent) {
-        toast({
-          title: 'Sucesso',
-          description:
-            data.status === 'rascunho'
-              ? 'Rascunho salvo com sucesso.'
-              : 'Relatório finalizado com sucesso.',
-        })
-        navigate('/')
-      } else {
-        setLastAutoSave(new Date())
-        setAutoSaveStatus('saved')
-      }
-      return true
-    } catch (error: any) {
-      if (!isSilent) {
-        const fieldErrors = extractFieldErrors(error)
-        const hasFieldErrors = Object.keys(fieldErrors).length > 0
-
-        let errMsg = getErrorMessage(error)
-        if (error?.status === 404 || error?.isCustom404) {
-          errMsg = 'Registro não encontrado. Outro usuário pode ter excluído ou você está offline.'
-          setHas404Error(true)
-        } else if (error?.status === 403) {
-          errMsg = 'Você não tem permissão para realizar esta operação.'
-        } else if (error?.status === 0) {
-          errMsg = 'Erro de conexão. Verifique sua internet.'
-        } else if (error?.status === 400 && hasFieldErrors) {
-          errMsg = 'Verifique os campos do formulário.'
-        }
-
-        if (hasFieldErrors) {
-          Object.entries(fieldErrors).forEach(([field, msg]) => {
-            methods.setError(field as any, { type: 'manual', message: msg })
-            if (field === 'anexos') {
-              errMsg += ` Erro em anexos: ${msg}`
-            } else if (field === 'equipamento_utilizado') {
-              errMsg += ` Equipamento Utilizado: ${msg}`
-            } else if (field === 'valor_teste') {
-              errMsg += ` Valor do Teste: ${msg}`
-            } else if (field === 'tipo_teste') {
-              errMsg += ` Tipo de Teste: ${msg}`
-            } else if (field === 'unidade') {
-              errMsg += ` Unidade: ${msg}`
-            }
-          })
-        }
-
-        toast({
-          title: hasFieldErrors ? 'Erro de Validação' : 'Erro ao Salvar',
-          description: errMsg,
-          variant: 'destructive',
-        })
-      } else {
-        if (error?.status === 404 || error?.isCustom404) {
-          setHas404Error(true)
-          toast({
-            title: 'Erro no salvamento automático',
-            description: 'Registro não encontrado. Pode ter sido excluído.',
-            variant: 'destructive',
-          })
-        } else if (error?.status === 0) {
-          toast({
-            title: 'Erro no salvamento automático',
-            description: 'Erro de conexão. Verifique sua internet.',
-            variant: 'destructive',
-          })
-        }
-        setAutoSaveStatus('error')
-      }
-      return false
-    } finally {
-      lastSaveTimeRef.current = Date.now()
-      if (!isSilent) {
-        isSavingRef.current = false
-        setIsSaving(false)
-      } else {
-        isAutoSavingRef.current = false
-      }
-    }
-  }
-
-  const checkAndAutoSave = useCallback(async () => {
-    const currentValues = methods.getValues()
-    if (currentValues.status !== 'rascunho') return
-    if (
-      isReadOnly ||
-      isSavingRef.current ||
-      isAutoSavingRef.current ||
-      isUploadingAttachmentRef.current
-    )
-      return
-
-    const currentState = JSON.stringify({
-      values: currentValues,
-      equipments: equipments
-        .filter((e) => !e._delete)
-        .map((e) => ({
-          ...e,
-          testes: e.testes?.filter((t) => !t._delete),
-          parecer: e.parecer?._delete ? undefined : e.parecer,
-        })),
+    await saveDraft({
+      id: id!,
+      updatedAt: Date.now(),
+      values: methods.getValues(),
+      equipments,
       existingAnexos,
+      reportIsNew,
     })
 
-    if (currentState === previousStateRef.current) {
-      return
+    if (isOnline) {
+      setIsSaving(true)
+      await performSync(true)
+      setIsSaving(false)
+      toast({
+        title: 'Sucesso',
+        description: status === 'finalizado' ? 'Relatório finalizado.' : 'Rascunho salvo.',
+      })
+      navigate('/')
+    } else {
+      setSyncStatus('offline')
+      toast({
+        title: 'Modo Offline',
+        description: 'Alterações salvas localmente. Sincronização ocorrerá quando houver internet.',
+      })
+      if (status === 'finalizado') navigate('/')
     }
-
-    const success = await performSave(currentValues, true)
-    if (success) {
-      previousStateRef.current = currentState
-    }
-  }, [methods, equipments, isReadOnly, existingAnexos])
-
-  useEffect(() => {
-    checkAndAutoSaveRef.current = checkAndAutoSave
-  }, [checkAndAutoSave])
-
-  useEffect(() => {
-    const interval = setInterval(() => {
-      checkAndAutoSaveRef.current()
-    }, 60000)
-    return () => clearInterval(interval)
-  }, [])
-
-  const handleStatusSubmit = (status: 'rascunho' | 'finalizado') => {
-    methods.setValue('status', status)
-    methods.handleSubmit((data) => performSave(data, false))()
   }
+
+  const discardDraft = async () => {
+    if (draftPrompt) {
+      await deleteDraft(draftPrompt.id)
+      setDraftPrompt(null)
+      loadData(true)
+    }
+  }
+
+  if (!id) return null
 
   if (isLoading && !hasError) {
     return (
@@ -926,7 +606,7 @@ export default function ReportForm() {
         <AlertTitle>Erro ao carregar dados</AlertTitle>
         <AlertDescription className="flex justify-between items-center mt-2">
           <span>Ocorreu um erro ao carregar os dados do relatório.</span>
-          <Button variant="outline" size="sm" onClick={loadData}>
+          <Button variant="outline" size="sm" onClick={() => loadData()}>
             Tentar novamente
           </Button>
         </AlertDescription>
@@ -936,6 +616,39 @@ export default function ReportForm() {
 
   return (
     <div className="max-w-5xl mx-auto animate-fade-in-up">
+      {draftPrompt && (
+        <Alert className="mb-6 bg-amber-50 border-amber-200">
+          <AlertCircle className="h-4 w-4 text-amber-600" />
+          <AlertTitle className="text-amber-800">Rascunho Local Encontrado</AlertTitle>
+          <AlertDescription className="text-amber-700 mt-2 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+            <span>
+              Existe um rascunho salvo offline em {new Date(draftPrompt.updatedAt).toLocaleString()}{' '}
+              que não foi sincronizado. Deseja restaurá-lo?
+            </span>
+            <div className="flex gap-2 shrink-0">
+              <Button
+                variant="outline"
+                size="sm"
+                className="bg-white hover:bg-muted"
+                onClick={discardDraft}
+              >
+                Descartar
+              </Button>
+              <Button
+                size="sm"
+                className="bg-amber-600 hover:bg-amber-700 text-white"
+                onClick={() => {
+                  applyDraft(draftPrompt)
+                  setDraftPrompt(null)
+                }}
+              >
+                Restaurar
+              </Button>
+            </div>
+          </AlertDescription>
+        </Alert>
+      )}
+
       <FormProvider {...methods}>
         <Card className="shadow-lg border-t-4 border-t-primary">
           <CardHeader className="border-b bg-muted/20 pb-6">
@@ -952,6 +665,30 @@ export default function ReportForm() {
                   Preencha os dados técnicos da manutenção preventiva e adicione os equipamentos
                   inspecionados.
                 </CardDescription>
+                {!isReadOnly && (
+                  <div className="mt-4 flex items-center gap-2 text-sm font-medium">
+                    {!isOnline ? (
+                      <Badge
+                        variant="outline"
+                        className="bg-amber-100 text-amber-800 border-amber-300 font-normal"
+                      >
+                        <WifiOff className="w-3 h-3 mr-1" /> Offline - Salvo Localmente
+                      </Badge>
+                    ) : syncStatus === 'syncing' ? (
+                      <span className="flex items-center text-blue-600 font-normal text-xs bg-blue-50 px-2 py-1 rounded-md border border-blue-200">
+                        <RefreshCw className="w-3 h-3 mr-2 animate-spin" /> Sincronizando...
+                      </span>
+                    ) : syncStatus === 'error' ? (
+                      <span className="flex items-center text-red-600 font-normal text-xs bg-red-50 px-2 py-1 rounded-md border border-red-200">
+                        <AlertCircle className="w-3 h-3 mr-2" /> Erro ao sincronizar
+                      </span>
+                    ) : (
+                      <span className="flex items-center text-emerald-700 font-normal text-xs bg-emerald-50 px-2 py-1 rounded-md border border-emerald-200">
+                        <CheckCircle2 className="w-3 h-3 mr-2" /> Todas alterações salvas
+                      </span>
+                    )}
+                  </div>
+                )}
               </div>
               <div className="hidden sm:block">
                 <img
@@ -969,75 +706,26 @@ export default function ReportForm() {
               equipments={equipments}
               setEquipments={setEquipments}
               isView={isReadOnly}
+              reportId={id}
             />
             <ReportAttachmentsSection
               record={reportRecord}
+              reportId={id}
               existingAnexos={existingAnexos}
-              onAnexosChange={(newAnexos) => setExistingAnexos(newAnexos)}
-              onUploadStart={() => {
-                isUploadingAttachmentRef.current = true
+              onAnexosChange={(newAnexos) => {
+                setExistingAnexos(newAnexos)
+                setReportDirty(true)
               }}
-              onUploadEnd={() => {
-                setTimeout(() => {
-                  isUploadingAttachmentRef.current = false
-                }, 1000)
-              }}
+              onUploadStart={() => {}}
+              onUploadEnd={() => {}}
               isView={isReadOnly}
             />
           </div>
 
           <CardFooter className="flex flex-col-reverse sm:flex-row justify-between items-center gap-4 bg-muted/30 p-6 border-t rounded-b-xl">
             <Button variant="outline" className="w-full sm:w-auto" onClick={() => navigate(-1)}>
-              <ArrowLeft className="mr-2 h-4 w-4" />
-              Voltar
+              <ArrowLeft className="mr-2 h-4 w-4" /> Voltar
             </Button>
-
-            {!isReadOnly && methods.watch('status') === 'rascunho' && (
-              <div className="flex-1 text-xs text-muted-foreground ml-4 hidden sm:flex items-center">
-                {autoSaveStatus === 'saving' && (
-                  <span className="animate-pulse">Salvando rascunho automaticamente...</span>
-                )}
-                {autoSaveStatus === 'saved' && lastAutoSave && (
-                  <span>Último salvamento automático: {lastAutoSave.toLocaleTimeString()}</span>
-                )}
-                {autoSaveStatus === 'error' && (
-                  <span className="text-destructive font-medium">
-                    Erro ao salvar automaticamente
-                  </span>
-                )}
-              </div>
-            )}
-
-            {has404Error && !isReadOnly && (
-              <div className="flex w-full sm:w-auto animate-fade-in mr-auto">
-                <Button
-                  type="button"
-                  className="w-full sm:w-auto bg-amber-500 hover:bg-amber-600 text-white shadow-sm"
-                  onClick={() => {
-                    setHas404Error(false)
-                    createdReportIdRef.current = null
-                    setExistingAnexos([])
-                    setEquipments((prev) =>
-                      prev.map((eq) => ({
-                        ...eq,
-                        id: undefined,
-                        testes: eq.testes?.map((t) => ({ ...t, id: undefined })),
-                        parecer: eq.parecer ? { ...eq.parecer, id: undefined } : undefined,
-                      })),
-                    )
-                    navigate('/relatorio/novo', { replace: true })
-                    toast({
-                      title: 'Modo de Recuperação',
-                      description:
-                        'Os dados atuais foram preparados para um novo rascunho. Por favor, salve para confirmar.',
-                    })
-                  }}
-                >
-                  <Save className="mr-2 h-4 w-4" />
-                  Salvar como Novo Relatório
-                </Button>
-              </div>
-            )}
 
             {isReadOnly && isFinalized && (
               <div className="flex flex-col sm:flex-row gap-3 w-full sm:w-auto">
@@ -1046,8 +734,7 @@ export default function ReportForm() {
                   className="w-full sm:w-auto bg-primary hover:bg-primary/90 text-primary-foreground shadow-sm"
                   onClick={() => window.open(`/relatorio/imprimir/${id}`, '_blank')}
                 >
-                  <FileText className="mr-2 h-4 w-4" />
-                  Gerar PDF
+                  <FileText className="mr-2 h-4 w-4" /> Gerar PDF
                 </Button>
               </div>
             )}

@@ -42,14 +42,16 @@ import {
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog'
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip'
+import { generateId } from '@/lib/idb'
 
 interface Props {
   equipments: EquipmentItem[]
   setEquipments: React.Dispatch<React.SetStateAction<EquipmentItem[]>>
   isView: boolean
+  reportId: string
 }
 
-export function EquipmentSection({ equipments, setEquipments, isView }: Props) {
+export function EquipmentSection({ equipments, setEquipments, isView, reportId }: Props) {
   const [modalOpen, setModalOpen] = useState(false)
   const [editingIndex, setEditingIndex] = useState<number | null>(null)
   const { control } = useFormContext()
@@ -69,11 +71,14 @@ export function EquipmentSection({ equipments, setEquipments, isView }: Props) {
   const handleSaveEquipment = (eq: EquipmentItem) => {
     if (editingIndex !== null) {
       const newList = [...equipments]
-      newList[editingIndex] = { ...newList[editingIndex], ...eq }
+      newList[editingIndex] = { ...newList[editingIndex], ...eq, _dirty: true } as any
       setEquipments(newList)
     } else {
       const maxOrdem = equipments.reduce((max, item) => Math.max(max, item.ordem || 0), 0)
-      setEquipments([...equipments, { ...eq, ordem: maxOrdem + 1 }])
+      setEquipments([
+        ...equipments,
+        { ...eq, id: generateId(), ordem: maxOrdem + 1, _isNew: true, _dirty: true } as any,
+      ])
     }
   }
 
@@ -82,7 +87,7 @@ export function EquipmentSection({ equipments, setEquipments, isView }: Props) {
     setEquipments((prev) => {
       const next = [...prev]
       let prevIdx = index - 1
-      while (prevIdx >= 0 && next[prevIdx]._delete) prevIdx--
+      while (prevIdx >= 0 && (next[prevIdx] as any)._delete) prevIdx--
       if (prevIdx >= 0) {
         const temp = next[index]
         next[index] = next[prevIdx]
@@ -91,6 +96,9 @@ export function EquipmentSection({ equipments, setEquipments, isView }: Props) {
         const tempOrdem = next[index].ordem || index + 1
         next[index].ordem = next[prevIdx].ordem || prevIdx + 1
         next[prevIdx].ordem = tempOrdem
+
+        ;(next[index] as any)._dirty = true
+        ;(next[prevIdx] as any)._dirty = true
       }
       return next
     })
@@ -101,7 +109,7 @@ export function EquipmentSection({ equipments, setEquipments, isView }: Props) {
     setEquipments((prev) => {
       const next = [...prev]
       let nextIdx = index + 1
-      while (nextIdx < next.length && next[nextIdx]._delete) nextIdx++
+      while (nextIdx < next.length && (next[nextIdx] as any)._delete) nextIdx++
       if (nextIdx < next.length) {
         const temp = next[index]
         next[index] = next[nextIdx]
@@ -110,6 +118,9 @@ export function EquipmentSection({ equipments, setEquipments, isView }: Props) {
         const tempOrdem = next[index].ordem || index + 1
         next[index].ordem = next[nextIdx].ordem || nextIdx + 1
         next[nextIdx].ordem = tempOrdem
+
+        ;(next[index] as any)._dirty = true
+        ;(next[nextIdx] as any)._dirty = true
       }
       return next
     })
@@ -118,9 +129,9 @@ export function EquipmentSection({ equipments, setEquipments, isView }: Props) {
   const handleDelete = () => {
     if (deleteDialog.index !== null) {
       const newList = [...equipments]
-      const eq = newList[deleteDialog.index]
-      if (eq.id) {
-        newList[deleteDialog.index] = { ...eq, _delete: true }
+      const eq = newList[deleteDialog.index] as any
+      if (!eq._isNew && eq.id) {
+        newList[deleteDialog.index] = { ...eq, _delete: true, _dirty: true }
       } else {
         newList.splice(deleteDialog.index, 1)
       }
@@ -129,22 +140,21 @@ export function EquipmentSection({ equipments, setEquipments, isView }: Props) {
     setDeleteDialog({ open: false, index: null })
   }
 
-  const activeEquipmentsCount = equipments.filter((eq) => !eq._delete).length
+  const activeEquipmentsCount = equipments.filter((eq) => !(eq as any)._delete).length
   let seqCounter = 1
   const visibleEquipments = equipments
     .map((eq, i) => {
-      const seq = !eq._delete ? seqCounter++ : 0
+      const seq = !(eq as any)._delete ? seqCounter++ : 0
       return { eq, index: i, seq }
     })
     .filter((x) => {
-      if (x.eq._delete) return false
+      if ((x.eq as any)._delete) return false
       if (!searchQuery) return true
       const q = searchQuery.toLowerCase()
       const tipo = x.eq.tipo_equipamento || ''
       const numero = x.eq.dados_tecnicos?.numero || x.eq.dados_tecnicos?.identificacao || ''
       const subestacao = x.eq.dados_tecnicos?.subestacao || ''
       const circuito = x.eq.dados_tecnicos?.circuito || ''
-
       return (
         tipo.toLowerCase().includes(q) ||
         String(numero).toLowerCase().includes(q) ||
@@ -156,9 +166,7 @@ export function EquipmentSection({ equipments, setEquipments, isView }: Props) {
   const substationsMap = new Map<string, typeof visibleEquipments>()
   visibleEquipments.forEach((item) => {
     const sub = item.eq.dados_tecnicos?.subestacao?.trim() || 'Geral'
-    if (!substationsMap.has(sub)) {
-      substationsMap.set(sub, [])
-    }
+    if (!substationsMap.has(sub)) substationsMap.set(sub, [])
     substationsMap.get(sub)!.push(item)
   })
 
@@ -175,19 +183,16 @@ export function EquipmentSection({ equipments, setEquipments, isView }: Props) {
     const allExpanded = currentTabEquipments.every(({ index }) =>
       expandedItems.includes(index.toString()),
     )
-
     if (allExpanded && currentTabEquipments.length > 0) {
       setExpandedItems((prev) =>
         prev.filter((id) => !currentTabEquipments.map((e) => e.index.toString()).includes(id)),
       )
     } else {
-      setExpandedItems((prev) => {
-        const newSet = new Set([
-          ...prev,
-          ...currentTabEquipments.map(({ index }) => index.toString()),
-        ])
-        return Array.from(newSet)
-      })
+      setExpandedItems((prev) =>
+        Array.from(
+          new Set([...prev, ...currentTabEquipments.map(({ index }) => index.toString())]),
+        ),
+      )
     }
   }
 
@@ -200,14 +205,7 @@ export function EquipmentSection({ equipments, setEquipments, isView }: Props) {
   const handleUpdateParecer = (index: number, p: ParecerItem) => {
     setEquipments((prev) => {
       const next = [...prev]
-      const oldP = next[index].parecer
-      if (oldP?.parecer !== p.parecer && p.parecer) {
-        toast({
-          title: 'Parecer registrado',
-          description: 'O status do parecer foi atualizado temporariamente.',
-        })
-      }
-      next[index] = { ...next[index], parecer: p }
+      next[index] = { ...next[index], parecer: p, _dirty: true } as any
       return next
     })
   }
@@ -218,7 +216,6 @@ export function EquipmentSection({ equipments, setEquipments, isView }: Props) {
         <h3 className="text-lg font-semibold text-primary whitespace-nowrap">
           2. Equipamentos Inspecionados
         </h3>
-
         {activeEquipmentsCount > 0 && (
           <div className="flex-1 w-full max-w-md relative">
             <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
@@ -239,7 +236,6 @@ export function EquipmentSection({ equipments, setEquipments, isView }: Props) {
             )}
           </div>
         )}
-
         <div className="flex gap-2 items-center w-full sm:w-auto justify-end">
           {visibleEquipments.length > 0 && (
             <Button variant="outline" size="sm" onClick={toggleAll} className="hidden sm:flex">
@@ -299,7 +295,6 @@ export function EquipmentSection({ equipments, setEquipments, isView }: Props) {
                 </TabsTrigger>
               ))}
             </TabsList>
-
             {substations.map((sub) => (
               <TabsContent key={sub} value={sub} className="focus-visible:outline-none">
                 <Accordion
@@ -323,7 +318,6 @@ export function EquipmentSection({ equipments, setEquipments, isView }: Props) {
                             </TooltipTrigger>
                             <TooltipContent>Expandir/Recolher</TooltipContent>
                           </Tooltip>
-
                           <Badge
                             variant="outline"
                             className="bg-primary/5 border-primary/20 text-primary px-2 py-0.5 text-xs font-mono shrink-0"
@@ -354,7 +348,6 @@ export function EquipmentSection({ equipments, setEquipments, isView }: Props) {
                               if (status === 'Não Conforme')
                                 badgeClass =
                                   'bg-destructive text-destructive-foreground hover:bg-destructive/90'
-
                               return (
                                 <Badge variant="outline" className={badgeClass}>
                                   {status}
@@ -379,7 +372,6 @@ export function EquipmentSection({ equipments, setEquipments, isView }: Props) {
                               </TooltipTrigger>
                               <TooltipContent>Mover para cima</TooltipContent>
                             </Tooltip>
-
                             <Tooltip>
                               <TooltipTrigger asChild>
                                 <Button
@@ -394,9 +386,7 @@ export function EquipmentSection({ equipments, setEquipments, isView }: Props) {
                               </TooltipTrigger>
                               <TooltipContent>Mover para baixo</TooltipContent>
                             </Tooltip>
-
                             <div className="w-[1px] h-6 bg-border/60 mx-1"></div>
-
                             <Tooltip>
                               <TooltipTrigger asChild>
                                 <Button
@@ -414,7 +404,6 @@ export function EquipmentSection({ equipments, setEquipments, isView }: Props) {
                               </TooltipTrigger>
                               <TooltipContent>Editar</TooltipContent>
                             </Tooltip>
-
                             <Tooltip>
                               <TooltipTrigger asChild>
                                 <Button
@@ -462,11 +451,9 @@ export function EquipmentSection({ equipments, setEquipments, isView }: Props) {
                               Parecer Técnico
                             </TabsTrigger>
                           </TabsList>
-
                           <TabsContent value="dados" className="p-4 focus-visible:outline-none">
                             {(() => {
                               const fields = getEquipmentFields(eq.tipo_equipamento)
-
                               const isFuseField = (f: FieldDef) => {
                                 const name = f.name.toLowerCase()
                                 const label = f.label.toLowerCase()
@@ -477,7 +464,6 @@ export function EquipmentSection({ equipments, setEquipments, isView }: Props) {
                                   label.includes('fusíveis')
                                 )
                               }
-
                               const fieldsWithoutSectionAndFuse = fields.filter(
                                 (f) => !f.section && !isFuseField(f),
                               )
@@ -485,14 +471,12 @@ export function EquipmentSection({ equipments, setEquipments, isView }: Props) {
                               const sections = Array.from(
                                 new Set(fields.filter((f) => f.section).map((f) => f.section)),
                               )
-
                               const renderField = (f: FieldDef) => {
                                 if (
                                   f.dependsOn &&
                                   eq.dados_tecnicos[f.dependsOn.field] !== f.dependsOn.value
-                                ) {
+                                )
                                   return null
-                                }
                                 const val = eq.dados_tecnicos[f.name]
                                 if (val === undefined || val === null || val === '') return null
                                 let displayVal = val
@@ -546,13 +530,11 @@ export function EquipmentSection({ equipments, setEquipments, isView }: Props) {
                                   </div>
                                 )
                               }
-
                               return (
                                 <div className="space-y-4">
                                   <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-y-3 gap-x-4 text-[13px] p-3 bg-muted/10 rounded-md border border-dashed">
                                     {fieldsWithoutSectionAndFuse.map(renderField)}
                                   </div>
-
                                   {sections.length > 0 && (
                                     <div className="space-y-3">
                                       {sections.map((section) => {
@@ -565,7 +547,6 @@ export function EquipmentSection({ equipments, setEquipments, isView }: Props) {
                                         const rightFields = sectionFields.filter(
                                           (f) => f.column === 'right',
                                         )
-
                                         return (
                                           <div
                                             key={section!}
@@ -607,7 +588,6 @@ export function EquipmentSection({ equipments, setEquipments, isView }: Props) {
                                       })}
                                     </div>
                                   )}
-
                                   {fuseFields.length > 0 &&
                                     fuseFields.some((f) => {
                                       if (
@@ -631,7 +611,6 @@ export function EquipmentSection({ equipments, setEquipments, isView }: Props) {
                               )
                             })()}
                           </TabsContent>
-
                           <TabsContent value="testes" className="p-4 focus-visible:outline-none">
                             <EquipmentTestsManager
                               equipment={eq}
@@ -643,16 +622,15 @@ export function EquipmentSection({ equipments, setEquipments, isView }: Props) {
                               reportDate={reportDate}
                             />
                           </TabsContent>
-
                           <TabsContent value="fotos" className="p-4 focus-visible:outline-none">
                             <EquipmentPhotosManager
                               equipment={eq}
                               index={index}
                               setEquipments={setEquipments}
                               isView={isView}
+                              reportId={reportId}
                             />
                           </TabsContent>
-
                           <TabsContent value="parecer" className="p-4 focus-visible:outline-none">
                             <ParecerForm
                               equipment={eq}
@@ -671,14 +649,12 @@ export function EquipmentSection({ equipments, setEquipments, isView }: Props) {
           </Tabs>
         </div>
       )}
-
       <EquipmentModal
         open={modalOpen}
         onOpenChange={setModalOpen}
         onSave={handleSaveEquipment}
         initialData={editingIndex !== null ? equipments[editingIndex] : undefined}
       />
-
       <AlertDialog
         open={deleteDialog.open}
         onOpenChange={(open) => !open && setDeleteDialog({ open: false, index: null })}
