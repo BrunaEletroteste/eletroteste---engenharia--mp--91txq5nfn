@@ -93,11 +93,11 @@ routerAdd(
             newTest.set('equipamento_id', newEqId)
             newTest.set('tipo_teste', t.get('tipo_teste'))
             newTest.set('equipamento_utilizado', t.get('equipamento_utilizado'))
-            newTest.set('valor_teste', 0)
+            newTest.set('valor_teste', t.get('valor_teste'))
             newTest.set('unidade', t.get('unidade'))
             newTest.set('data_teste', today)
             newTest.set('dados_detalhados', t.get('dados_detalhados'))
-            newTest.set('observacoes', '')
+            newTest.set('observacoes', t.getString('observacoes'))
 
             txApp.save(newTest)
           }
@@ -113,9 +113,9 @@ routerAdd(
             const newParecer = new Record(txApp.findCollectionByNameOrId('parecer_tecnico'))
             newParecer.set('equipamento_id', newEqId)
             newParecer.set('parecer_anterior', p.getString('parecer'))
-            newParecer.set('parecer', '')
+            newParecer.set('parecer', p.getString('parecer'))
             newParecer.set('justificativa_mudanca', '')
-            newParecer.set('observacoes', '')
+            newParecer.set('observacoes', p.getString('observacoes'))
             newParecer.set('observacoes_anteriores', p.getString('observacoes'))
 
             txApp.saveNoValidate(newParecer)
