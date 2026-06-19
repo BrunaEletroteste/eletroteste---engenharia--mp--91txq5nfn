@@ -28,6 +28,7 @@ import { TestModal } from './TestModal'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip'
 import { useRealtime } from '@/hooks/use-realtime'
+import { generateId } from '@/lib/idb'
 
 interface Props {
   equipment: EquipmentItem
@@ -476,9 +477,24 @@ export function EquipmentTestsManager({
       const newEqs = [...prev]
       const eq = { ...newEqs[equipmentIndex] }
       const testes = [...(eq.testes || [])]
-      if (editingTest) testes[editingTest.index] = { ...testes[editingTest.index], ...test }
-      else testes.push(test)
+
+      if (editingTest) {
+        testes[editingTest.index] = {
+          ...testes[editingTest.index],
+          ...test,
+          _dirty: true,
+        }
+      } else {
+        testes.push({
+          ...test,
+          id: test.id || generateId(),
+          _isNew: true,
+          _dirty: true,
+        })
+      }
+
       eq.testes = testes
+      eq._dirty = true
       newEqs[equipmentIndex] = eq
       return newEqs
     })
@@ -494,9 +510,15 @@ export function EquipmentTestsManager({
       const eq = { ...newEqs[equipmentIndex] }
       const testes = [...(eq.testes || [])]
       const realIndex = testes.findIndex((t) => t === testToDel)
-      if (testes[realIndex].id) testes[realIndex]._delete = true
-      else testes.splice(realIndex, 1)
+
+      if (testes[realIndex].id && !testes[realIndex]._isNew) {
+        testes[realIndex] = { ...testes[realIndex], _delete: true, _dirty: true }
+      } else {
+        testes.splice(realIndex, 1)
+      }
+
       eq.testes = testes
+      eq._dirty = true
       newEqs[equipmentIndex] = eq
       return newEqs
     })

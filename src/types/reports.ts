@@ -27,6 +27,8 @@ export type TestItem = {
   dados_detalhados?: Record<string, any> | null
   observacoes?: string
   _delete?: boolean
+  _dirty?: boolean
+  _isNew?: boolean
 }
 
 export type ParecerItem = {
@@ -50,4 +52,6 @@ export type EquipmentItem = {
   parecer?: ParecerItem
   fotos?: string[]
   _delete?: boolean
+  _dirty?: boolean
+  _isNew?: boolean
 }
