@@ -205,7 +205,19 @@ export function EquipmentSection({ equipments, setEquipments, isView, reportId }
   const handleUpdateParecer = (index: number, p: ParecerItem) => {
     setEquipments((prev) => {
       const next = [...prev]
-      next[index] = { ...next[index], parecer: p, _dirty: true } as any
+      const currentParecer = next[index].parecer || {}
+      const isNew = (!currentParecer.id && !p.id) || p._isNew || currentParecer._isNew
+      next[index] = {
+        ...next[index],
+        parecer: {
+          ...currentParecer,
+          ...p,
+          id: p.id || currentParecer.id || generateId(),
+          _isNew: isNew,
+          _dirty: true,
+        },
+        _dirty: true,
+      } as any
       return next
     })
   }

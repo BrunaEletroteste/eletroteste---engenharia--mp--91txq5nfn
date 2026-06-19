@@ -36,6 +36,9 @@ export type ParecerItem = {
   justificativa_mudanca?: string
   observacoes?: string
   observacoes_anteriores?: string
+  _dirty?: boolean
+  _isNew?: boolean
+  _delete?: boolean
 }
 
 export type EquipmentItem = {

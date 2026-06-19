@@ -199,6 +199,7 @@ export default function ReportForm() {
                       parecer_anterior: eqParecer.parecer_anterior as any,
                       justificativa_mudanca: eqParecer.justificativa_mudanca,
                       observacoes: eqParecer.observacoes,
+                      observacoes_anteriores: eqParecer.observacoes_anteriores,
                     }
                   : undefined,
               }
@@ -415,21 +416,26 @@ export default function ReportForm() {
               p._dirty = false
               anyChanges = true
             } else if (p._dirty) {
-              const payload = {
-                equipamento_id: eq.id,
-                parecer: p.parecer,
-                parecer_anterior: p.parecer_anterior,
-                justificativa_mudanca: p.justificativa_mudanca,
-                observacoes: p.observacoes,
+              if (!p.parecer) {
+                p._dirty = false
+              } else {
+                const payload = {
+                  equipamento_id: eq.id,
+                  parecer: p.parecer,
+                  parecer_anterior: p.parecer_anterior,
+                  justificativa_mudanca: p.justificativa_mudanca,
+                  observacoes: p.observacoes,
+                  observacoes_anteriores: p.observacoes_anteriores,
+                }
+                if (p._isNew) {
+                  await pb.collection('parecer_tecnico').create({ id: p.id, ...payload })
+                  p._isNew = false
+                } else if (p.id) {
+                  await pb.collection('parecer_tecnico').update(p.id, payload)
+                }
+                p._dirty = false
+                anyChanges = true
               }
-              if (p._isNew) {
-                await pb.collection('parecer_tecnico').create({ id: p.id, ...payload })
-                p._isNew = false
-              } else if (p.id) {
-                await pb.collection('parecer_tecnico').update(p.id, payload)
-              }
-              p._dirty = false
-              anyChanges = true
             }
           }
         }
@@ -444,6 +450,7 @@ export default function ReportForm() {
 
         setSyncStatus('synced')
         lastSaveTimeRef.current = Date.now()
+        return true
       } catch (err: any) {
         console.error('Sync error', err)
         if (err?.status === 404 && !reportIsNew) {
@@ -451,6 +458,7 @@ export default function ReportForm() {
           setReportDirty(true)
         }
         setSyncStatus('error')
+        throw err
       }
     },
     [isOnline, reportDirty, methods, reportIsNew, id, user?.id, equipments],
@@ -487,14 +495,14 @@ export default function ReportForm() {
           reportIsNew,
         })
         if (isOnline) {
-          await performSync()
-          await syncPendingFiles()
+          await performSync().catch(() => {})
+          await syncPendingFiles().catch(() => {})
         } else {
           setSyncStatus('offline')
         }
       } else if (isOnline && (syncStatus === 'offline' || syncStatus === 'error')) {
-        await performSync()
-        await syncPendingFiles()
+        await performSync().catch(() => {})
+        await syncPendingFiles().catch(() => {})
       }
     }, 3000)
 
@@ -564,13 +572,24 @@ export default function ReportForm() {
 
     if (isOnline) {
       setIsSaving(true)
-      await performSync(true)
-      setIsSaving(false)
-      toast({
-        title: 'Sucesso',
-        description: status === 'finalizado' ? 'Relatório finalizado.' : 'Rascunho salvo.',
-      })
-      navigate('/')
+      try {
+        await performSync(true)
+        setIsSaving(false)
+        toast({
+          title: 'Sucesso',
+          description: status === 'finalizado' ? 'Relatório finalizado.' : 'Rascunho salvo.',
+        })
+        navigate('/')
+      } catch (err: any) {
+        setIsSaving(false)
+        toast({
+          title: 'Erro ao salvar',
+          description:
+            err?.message ||
+            'Ocorreu um erro de rede ou validação ao salvar as alterações. Verifique os dados.',
+          variant: 'destructive',
+        })
+      }
     } else {
       setSyncStatus('offline')
       toast({
