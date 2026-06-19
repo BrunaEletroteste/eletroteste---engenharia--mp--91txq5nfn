@@ -397,8 +397,19 @@ export default function ReportForm() {
               ordem: eq.ordem,
             }
             if (eq._isNew) {
-              await pb.collection('equipamentos_relatorio').create({ id: eq.id, ...payload })
-              eq._isNew = false
+              try {
+                const createPayload = eq.id ? { id: eq.id, ...payload } : payload
+                const created = await pb.collection('equipamentos_relatorio').create(createPayload)
+                eq.id = created.id
+                eq._isNew = false
+              } catch (e: any) {
+                if (e.status === 400 && eq.id) {
+                  await pb.collection('equipamentos_relatorio').update(eq.id, payload)
+                  eq._isNew = false
+                } else {
+                  throw e
+                }
+              }
             } else if (eq.id) {
               await pb.collection('equipamentos_relatorio').update(eq.id, payload)
             }
@@ -427,8 +438,19 @@ export default function ReportForm() {
                   equipamento_utilizado: t.equipamento_utilizado || '',
                 }
                 if (t._isNew) {
-                  await pb.collection('testes_equipamento').create({ id: t.id, ...payload })
-                  t._isNew = false
+                  try {
+                    const createPayload = t.id ? { id: t.id, ...payload } : payload
+                    const created = await pb.collection('testes_equipamento').create(createPayload)
+                    t.id = created.id
+                    t._isNew = false
+                  } catch (e: any) {
+                    if (e.status === 400 && t.id) {
+                      await pb.collection('testes_equipamento').update(t.id, payload)
+                      t._isNew = false
+                    } else {
+                      throw e
+                    }
+                  }
                 } else if (t.id) {
                   await pb.collection('testes_equipamento').update(t.id, payload)
                 }
@@ -457,8 +479,19 @@ export default function ReportForm() {
                   observacoes_anteriores: p.observacoes_anteriores,
                 }
                 if (p._isNew) {
-                  await pb.collection('parecer_tecnico').create({ id: p.id, ...payload })
-                  p._isNew = false
+                  try {
+                    const createPayload = p.id ? { id: p.id, ...payload } : payload
+                    const created = await pb.collection('parecer_tecnico').create(createPayload)
+                    p.id = created.id
+                    p._isNew = false
+                  } catch (e: any) {
+                    if (e.status === 400 && p.id) {
+                      await pb.collection('parecer_tecnico').update(p.id, payload)
+                      p._isNew = false
+                    } else {
+                      throw e
+                    }
+                  }
                 } else if (p.id) {
                   await pb.collection('parecer_tecnico').update(p.id, payload)
                 }
