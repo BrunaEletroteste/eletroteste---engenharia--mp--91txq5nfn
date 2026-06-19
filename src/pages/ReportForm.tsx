@@ -138,9 +138,6 @@ export default function ReportForm() {
         if (isEditRoute || isViewRoute) {
           try {
             const res = await pb.collection('relatorios').getOne(id)
-            if (localDraft && localDraft.updatedAt > new Date(res.updated).getTime()) {
-              setDraftPrompt(localDraft)
-            }
 
             setReportRecord(res)
             setExistingAnexos(res.anexos || [])
@@ -159,7 +156,39 @@ export default function ReportForm() {
                 : '',
               status: res.status as 'rascunho' | 'finalizado',
               observacoes: res.observacoes || '',
+              tipo_laudo: res.tipo_laudo || 'PREVENTIVA',
             }
+
+            if (localDraft) {
+              const serverTime = new Date(res.updated).getTime()
+              // Allow 60s of clock skew tolerance
+              if (localDraft.updatedAt > serverTime - 60000) {
+                const hasEqChanges = localDraft.equipments?.some(
+                  (eq: any) =>
+                    eq._dirty ||
+                    eq._delete ||
+                    eq._isNew ||
+                    eq.testes?.some((t: any) => t._dirty || t._delete || t._isNew) ||
+                    eq.parecer?._dirty ||
+                    eq.parecer?._delete ||
+                    eq.parecer?._isNew,
+                )
+
+                const draftValues = localDraft.values || {}
+                const valuesMatch =
+                  Object.keys(values).every((key) => draftValues[key] === (values as any)[key]) &&
+                  Object.keys(draftValues).every((key) => draftValues[key] === (values as any)[key])
+
+                if (hasEqChanges || !valuesMatch) {
+                  setDraftPrompt(localDraft)
+                } else {
+                  deleteDraft(id).catch(() => {})
+                }
+              } else {
+                deleteDraft(id).catch(() => {})
+              }
+            }
+
             reset(values)
 
             const eqRes = await pb
@@ -450,6 +479,11 @@ export default function ReportForm() {
 
         setSyncStatus('synced')
         lastSaveTimeRef.current = Date.now()
+
+        if (id) {
+          await deleteDraft(id).catch(() => {})
+        }
+
         return true
       } catch (err: any) {
         console.error('Sync error', err)
