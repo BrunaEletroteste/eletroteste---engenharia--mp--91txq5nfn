@@ -219,9 +219,8 @@ function ComboboxField({
     'rele_fechamento',
     'motorizacao',
   ].includes(field.name)
-  const originalFormatNumberPtBR = formatNumberPtBR
-  const formatNumberPtBR = (val: any, max: number, min: number) => {
-    return originalFormatNumberPtBR(val, isQgbtSpecial ? 0 : max, isQgbtSpecial ? 0 : min)
+  const formatNumberLocal = (val: any, max: number, min: number) => {
+    return formatNumberPtBR(val, isQgbtSpecial ? 0 : max, isQgbtSpecial ? 0 : min)
   }
 
   if (
@@ -234,7 +233,7 @@ function ComboboxField({
       : displayValue.trim().replace(/\./g, '')
     const num = Number(cleanStr)
     if (!isNaN(num)) {
-      displayValue = formatNumberPtBR(num, 2, 2)
+      displayValue = formatNumberLocal(num, 2, 2)
     }
   }
 
@@ -298,7 +297,7 @@ function ComboboxField({
                       if (formatAsNumber && /^-?\d+(\.\d+)*(,\d+)?$/.test(finalValue.trim())) {
                         const cleanStr = finalValue.trim().replace(/\./g, '').replace(',', '.')
                         const num = Number(cleanStr)
-                        if (!isNaN(num)) finalValue = formatNumberPtBR(num, 2, 2)
+                        if (!isNaN(num)) finalValue = formatNumberLocal(num, 2, 2)
                       }
                       onChange(finalValue)
                       setOpen(false)
@@ -321,7 +320,7 @@ function ComboboxField({
                       if (formatAsNumber && /^-?\d+(\.\d+)*(,\d+)?$/.test(finalValue.trim())) {
                         const cleanStr = finalValue.trim().replace(/\./g, '').replace(',', '.')
                         const num = Number(cleanStr)
-                        if (!isNaN(num)) finalValue = formatNumberPtBR(num, 2, 2)
+                        if (!isNaN(num)) finalValue = formatNumberLocal(num, 2, 2)
                       }
                       onChange(finalValue)
                       setOpen(false)
@@ -894,6 +893,18 @@ export function EquipmentModal({ open, onOpenChange, onSave, initialData }: Prop
                       ].includes(field.name)
                     ) {
                       currentVal = formatNumberPtBR(num, 1, 1)
+                    } else if (
+                      [
+                        'subestacao',
+                        'numero',
+                        'corrente_nominal',
+                        'rele_minima_tensao',
+                        'rele_abertura',
+                        'rele_fechamento',
+                        'motorizacao',
+                      ].includes(field.name)
+                    ) {
+                      currentVal = formatNumberPtBR(num, 0, 0)
                     } else {
                       currentVal = formatNumberPtBR(num, 2, 2)
                     }
@@ -953,6 +964,18 @@ export function EquipmentModal({ open, onOpenChange, onSave, initialData }: Prop
                                   ].includes(field.name)
                                 ) {
                                   customVal = formatNumberPtBR(num, 1, 1)
+                                } else if (
+                                  [
+                                    'subestacao',
+                                    'numero',
+                                    'corrente_nominal',
+                                    'rele_minima_tensao',
+                                    'rele_abertura',
+                                    'rele_fechamento',
+                                    'motorizacao',
+                                  ].includes(field.name)
+                                ) {
+                                  customVal = formatNumberPtBR(num, 0, 0)
                                 } else {
                                   customVal = formatNumberPtBR(num, 2, 2)
                                 }
@@ -987,6 +1010,18 @@ export function EquipmentModal({ open, onOpenChange, onSave, initialData }: Prop
                                   ].includes(field.name)
                                 ) {
                                   customVal = formatNumberPtBR(num, 1, 1)
+                                } else if (
+                                  [
+                                    'subestacao',
+                                    'numero',
+                                    'corrente_nominal',
+                                    'rele_minima_tensao',
+                                    'rele_abertura',
+                                    'rele_fechamento',
+                                    'motorizacao',
+                                  ].includes(field.name)
+                                ) {
+                                  customVal = formatNumberPtBR(num, 0, 0)
                                 } else {
                                   customVal = formatNumberPtBR(num, 2, 2)
                                 }
@@ -1065,6 +1100,18 @@ export function EquipmentModal({ open, onOpenChange, onSave, initialData }: Prop
                               ].includes(field.name)
                             ) {
                               displayVal = formatNumberPtBR(num, 1, 1)
+                            } else if (
+                              [
+                                'subestacao',
+                                'numero',
+                                'corrente_nominal',
+                                'rele_minima_tensao',
+                                'rele_abertura',
+                                'rele_fechamento',
+                                'motorizacao',
+                              ].includes(field.name)
+                            ) {
+                              displayVal = formatNumberPtBR(num, 0, 0)
                             } else {
                               displayVal = formatNumberPtBR(num, 2, 2)
                             }
@@ -1118,11 +1165,22 @@ export function EquipmentModal({ open, onOpenChange, onSave, initialData }: Prop
                 'corrente_ajuste_instantanea',
               ].includes(field.name)
                 ? 1
-                : tipo === 'QGBT'
-                  ? 2
-                  : tipo === 'Transformador' && field.name === 'impedancia'
+                : tipo === 'QGBT' &&
+                    [
+                      'subestacao',
+                      'numero',
+                      'corrente_nominal',
+                      'rele_minima_tensao',
+                      'rele_abertura',
+                      'rele_fechamento',
+                      'motorizacao',
+                    ].includes(field.name)
+                  ? 0
+                  : tipo === 'QGBT'
                     ? 2
-                    : undefined
+                    : tipo === 'Transformador' && field.name === 'impedancia'
+                      ? 2
+                      : undefined
             }
             minDecimals={
               tipo === 'QGBT' &&
@@ -1134,11 +1192,22 @@ export function EquipmentModal({ open, onOpenChange, onSave, initialData }: Prop
                 'corrente_ajuste_instantanea',
               ].includes(field.name)
                 ? 1
-                : tipo === 'QGBT'
-                  ? 2
-                  : tipo === 'Transformador' && field.name === 'impedancia'
+                : tipo === 'QGBT' &&
+                    [
+                      'subestacao',
+                      'numero',
+                      'corrente_nominal',
+                      'rele_minima_tensao',
+                      'rele_abertura',
+                      'rele_fechamento',
+                      'motorizacao',
+                    ].includes(field.name)
+                  ? 0
+                  : tipo === 'QGBT'
                     ? 2
-                    : undefined
+                    : tipo === 'Transformador' && field.name === 'impedancia'
+                      ? 2
+                      : undefined
             }
           />
         ) : (
@@ -1167,6 +1236,18 @@ export function EquipmentModal({ open, onOpenChange, onSave, initialData }: Prop
                       ].includes(field.name)
                     ) {
                       formatted = formatNumberPtBR(num, 1, 1)
+                    } else if (
+                      [
+                        'subestacao',
+                        'numero',
+                        'corrente_nominal',
+                        'rele_minima_tensao',
+                        'rele_abertura',
+                        'rele_fechamento',
+                        'motorizacao',
+                      ].includes(field.name)
+                    ) {
+                      formatted = formatNumberPtBR(num, 0, 0)
                     } else {
                       formatted = formatNumberPtBR(num, 2, 2)
                     }
