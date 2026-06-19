@@ -129,12 +129,14 @@ function ComboboxField({
   onChange,
   opcoes,
   overrideCategory,
+  formatAsNumber,
 }: {
   field: FieldDef
   value: any
   onChange: (v: string) => void
   opcoes: OpcaoPadronizada[]
   overrideCategory?: string
+  formatAsNumber?: boolean
 }) {
   const [open, setOpen] = useState(false)
   const [searchValue, setSearchValue] = useState('')
@@ -185,9 +187,21 @@ function ComboboxField({
     return v.includes(',') ? v.replace(/\./g, '').replace(',', '.') : v.replace(/\./g, '')
   }
 
-  const displayValue = value
+  let displayValue = value
     ? options.find((o) => o.valor === value || getCleanValue(o.valor) === value)?.valor || value
     : ''
+
+  if (
+    formatAsNumber &&
+    typeof displayValue === 'string' &&
+    /^-?\d+(\.\d+)*(,\d+)?$/.test(displayValue.trim())
+  ) {
+    const cleanStr = displayValue.trim().replace(/\./g, '').replace(',', '.')
+    const num = Number(cleanStr)
+    if (!isNaN(num)) {
+      displayValue = formatNumberPtBR(num)
+    }
+  }
 
   return (
     <Popover open={open} onOpenChange={setOpen}>
@@ -245,7 +259,13 @@ function ComboboxField({
                       const selected = options.find(
                         (opt) => opt.valor.toLowerCase() === currentValue.toLowerCase(),
                       )
-                      onChange(selected ? selected.valor : currentValue)
+                      let finalValue = selected ? selected.valor : currentValue
+                      if (formatAsNumber && /^-?\d+(\.\d+)*(,\d+)?$/.test(finalValue.trim())) {
+                        const cleanStr = finalValue.trim().replace(/\./g, '').replace(',', '.')
+                        const num = Number(cleanStr)
+                        if (!isNaN(num)) finalValue = formatNumberPtBR(num)
+                      }
+                      onChange(finalValue)
                       setOpen(false)
                       setSearchValue('')
                     }}
@@ -262,7 +282,13 @@ function ComboboxField({
                   <CommandItem
                     value={searchValue}
                     onSelect={(currentValue) => {
-                      onChange(currentValue)
+                      let finalValue = currentValue
+                      if (formatAsNumber && /^-?\d+(\.\d+)*(,\d+)?$/.test(finalValue.trim())) {
+                        const cleanStr = finalValue.trim().replace(/\./g, '').replace(',', '.')
+                        const num = Number(cleanStr)
+                        if (!isNaN(num)) finalValue = formatNumberPtBR(num)
+                      }
+                      onChange(finalValue)
                       setOpen(false)
                       setSearchValue('')
                     }}
@@ -782,6 +808,9 @@ export function EquipmentModal({ open, onOpenChange, onSave, initialData }: Prop
               handleFieldChange(field.name, finalVal)
             }}
             opcoes={opcoes}
+            formatAsNumber={
+              tipo === 'QGBT' || (tipo === 'Transformador' && field.name === 'impedancia')
+            }
             overrideCategory={
               tipo === 'Relé de Proteção' && field.name === 'tipo_modelo'
                 ? 'tipo/modelo do relé de proteção'
@@ -810,7 +839,23 @@ export function EquipmentModal({ open, onOpenChange, onSave, initialData }: Prop
           />
         ) : isSelect ? (
           <Select
-            value={dados[field.name]?.toString() || ''}
+            value={(() => {
+              let currentVal = dados[field.name]?.toString() || ''
+              if (
+                (tipo === 'QGBT' || (tipo === 'Transformador' && field.name === 'impedancia')) &&
+                /^-?\d+(\.\d+)*(,\d+)?$/.test(currentVal.trim())
+              ) {
+                const cleanStr = currentVal.trim().replace(/\./g, '').replace(',', '.')
+                const num = Number(cleanStr)
+                if (!isNaN(num)) {
+                  currentVal = formatNumberPtBR(num)
+                  if (tipo === 'Transformador' && field.name === 'impedancia') {
+                    currentVal = formatNumberPtBR(num, 2, 2)
+                  }
+                }
+              }
+              return currentVal
+            })()}
             onValueChange={(v) => handleFieldChange(field.name, v)}
             disabled={loadingOpcoes}
           >
@@ -836,8 +881,44 @@ export function EquipmentModal({ open, onOpenChange, onSave, initialData }: Prop
                         (targetCategory === 'classe_isolamento' && cat === 'classe de isolamento')
                       return matchesCategory && String(op.valor) === String(dados[field.name])
                     }) && (
-                      <SelectItem value={String(dados[field.name])}>
-                        {String(dados[field.name])}
+                      <SelectItem
+                        value={(() => {
+                          let customVal = String(dados[field.name])
+                          if (
+                            (tipo === 'QGBT' ||
+                              (tipo === 'Transformador' && field.name === 'impedancia')) &&
+                            /^-?\d+(\.\d+)*(,\d+)?$/.test(customVal.trim())
+                          ) {
+                            const cleanStr = customVal.trim().replace(/\./g, '').replace(',', '.')
+                            const num = Number(cleanStr)
+                            if (!isNaN(num)) {
+                              customVal = formatNumberPtBR(num)
+                              if (tipo === 'Transformador' && field.name === 'impedancia') {
+                                customVal = formatNumberPtBR(num, 2, 2)
+                              }
+                            }
+                          }
+                          return customVal
+                        })()}
+                      >
+                        {(() => {
+                          let customVal = String(dados[field.name])
+                          if (
+                            (tipo === 'QGBT' ||
+                              (tipo === 'Transformador' && field.name === 'impedancia')) &&
+                            /^-?\d+(\.\d+)*(,\d+)?$/.test(customVal.trim())
+                          ) {
+                            const cleanStr = customVal.trim().replace(/\./g, '').replace(',', '.')
+                            const num = Number(cleanStr)
+                            if (!isNaN(num)) {
+                              customVal = formatNumberPtBR(num)
+                              if (tipo === 'Transformador' && field.name === 'impedancia') {
+                                customVal = formatNumberPtBR(num, 2, 2)
+                              }
+                            }
+                          }
+                          return customVal
+                        })()}
                       </SelectItem>
                     )}
                   {opcoes
@@ -883,11 +964,28 @@ export function EquipmentModal({ open, onOpenChange, onSave, initialData }: Prop
                         sensitivity: 'base',
                       })
                     })
-                    .map((o) => (
-                      <SelectItem key={o.id} value={String(o.valor)}>
-                        {o.valor}
-                      </SelectItem>
-                    ))}
+                    .map((o) => {
+                      let displayVal = String(o.valor)
+                      if (
+                        (tipo === 'QGBT' ||
+                          (tipo === 'Transformador' && field.name === 'impedancia')) &&
+                        /^-?\d+(\.\d+)*(,\d+)?$/.test(displayVal.trim())
+                      ) {
+                        const cleanStr = displayVal.trim().replace(/\./g, '').replace(',', '.')
+                        const num = Number(cleanStr)
+                        if (!isNaN(num)) {
+                          displayVal = formatNumberPtBR(num)
+                          if (tipo === 'Transformador' && field.name === 'impedancia') {
+                            displayVal = formatNumberPtBR(num, 2, 2)
+                          }
+                        }
+                      }
+                      return (
+                        <SelectItem key={o.id} value={displayVal}>
+                          {displayVal}
+                        </SelectItem>
+                      )
+                    })}
                 </>
               )}
             </SelectContent>
@@ -925,7 +1023,9 @@ export function EquipmentModal({ open, onOpenChange, onSave, initialData }: Prop
                 'corrente_ajuste_instantanea',
               ].includes(field.name)
                 ? 1
-                : undefined
+                : tipo === 'Transformador' && field.name === 'impedancia'
+                  ? 2
+                  : undefined
             }
             minDecimals={
               tipo === 'QGBT' &&
@@ -937,7 +1037,9 @@ export function EquipmentModal({ open, onOpenChange, onSave, initialData }: Prop
                 'corrente_ajuste_instantanea',
               ].includes(field.name)
                 ? 1
-                : undefined
+                : tipo === 'Transformador' && field.name === 'impedancia'
+                  ? 2
+                  : undefined
             }
           />
         ) : (
@@ -945,6 +1047,23 @@ export function EquipmentModal({ open, onOpenChange, onSave, initialData }: Prop
             type="text"
             value={dados[field.name] ?? ''}
             onChange={(e) => handleFieldChange(field.name, e.target.value)}
+            onBlur={(e) => {
+              if (
+                (tipo === 'QGBT' || (tipo === 'Transformador' && field.name === 'impedancia')) &&
+                e.target.value &&
+                /^-?\d+(\.\d+)*(,\d+)?$/.test(e.target.value.trim())
+              ) {
+                const cleanStr = e.target.value.trim().replace(/\./g, '').replace(',', '.')
+                const num = Number(cleanStr)
+                if (!isNaN(num)) {
+                  let formatted = formatNumberPtBR(num)
+                  if (tipo === 'Transformador' && field.name === 'impedancia') {
+                    formatted = formatNumberPtBR(num, 2, 2)
+                  }
+                  handleFieldChange(field.name, formatted)
+                }
+              }
+            }}
             placeholder={
               field.readOnly
                 ? 'Calculado automaticamente'

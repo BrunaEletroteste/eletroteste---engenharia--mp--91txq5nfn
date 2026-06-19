@@ -508,14 +508,8 @@ export function EquipmentSection({ equipments, setEquipments, isView, reportId }
                                       ? formatNumberPtBR(num, 1, 1)
                                       : val
                                 } else if (
-                                  eq.tipo_equipamento === 'QGBT' &&
-                                  [
-                                    'corrente_ajuste_longo',
-                                    'temporizacao_longo',
-                                    'corrente_ajuste_curto',
-                                    'temporizacao_curto',
-                                    'corrente_ajuste_instantanea',
-                                  ].includes(f.name)
+                                  eq.tipo_equipamento === 'Transformador' &&
+                                  f.name === 'impedancia'
                                 ) {
                                   const num =
                                     typeof val === 'string'
@@ -523,13 +517,41 @@ export function EquipmentSection({ equipments, setEquipments, isView, reportId }
                                       : val
                                   displayVal =
                                     typeof num === 'number' && !isNaN(num)
-                                      ? formatNumberPtBR(num, 1, 1)
+                                      ? formatNumberPtBR(num, 2, 2)
                                       : val
-                                } else if (
-                                  eq.tipo_equipamento === 'Transformador' &&
-                                  f.name === 'impedancia'
-                                ) {
-                                  displayVal = formatNumberPtBR(val, 2, 2) || val
+                                } else if (eq.tipo_equipamento === 'QGBT') {
+                                  if (
+                                    [
+                                      'corrente_ajuste_longo',
+                                      'temporizacao_longo',
+                                      'corrente_ajuste_curto',
+                                      'temporizacao_curto',
+                                      'corrente_ajuste_instantanea',
+                                    ].includes(f.name)
+                                  ) {
+                                    const num =
+                                      typeof val === 'string'
+                                        ? parseFloat(val.replace(',', '.'))
+                                        : val
+                                    displayVal =
+                                      typeof num === 'number' && !isNaN(num)
+                                        ? formatNumberPtBR(num, 1, 1)
+                                        : val
+                                  } else {
+                                    if (typeof val === 'number') {
+                                      displayVal = formatNumberPtBR(val)
+                                    } else if (
+                                      typeof val === 'string' &&
+                                      /^-?\d+(\.\d+)*(,\d+)?$/.test(val.trim())
+                                    ) {
+                                      const cleanStr = val
+                                        .trim()
+                                        .replace(/\./g, '')
+                                        .replace(',', '.')
+                                      const num = Number(cleanStr)
+                                      displayVal = !isNaN(num) ? formatNumberPtBR(num) : val
+                                    }
+                                  }
                                 } else if (typeof val === 'number') {
                                   displayVal = formatNumberPtBR(val, 4)
                                 }
