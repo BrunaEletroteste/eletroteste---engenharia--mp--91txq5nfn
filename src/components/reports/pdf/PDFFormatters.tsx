@@ -124,7 +124,12 @@ export const renderLaudoTitle = (tipo?: string) =>
 export const formatTestValue = (t: any, tipoEquipamento: string, subType?: string): string[] => {
   const formatNum = (val: any, isRelacao = false) => {
     if (val === undefined || val === null || val === '') return '-'
-    const num = typeof val === 'string' ? Number(val.replace(',', '.')) : val
+    const num =
+      typeof val === 'string'
+        ? Number(
+            val.includes(',') ? val.replace(/\./g, '').replace(',', '.') : val.replace(/\./g, ''),
+          )
+        : val
     if (typeof num === 'number' && !isNaN(num)) {
       const numStr = isRelacao ? formatNumberPtBR(num, 3, 3) : formatNumberPtBR(num, 4)
       return t.unidade && t.unidade !== '-' ? `${numStr} ${t.unidade}` : numStr
@@ -132,6 +137,10 @@ export const formatTestValue = (t: any, tipoEquipamento: string, subType?: strin
     return val === '-' ? val : t.unidade && t.unidade !== '-' ? `${val} ${t.unidade}` : String(val)
   }
 
+  const parseLocalNum = (v: any) =>
+    typeof v === 'string'
+      ? Number(v.includes(',') ? v.replace(/\./g, '').replace(',', '.') : v.replace(/\./g, ''))
+      : v
   if (t.tipo_teste === 'Resistências dos Isolamentos') {
     if (tipoEquipamento === 'Condutor Elétrico') {
       const d = t.dados_detalhados || {}
@@ -139,7 +148,7 @@ export const formatTestValue = (t: any, tipoEquipamento: string, subType?: strin
         f?.resultado !== undefined
           ? formatNum(f.resultado)
           : f?.v1 && f?.v2
-            ? formatNum(Number(f.v1) * Number(f.v2))
+            ? formatNum(parseLocalNum(f.v1) * parseLocalNum(f.v2))
             : '-'
       const items = [`A: ${calc(d.fase_a)}`, `B: ${calc(d.fase_b)}`, `C: ${calc(d.fase_c)}`]
       const rRaw = d.reserva
@@ -154,7 +163,7 @@ export const formatTestValue = (t: any, tipoEquipamento: string, subType?: strin
         f?.resultado !== undefined
           ? formatNum(f.resultado)
           : f?.valor1 && f?.valor2
-            ? formatNum(Number(f.valor1) * Number(f.valor2))
+            ? formatNum(parseLocalNum(f.valor1) * parseLocalNum(f.valor2))
             : '-'
       return [`A: ${calc(d.A)}`, `B: ${calc(d.B)}`, `C: ${calc(d.C)}`]
     } else if (tipoEquipamento === 'Disjuntor') {
@@ -164,7 +173,7 @@ export const formatTestValue = (t: any, tipoEquipamento: string, subType?: strin
         f?.resultado !== undefined
           ? formatNum(f.resultado)
           : f?.v1 && f?.v2
-            ? formatNum(Number(f.v1) * Number(f.v2))
+            ? formatNum(parseLocalNum(f.v1) * parseLocalNum(f.v2))
             : '-'
       const fechado = [
         `A x B: ${calc(df.ab)}`,
@@ -185,7 +194,7 @@ export const formatTestValue = (t: any, tipoEquipamento: string, subType?: strin
         f?.resultado !== undefined
           ? formatNum(f.resultado)
           : f?.v1 && f?.v2
-            ? formatNum(Number(f.v1) * Number(f.v2))
+            ? formatNum(parseLocalNum(f.v1) * parseLocalNum(f.v2))
             : '-'
       return [
         `A/B: ${calc(m.alta_baixa)}`,
@@ -194,7 +203,7 @@ export const formatTestValue = (t: any, tipoEquipamento: string, subType?: strin
       ]
     } else {
       const d = t.dados_detalhados || {}
-      const calc = (f: any) => formatNum((Number(f?.v1) || 0) * (Number(f?.v2) || 0))
+      const calc = (f: any) => formatNum((parseLocalNum(f?.v1) || 0) * (parseLocalNum(f?.v2) || 0))
       return [
         `A x B: ${calc(d.ab)}`,
         `B x C: ${calc(d.bc)}`,

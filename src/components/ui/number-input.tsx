@@ -1,76 +1,88 @@
-import React, { useState, useEffect, forwardRef } from 'react'
-import { Input, InputProps } from '@/components/ui/input'
+import * as React from 'react'
+import { Input } from '@/components/ui/input'
 import { formatNumberPtBR, parseNumberPtBR } from '@/lib/format'
 
-export interface NumberInputProps extends Omit<InputProps, 'value' | 'onChange'> {
-  value?: number | string | null
-  onChange?: (value: number | '') => void
-  decimalScale?: number
+export interface NumberInputProps extends Omit<
+  React.InputHTMLAttributes<HTMLInputElement>,
+  'onChange'
+> {
+  value: number | string | undefined | null
+  onChange: (value: number | '') => void
+  maxDecimals?: number
   minDecimals?: number
 }
 
-export const NumberInput = forwardRef<HTMLInputElement, NumberInputProps>(
-  ({ value, onChange, decimalScale = 4, minDecimals = 0, onBlur, ...props }, ref) => {
-    const [displayValue, setDisplayValue] = useState('')
+const NumberInput = React.forwardRef<HTMLInputElement, NumberInputProps>(
+  ({ className, value, onChange, maxDecimals = 4, minDecimals = 0, name, ...props }, ref) => {
+    const [localValue, setLocalValue] = React.useState('')
 
-    useEffect(() => {
+    const isQgbtNoDecimalField = name
+      ? [
+          'subestacao',
+          'numero',
+          'corrente_nominal',
+          'rele_minima_tensao',
+          'rele_abertura',
+          'rele_fechamento',
+          'motorizacao',
+        ].includes(name)
+      : false
+
+    const effectiveMax = isQgbtNoDecimalField ? 0 : maxDecimals
+    const effectiveMin = isQgbtNoDecimalField ? 0 : minDecimals
+
+    React.useEffect(() => {
       if (value === undefined || value === null || value === '') {
-        setDisplayValue('')
+        setLocalValue('')
+      } else if (typeof value === 'number') {
+        setLocalValue(formatNumberPtBR(value, effectiveMax, effectiveMin))
       } else {
-        const num = typeof value === 'string' ? parseFloat(value) : value
-        const parsedDisplay = parseNumberPtBR(displayValue)
-        if (parsedDisplay !== num) {
-          setDisplayValue(formatNumberPtBR(num, decimalScale, minDecimals))
+        const parsed = parseNumberPtBR(String(value))
+        if (typeof parsed === 'number') {
+          setLocalValue(formatNumberPtBR(parsed, effectiveMax, effectiveMin))
+        } else {
+          setLocalValue(String(value))
         }
       }
-    }, [value, decimalScale, minDecimals])
+    }, [value, effectiveMax, effectiveMin])
 
     const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-      let val = e.target.value
-      val = val.replace(/[^\d.,-]/g, '')
-      setDisplayValue(val)
-
+      let val = e.target.value.replace(/[^0-9.,-]/g, '')
+      setLocalValue(val)
       const parsed = parseNumberPtBR(val)
-      onChange?.(parsed)
-    }
-
-    const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
-      if (e.key === '.') {
-        e.preventDefault()
-        const target = e.target as HTMLInputElement
-        const start = target.selectionStart || 0
-        const end = target.selectionEnd || 0
-        const val = target.value
-        const newVal = val.slice(0, start) + ',' + val.slice(end)
-        setDisplayValue(newVal)
-        onChange?.(parseNumberPtBR(newVal))
-
-        setTimeout(() => {
-          target.setSelectionRange(start + 1, start + 1)
-        }, 0)
+      if (typeof parsed === 'number') {
+        onChange(parsed)
+      } else {
+        onChange('')
       }
-      props.onKeyDown?.(e)
     }
 
     const handleBlur = (e: React.FocusEvent<HTMLInputElement>) => {
-      const parsed = parseNumberPtBR(displayValue)
-      if (parsed !== '') {
-        setDisplayValue(formatNumberPtBR(parsed, decimalScale, minDecimals))
+      const parsed = parseNumberPtBR(localValue)
+      if (typeof parsed === 'number') {
+        setLocalValue(formatNumberPtBR(parsed, effectiveMax, effectiveMin))
+        onChange(parsed)
+      } else {
+        setLocalValue('')
+        onChange('')
       }
-      onBlur?.(e)
+      props.onBlur?.(e)
     }
 
     return (
       <Input
         type="text"
-        ref={ref}
-        value={displayValue}
+        className={className}
+        value={localValue}
         onChange={handleChange}
-        onKeyDown={handleKeyDown}
         onBlur={handleBlur}
+        name={name}
+        ref={ref}
         {...props}
       />
     )
   },
 )
 NumberInput.displayName = 'NumberInput'
+
+export { NumberInput }

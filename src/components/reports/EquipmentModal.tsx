@@ -52,22 +52,35 @@ function EnvFieldInput({
     return ''
   })
 
+  const isQgbtSpecial = [
+    'subestacao',
+    'numero',
+    'corrente_nominal',
+    'rele_minima_tensao',
+    'rele_abertura',
+    'rele_fechamento',
+    'motorizacao',
+  ].includes(field.name)
+
   useEffect(() => {
     if (value === undefined || value === '') {
       setLocalVal((prev) => (prev === '' ? prev : ''))
     } else if (typeof value === 'number') {
       setLocalVal((prev) => {
-        const numLocal = parseFloat(prev.replace(',', '.'))
+        const cleanStr = prev.includes(',')
+          ? prev.replace(/\./g, '').replace(',', '.')
+          : prev.replace(/\./g, '')
+        const numLocal = parseFloat(cleanStr)
         if (isNaN(numLocal) || numLocal !== value) {
-          return formatNumberPtBR(value, 1, 1)
+          return formatNumberPtBR(value, isQgbtSpecial ? 0 : 1, isQgbtSpecial ? 0 : 1)
         }
         return prev
       })
     }
-  }, [value])
+  }, [value, isQgbtSpecial])
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    let val = e.target.value.replace(/[^0-9,-]/g, '')
+    let val = e.target.value.replace(/[^0-9.,-]/g, '')
 
     if (val.includes('-')) {
       const isNegative = val.startsWith('-')
@@ -82,9 +95,12 @@ function EnvFieldInput({
     setLocalVal(val)
 
     if (val && val !== '-') {
-      const num = parseFloat(val.replace(',', '.'))
+      const cleanStr = val.includes(',')
+        ? val.replace(/\./g, '').replace(',', '.')
+        : val.replace(/\./g, '')
+      const num = parseFloat(cleanStr)
       if (!isNaN(num)) {
-        onChange(Math.round(num * 10) / 10)
+        onChange(isQgbtSpecial ? Math.round(num) : Math.round(num * 10) / 10)
       } else {
         onChange('')
       }
@@ -95,10 +111,13 @@ function EnvFieldInput({
 
   const handleBlur = () => {
     if (localVal && localVal !== '-') {
-      const num = parseFloat(localVal.replace(',', '.'))
+      const cleanStr = localVal.includes(',')
+        ? localVal.replace(/\./g, '').replace(',', '.')
+        : localVal.replace(/\./g, '')
+      const num = parseFloat(cleanStr)
       if (!isNaN(num)) {
-        const rounded = Math.round(num * 10) / 10
-        setLocalVal(formatNumberPtBR(rounded, 1, 1))
+        const rounded = isQgbtSpecial ? Math.round(num) : Math.round(num * 10) / 10
+        setLocalVal(formatNumberPtBR(rounded, isQgbtSpecial ? 0 : 1, isQgbtSpecial ? 0 : 1))
         onChange(rounded)
       } else {
         setLocalVal('')
@@ -191,12 +210,28 @@ function ComboboxField({
     ? options.find((o) => o.valor === value || getCleanValue(o.valor) === value)?.valor || value
     : ''
 
+  const isQgbtSpecial = [
+    'subestacao',
+    'numero',
+    'corrente_nominal',
+    'rele_minima_tensao',
+    'rele_abertura',
+    'rele_fechamento',
+    'motorizacao',
+  ].includes(field.name)
+  const originalFormatNumberPtBR = formatNumberPtBR
+  const formatNumberPtBR = (val: any, max: number, min: number) => {
+    return originalFormatNumberPtBR(val, isQgbtSpecial ? 0 : max, isQgbtSpecial ? 0 : min)
+  }
+
   if (
     formatAsNumber &&
     typeof displayValue === 'string' &&
     /^-?\d+(\.\d+)*(,\d+)?$/.test(displayValue.trim())
   ) {
-    const cleanStr = displayValue.trim().replace(/\./g, '').replace(',', '.')
+    const cleanStr = displayValue.trim().includes(',')
+      ? displayValue.trim().replace(/\./g, '').replace(',', '.')
+      : displayValue.trim().replace(/\./g, '')
     const num = Number(cleanStr)
     if (!isNaN(num)) {
       displayValue = formatNumberPtBR(num, 2, 2)
