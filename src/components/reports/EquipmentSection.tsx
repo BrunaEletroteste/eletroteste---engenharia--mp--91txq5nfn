@@ -525,6 +525,11 @@ export function EquipmentSection({ equipments, setEquipments, isView, reportId }
                                     typeof num === 'number' && !isNaN(num)
                                       ? formatNumberPtBR(num, 1, 1)
                                       : val
+                                } else if (
+                                  eq.tipo_equipamento === 'Transformador' &&
+                                  f.name === 'impedancia'
+                                ) {
+                                  displayVal = formatNumberPtBR(val, 2, 2) || val
                                 } else if (typeof val === 'number') {
                                   displayVal = formatNumberPtBR(val, 4)
                                 }

@@ -937,9 +937,12 @@ export default function ReportPrint() {
                                           ? value
                                             ? 'Sim'
                                             : 'Não'
-                                          : typeof value === 'number'
-                                            ? formatNumberPtBR(value)
-                                            : String(value)}
+                                          : eq.tipo_equipamento === 'Transformador' &&
+                                              key === 'impedancia'
+                                            ? formatNumberPtBR(value, 2, 2) || String(value)
+                                            : typeof value === 'number'
+                                              ? formatNumberPtBR(value)
+                                              : String(value)}
                                       </span>
                                     </div>
                                   ))

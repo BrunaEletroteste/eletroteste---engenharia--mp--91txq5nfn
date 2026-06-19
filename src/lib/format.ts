@@ -4,7 +4,7 @@ export function formatNumberPtBR(
   minDecimals = 0,
 ): string {
   if (value === null || value === undefined || value === '') return ''
-  const num = typeof value === 'string' ? parseFloat(value) : value
+  const num = typeof value === 'string' ? parseFloat(value.replace(',', '.')) : value
   if (isNaN(num)) return ''
   return new Intl.NumberFormat('pt-BR', {
     minimumFractionDigits: minDecimals,
