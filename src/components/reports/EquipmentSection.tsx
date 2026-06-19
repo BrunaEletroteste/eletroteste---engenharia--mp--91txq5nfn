@@ -537,6 +537,30 @@ export function EquipmentSection({ equipments, setEquipments, isView, reportId }
                                       typeof num === 'number' && !isNaN(num)
                                         ? formatNumberPtBR(num, 1, 1)
                                         : val
+                                  } else if (
+                                    [
+                                      'subestacao',
+                                      'numero',
+                                      'corrente_nominal',
+                                      'rele_minima_tensao',
+                                      'rele_abertura',
+                                      'rele_fechamento',
+                                      'motorizacao',
+                                    ].includes(f.name)
+                                  ) {
+                                    if (typeof val === 'number') {
+                                      displayVal = formatNumberPtBR(val, 0, 0)
+                                    } else if (
+                                      typeof val === 'string' &&
+                                      /^-?\d+(\.\d+)*(,\d+)?$/.test(val.trim())
+                                    ) {
+                                      const cleanStr = val
+                                        .trim()
+                                        .replace(/\./g, '')
+                                        .replace(',', '.')
+                                      const num = Number(cleanStr)
+                                      displayVal = !isNaN(num) ? formatNumberPtBR(num, 0, 0) : val
+                                    }
                                   } else {
                                     if (typeof val === 'number') {
                                       displayVal = formatNumberPtBR(val, 2, 2)
