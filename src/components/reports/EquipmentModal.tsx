@@ -199,7 +199,7 @@ function ComboboxField({
     const cleanStr = displayValue.trim().replace(/\./g, '').replace(',', '.')
     const num = Number(cleanStr)
     if (!isNaN(num)) {
-      displayValue = formatNumberPtBR(num)
+      displayValue = formatNumberPtBR(num, 2, 2)
     }
   }
 
@@ -263,7 +263,7 @@ function ComboboxField({
                       if (formatAsNumber && /^-?\d+(\.\d+)*(,\d+)?$/.test(finalValue.trim())) {
                         const cleanStr = finalValue.trim().replace(/\./g, '').replace(',', '.')
                         const num = Number(cleanStr)
-                        if (!isNaN(num)) finalValue = formatNumberPtBR(num)
+                        if (!isNaN(num)) finalValue = formatNumberPtBR(num, 2, 2)
                       }
                       onChange(finalValue)
                       setOpen(false)
@@ -286,7 +286,7 @@ function ComboboxField({
                       if (formatAsNumber && /^-?\d+(\.\d+)*(,\d+)?$/.test(finalValue.trim())) {
                         const cleanStr = finalValue.trim().replace(/\./g, '').replace(',', '.')
                         const num = Number(cleanStr)
-                        if (!isNaN(num)) finalValue = formatNumberPtBR(num)
+                        if (!isNaN(num)) finalValue = formatNumberPtBR(num, 2, 2)
                       }
                       onChange(finalValue)
                       setOpen(false)
@@ -848,9 +848,24 @@ export function EquipmentModal({ open, onOpenChange, onSave, initialData }: Prop
                 const cleanStr = currentVal.trim().replace(/\./g, '').replace(',', '.')
                 const num = Number(cleanStr)
                 if (!isNaN(num)) {
-                  currentVal = formatNumberPtBR(num)
-                  if (tipo === 'Transformador' && field.name === 'impedancia') {
+                  if (tipo === 'QGBT') {
+                    if (
+                      [
+                        'corrente_ajuste_longo',
+                        'temporizacao_longo',
+                        'corrente_ajuste_curto',
+                        'temporizacao_curto',
+                        'corrente_ajuste_instantanea',
+                      ].includes(field.name)
+                    ) {
+                      currentVal = formatNumberPtBR(num, 1, 1)
+                    } else {
+                      currentVal = formatNumberPtBR(num, 2, 2)
+                    }
+                  } else if (tipo === 'Transformador' && field.name === 'impedancia') {
                     currentVal = formatNumberPtBR(num, 2, 2)
+                  } else {
+                    currentVal = formatNumberPtBR(num)
                   }
                 }
               }
@@ -892,9 +907,24 @@ export function EquipmentModal({ open, onOpenChange, onSave, initialData }: Prop
                             const cleanStr = customVal.trim().replace(/\./g, '').replace(',', '.')
                             const num = Number(cleanStr)
                             if (!isNaN(num)) {
-                              customVal = formatNumberPtBR(num)
-                              if (tipo === 'Transformador' && field.name === 'impedancia') {
+                              if (tipo === 'QGBT') {
+                                if (
+                                  [
+                                    'corrente_ajuste_longo',
+                                    'temporizacao_longo',
+                                    'corrente_ajuste_curto',
+                                    'temporizacao_curto',
+                                    'corrente_ajuste_instantanea',
+                                  ].includes(field.name)
+                                ) {
+                                  customVal = formatNumberPtBR(num, 1, 1)
+                                } else {
+                                  customVal = formatNumberPtBR(num, 2, 2)
+                                }
+                              } else if (tipo === 'Transformador' && field.name === 'impedancia') {
                                 customVal = formatNumberPtBR(num, 2, 2)
+                              } else {
+                                customVal = formatNumberPtBR(num)
                               }
                             }
                           }
@@ -911,14 +941,29 @@ export function EquipmentModal({ open, onOpenChange, onSave, initialData }: Prop
                             const cleanStr = customVal.trim().replace(/\./g, '').replace(',', '.')
                             const num = Number(cleanStr)
                             if (!isNaN(num)) {
-                              customVal = formatNumberPtBR(num)
-                              if (tipo === 'Transformador' && field.name === 'impedancia') {
+                              if (tipo === 'QGBT') {
+                                if (
+                                  [
+                                    'corrente_ajuste_longo',
+                                    'temporizacao_longo',
+                                    'corrente_ajuste_curto',
+                                    'temporizacao_curto',
+                                    'corrente_ajuste_instantanea',
+                                  ].includes(field.name)
+                                ) {
+                                  customVal = formatNumberPtBR(num, 1, 1)
+                                } else {
+                                  customVal = formatNumberPtBR(num, 2, 2)
+                                }
+                              } else if (tipo === 'Transformador' && field.name === 'impedancia') {
                                 customVal = formatNumberPtBR(num, 2, 2)
+                              } else {
+                                customVal = formatNumberPtBR(num)
                               }
                             }
                           }
                           return customVal
-                        })()}
+                        })()}{' '}
                       </SelectItem>
                     )}
                   {opcoes
@@ -974,9 +1019,24 @@ export function EquipmentModal({ open, onOpenChange, onSave, initialData }: Prop
                         const cleanStr = displayVal.trim().replace(/\./g, '').replace(',', '.')
                         const num = Number(cleanStr)
                         if (!isNaN(num)) {
-                          displayVal = formatNumberPtBR(num)
-                          if (tipo === 'Transformador' && field.name === 'impedancia') {
+                          if (tipo === 'QGBT') {
+                            if (
+                              [
+                                'corrente_ajuste_longo',
+                                'temporizacao_longo',
+                                'corrente_ajuste_curto',
+                                'temporizacao_curto',
+                                'corrente_ajuste_instantanea',
+                              ].includes(field.name)
+                            ) {
+                              displayVal = formatNumberPtBR(num, 1, 1)
+                            } else {
+                              displayVal = formatNumberPtBR(num, 2, 2)
+                            }
+                          } else if (tipo === 'Transformador' && field.name === 'impedancia') {
                             displayVal = formatNumberPtBR(num, 2, 2)
+                          } else {
+                            displayVal = formatNumberPtBR(num)
                           }
                         }
                       }
@@ -1023,9 +1083,11 @@ export function EquipmentModal({ open, onOpenChange, onSave, initialData }: Prop
                 'corrente_ajuste_instantanea',
               ].includes(field.name)
                 ? 1
-                : tipo === 'Transformador' && field.name === 'impedancia'
+                : tipo === 'QGBT'
                   ? 2
-                  : undefined
+                  : tipo === 'Transformador' && field.name === 'impedancia'
+                    ? 2
+                    : undefined
             }
             minDecimals={
               tipo === 'QGBT' &&
@@ -1037,9 +1099,11 @@ export function EquipmentModal({ open, onOpenChange, onSave, initialData }: Prop
                 'corrente_ajuste_instantanea',
               ].includes(field.name)
                 ? 1
-                : tipo === 'Transformador' && field.name === 'impedancia'
+                : tipo === 'QGBT'
                   ? 2
-                  : undefined
+                  : tipo === 'Transformador' && field.name === 'impedancia'
+                    ? 2
+                    : undefined
             }
           />
         ) : (
@@ -1057,7 +1121,21 @@ export function EquipmentModal({ open, onOpenChange, onSave, initialData }: Prop
                 const num = Number(cleanStr)
                 if (!isNaN(num)) {
                   let formatted = formatNumberPtBR(num)
-                  if (tipo === 'Transformador' && field.name === 'impedancia') {
+                  if (tipo === 'QGBT') {
+                    if (
+                      [
+                        'corrente_ajuste_longo',
+                        'temporizacao_longo',
+                        'corrente_ajuste_curto',
+                        'temporizacao_curto',
+                        'corrente_ajuste_instantanea',
+                      ].includes(field.name)
+                    ) {
+                      formatted = formatNumberPtBR(num, 1, 1)
+                    } else {
+                      formatted = formatNumberPtBR(num, 2, 2)
+                    }
+                  } else if (tipo === 'Transformador' && field.name === 'impedancia') {
                     formatted = formatNumberPtBR(num, 2, 2)
                   }
                   handleFieldChange(field.name, formatted)

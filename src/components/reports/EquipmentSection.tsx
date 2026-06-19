@@ -539,7 +539,7 @@ export function EquipmentSection({ equipments, setEquipments, isView, reportId }
                                         : val
                                   } else {
                                     if (typeof val === 'number') {
-                                      displayVal = formatNumberPtBR(val)
+                                      displayVal = formatNumberPtBR(val, 2, 2)
                                     } else if (
                                       typeof val === 'string' &&
                                       /^-?\d+(\.\d+)*(,\d+)?$/.test(val.trim())
@@ -549,7 +549,7 @@ export function EquipmentSection({ equipments, setEquipments, isView, reportId }
                                         .replace(/\./g, '')
                                         .replace(',', '.')
                                       const num = Number(cleanStr)
-                                      displayVal = !isNaN(num) ? formatNumberPtBR(num) : val
+                                      displayVal = !isNaN(num) ? formatNumberPtBR(num, 2, 2) : val
                                     }
                                   }
                                 } else if (typeof val === 'number') {

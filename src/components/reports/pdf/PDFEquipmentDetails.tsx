@@ -99,6 +99,8 @@ export const PDFEquipmentDetails = ({
                                   typeof value === 'string'
                                     ? Number(value.trim().replace(/\./g, '').replace(',', '.'))
                                     : value,
+                                  2,
+                                  2,
                                 )
                               : typeof value === 'number'
                                 ? formatNumberPtBR(value)
