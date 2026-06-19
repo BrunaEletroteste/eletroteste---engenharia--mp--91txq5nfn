@@ -1,6 +1,7 @@
 import React from 'react'
 import logoImg from '@/assets/logotransparente-c06b6.png'
 import { renderLaudoTitle } from './PDFFormatters'
+import { QRCode } from '@/components/ui/qrcode'
 
 export const ReportHeader = ({ report }: { report: any }) => (
   <div className="border-t-[6px] border-blue-900 pb-2 mb-6 w-full">
@@ -45,11 +46,10 @@ export const ReportFooter = ({ report }: { report: any }) => (
     <div className="flex justify-between items-center w-full">
       <div className="flex items-center gap-4">
         <div className="flex flex-col items-center shrink-0">
-          <img
-            src={`https://api.qrserver.com/v1/create-qr-code/?size=60x60&data=${encodeURIComponent('https://mp-eletroteste.goskip.app/validar/' + report.id)}`}
-            alt="QR"
+          <QRCode
+            text={`https://mp-eletroteste.goskip.app/validar/${report.id}`}
+            size={48}
             className="w-12 h-12"
-            crossOrigin="anonymous"
           />
           <span className="text-[6px] text-slate-600 mt-0.5 font-bold uppercase tracking-wider text-center leading-none">
             Autenticidade
