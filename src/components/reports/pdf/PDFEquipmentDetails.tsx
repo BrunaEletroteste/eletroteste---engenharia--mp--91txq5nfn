@@ -85,9 +85,7 @@ export const PDFEquipmentDetails = ({
                           : eq.tipo_equipamento === 'QGBT' &&
                               [
                                 'corrente_ajuste_longo',
-                                'temporizacao_longo',
                                 'corrente_ajuste_curto',
-                                'temporizacao_curto',
                                 'corrente_ajuste_instantanea',
                               ].includes(key)
                             ? typeof value === 'number' ||
@@ -107,36 +105,43 @@ export const PDFEquipmentDetails = ({
                                           : String(value).replace(/\./g, ''),
                                       )
                                     : value,
-                                  1,
-                                  1,
+                                  0,
+                                  0,
                                 )
                               : String(value)
                             : eq.tipo_equipamento === 'QGBT' &&
-                                key !== 'subestacao' &&
-                                [
-                                  'numero',
-                                  'corrente_nominal',
-                                  'rele_minima_tensao',
-                                  'rele_abertura',
-                                  'rele_fechamento',
-                                  'motorizacao',
-                                ].includes(key) &&
-                                (typeof value === 'number' ||
-                                  (typeof value === 'string' &&
-                                    /^-?\d+(\.\d+)*(,\d+)?$/.test(value.trim())))
-                              ? formatNumberPtBR(
-                                  typeof value === 'string'
-                                    ? Number(
-                                        value.trim().includes(',')
-                                          ? value.trim().replace(/\./g, '').replace(',', '.')
-                                          : value.trim().replace(/\./g, ''),
-                                      )
-                                    : value,
-                                  0,
-                                  0,
-                                )
+                                ['temporizacao_longo', 'temporizacao_curto'].includes(key)
+                              ? typeof value === 'number' ||
+                                (!isNaN(
+                                  Number(
+                                    String(value).includes(',')
+                                      ? String(value).replace(/\./g, '').replace(',', '.')
+                                      : String(value).replace(/\./g, ''),
+                                  ),
+                                ) &&
+                                  String(value).trim() !== '')
+                                ? formatNumberPtBR(
+                                    typeof value === 'string'
+                                      ? Number(
+                                          String(value).includes(',')
+                                            ? String(value).replace(/\./g, '').replace(',', '.')
+                                            : String(value).replace(/\./g, ''),
+                                        )
+                                      : value,
+                                    1,
+                                    1,
+                                  )
+                                : String(value)
                               : eq.tipo_equipamento === 'QGBT' &&
                                   key !== 'subestacao' &&
+                                  [
+                                    'numero',
+                                    'corrente_nominal',
+                                    'rele_minima_tensao',
+                                    'rele_abertura',
+                                    'rele_fechamento',
+                                    'motorizacao',
+                                  ].includes(key) &&
                                   (typeof value === 'number' ||
                                     (typeof value === 'string' &&
                                       /^-?\d+(\.\d+)*(,\d+)?$/.test(value.trim())))
@@ -148,12 +153,28 @@ export const PDFEquipmentDetails = ({
                                             : value.trim().replace(/\./g, ''),
                                         )
                                       : value,
-                                    2,
-                                    2,
+                                    0,
+                                    0,
                                   )
-                                : typeof value === 'number'
-                                  ? formatNumberPtBR(value)
-                                  : String(value)}
+                                : eq.tipo_equipamento === 'QGBT' &&
+                                    key !== 'subestacao' &&
+                                    (typeof value === 'number' ||
+                                      (typeof value === 'string' &&
+                                        /^-?\d+(\.\d+)*(,\d+)?$/.test(value.trim())))
+                                  ? formatNumberPtBR(
+                                      typeof value === 'string'
+                                        ? Number(
+                                            value.trim().includes(',')
+                                              ? value.trim().replace(/\./g, '').replace(',', '.')
+                                              : value.trim().replace(/\./g, ''),
+                                          )
+                                        : value,
+                                      2,
+                                      2,
+                                    )
+                                  : typeof value === 'number'
+                                    ? formatNumberPtBR(value)
+                                    : String(value)}
                     </span>
                   </div>
                 ))}

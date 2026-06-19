@@ -53,7 +53,6 @@ function EnvFieldInput({
   })
 
   const isQgbtSpecial = [
-    'subestacao',
     'numero',
     'corrente_nominal',
     'rele_minima_tensao',
@@ -211,7 +210,6 @@ function ComboboxField({
     : ''
 
   const isQgbtSpecial = [
-    'subestacao',
     'numero',
     'corrente_nominal',
     'rele_minima_tensao',
@@ -894,12 +892,12 @@ export function EquipmentModal({ open, onOpenChange, onSave, initialData }: Prop
                     if (
                       [
                         'corrente_ajuste_longo',
-                        'temporizacao_longo',
                         'corrente_ajuste_curto',
-                        'temporizacao_curto',
                         'corrente_ajuste_instantanea',
                       ].includes(field.name)
                     ) {
+                      currentVal = formatNumberPtBR(num, 0, 0)
+                    } else if (['temporizacao_longo', 'temporizacao_curto'].includes(field.name)) {
                       currentVal = formatNumberPtBR(num, 1, 1)
                     } else if (
                       [
@@ -953,7 +951,7 @@ export function EquipmentModal({ open, onOpenChange, onSave, initialData }: Prop
                         value={(() => {
                           let customVal = String(dados[field.name])
                           if (
-                            (tipo === 'QGBT' ||
+                            ((tipo === 'QGBT' && field.name !== 'subestacao') ||
                               (tipo === 'Transformador' && field.name === 'impedancia')) &&
                             /^-?\d+(\.\d+)*(,\d+)?$/.test(customVal.trim())
                           ) {
@@ -964,16 +962,17 @@ export function EquipmentModal({ open, onOpenChange, onSave, initialData }: Prop
                                 if (
                                   [
                                     'corrente_ajuste_longo',
-                                    'temporizacao_longo',
                                     'corrente_ajuste_curto',
-                                    'temporizacao_curto',
                                     'corrente_ajuste_instantanea',
                                   ].includes(field.name)
+                                ) {
+                                  customVal = formatNumberPtBR(num, 0, 0)
+                                } else if (
+                                  ['temporizacao_longo', 'temporizacao_curto'].includes(field.name)
                                 ) {
                                   customVal = formatNumberPtBR(num, 1, 1)
                                 } else if (
                                   [
-                                    'subestacao',
                                     'numero',
                                     'corrente_nominal',
                                     'rele_minima_tensao',
@@ -999,7 +998,7 @@ export function EquipmentModal({ open, onOpenChange, onSave, initialData }: Prop
                         {(() => {
                           let customVal = String(dados[field.name])
                           if (
-                            (tipo === 'QGBT' ||
+                            ((tipo === 'QGBT' && field.name !== 'subestacao') ||
                               (tipo === 'Transformador' && field.name === 'impedancia')) &&
                             /^-?\d+(\.\d+)*(,\d+)?$/.test(customVal.trim())
                           ) {
@@ -1010,16 +1009,17 @@ export function EquipmentModal({ open, onOpenChange, onSave, initialData }: Prop
                                 if (
                                   [
                                     'corrente_ajuste_longo',
-                                    'temporizacao_longo',
                                     'corrente_ajuste_curto',
-                                    'temporizacao_curto',
                                     'corrente_ajuste_instantanea',
                                   ].includes(field.name)
+                                ) {
+                                  customVal = formatNumberPtBR(num, 0, 0)
+                                } else if (
+                                  ['temporizacao_longo', 'temporizacao_curto'].includes(field.name)
                                 ) {
                                   customVal = formatNumberPtBR(num, 1, 1)
                                 } else if (
                                   [
-                                    'subestacao',
                                     'numero',
                                     'corrente_nominal',
                                     'rele_minima_tensao',
@@ -1089,7 +1089,7 @@ export function EquipmentModal({ open, onOpenChange, onSave, initialData }: Prop
                     .map((o) => {
                       let displayVal = String(o.valor)
                       if (
-                        (tipo === 'QGBT' ||
+                        ((tipo === 'QGBT' && field.name !== 'subestacao') ||
                           (tipo === 'Transformador' && field.name === 'impedancia')) &&
                         /^-?\d+(\.\d+)*(,\d+)?$/.test(displayVal.trim())
                       ) {
@@ -1100,16 +1100,17 @@ export function EquipmentModal({ open, onOpenChange, onSave, initialData }: Prop
                             if (
                               [
                                 'corrente_ajuste_longo',
-                                'temporizacao_longo',
                                 'corrente_ajuste_curto',
-                                'temporizacao_curto',
                                 'corrente_ajuste_instantanea',
                               ].includes(field.name)
+                            ) {
+                              displayVal = formatNumberPtBR(num, 0, 0)
+                            } else if (
+                              ['temporizacao_longo', 'temporizacao_curto'].includes(field.name)
                             ) {
                               displayVal = formatNumberPtBR(num, 1, 1)
                             } else if (
                               [
-                                'subestacao',
                                 'numero',
                                 'corrente_nominal',
                                 'rele_minima_tensao',
@@ -1166,23 +1167,19 @@ export function EquipmentModal({ open, onOpenChange, onSave, initialData }: Prop
               tipo === 'QGBT' &&
               [
                 'corrente_ajuste_longo',
-                'temporizacao_longo',
                 'corrente_ajuste_curto',
-                'temporizacao_curto',
                 'corrente_ajuste_instantanea',
+                'numero',
+                'corrente_nominal',
+                'rele_minima_tensao',
+                'rele_abertura',
+                'rele_fechamento',
+                'motorizacao',
               ].includes(field.name)
-                ? 1
+                ? 0
                 : tipo === 'QGBT' &&
-                    [
-                      'subestacao',
-                      'numero',
-                      'corrente_nominal',
-                      'rele_minima_tensao',
-                      'rele_abertura',
-                      'rele_fechamento',
-                      'motorizacao',
-                    ].includes(field.name)
-                  ? 0
+                    ['temporizacao_longo', 'temporizacao_curto'].includes(field.name)
+                  ? 1
                   : tipo === 'QGBT'
                     ? 2
                     : tipo === 'Transformador' && field.name === 'impedancia'
@@ -1193,23 +1190,19 @@ export function EquipmentModal({ open, onOpenChange, onSave, initialData }: Prop
               tipo === 'QGBT' &&
               [
                 'corrente_ajuste_longo',
-                'temporizacao_longo',
                 'corrente_ajuste_curto',
-                'temporizacao_curto',
                 'corrente_ajuste_instantanea',
+                'numero',
+                'corrente_nominal',
+                'rele_minima_tensao',
+                'rele_abertura',
+                'rele_fechamento',
+                'motorizacao',
               ].includes(field.name)
-                ? 1
+                ? 0
                 : tipo === 'QGBT' &&
-                    [
-                      'subestacao',
-                      'numero',
-                      'corrente_nominal',
-                      'rele_minima_tensao',
-                      'rele_abertura',
-                      'rele_fechamento',
-                      'motorizacao',
-                    ].includes(field.name)
-                  ? 0
+                    ['temporizacao_longo', 'temporizacao_curto'].includes(field.name)
+                  ? 1
                   : tipo === 'QGBT'
                     ? 2
                     : tipo === 'Transformador' && field.name === 'impedancia'
@@ -1224,7 +1217,8 @@ export function EquipmentModal({ open, onOpenChange, onSave, initialData }: Prop
             onChange={(e) => handleFieldChange(field.name, e.target.value)}
             onBlur={(e) => {
               if (
-                (tipo === 'QGBT' || (tipo === 'Transformador' && field.name === 'impedancia')) &&
+                ((tipo === 'QGBT' && field.name !== 'subestacao') ||
+                  (tipo === 'Transformador' && field.name === 'impedancia')) &&
                 e.target.value &&
                 /^-?\d+(\.\d+)*(,\d+)?$/.test(e.target.value.trim())
               ) {
@@ -1236,16 +1230,15 @@ export function EquipmentModal({ open, onOpenChange, onSave, initialData }: Prop
                     if (
                       [
                         'corrente_ajuste_longo',
-                        'temporizacao_longo',
                         'corrente_ajuste_curto',
-                        'temporizacao_curto',
                         'corrente_ajuste_instantanea',
                       ].includes(field.name)
                     ) {
+                      formatted = formatNumberPtBR(num, 0, 0)
+                    } else if (['temporizacao_longo', 'temporizacao_curto'].includes(field.name)) {
                       formatted = formatNumberPtBR(num, 1, 1)
                     } else if (
                       [
-                        'subestacao',
                         'numero',
                         'corrente_nominal',
                         'rele_minima_tensao',

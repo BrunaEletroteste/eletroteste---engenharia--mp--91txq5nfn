@@ -526,11 +526,20 @@ export function EquipmentSection({ equipments, setEquipments, isView, reportId }
                                   if (
                                     [
                                       'corrente_ajuste_longo',
-                                      'temporizacao_longo',
                                       'corrente_ajuste_curto',
-                                      'temporizacao_curto',
                                       'corrente_ajuste_instantanea',
                                     ].includes(f.name)
+                                  ) {
+                                    const num =
+                                      typeof val === 'string'
+                                        ? parseFloat(val.replace(',', '.'))
+                                        : val
+                                    displayVal =
+                                      typeof num === 'number' && !isNaN(num)
+                                        ? formatNumberPtBR(num, 0, 0)
+                                        : val
+                                  } else if (
+                                    ['temporizacao_longo', 'temporizacao_curto'].includes(f.name)
                                   ) {
                                     const num =
                                       typeof val === 'string'
