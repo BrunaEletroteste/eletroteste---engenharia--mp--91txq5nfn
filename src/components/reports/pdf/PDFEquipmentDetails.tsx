@@ -112,8 +112,8 @@ export const PDFEquipmentDetails = ({
                                 )
                               : String(value)
                             : eq.tipo_equipamento === 'QGBT' &&
+                                key !== 'subestacao' &&
                                 [
-                                  'subestacao',
                                   'numero',
                                   'corrente_nominal',
                                   'rele_minima_tensao',
@@ -136,6 +136,7 @@ export const PDFEquipmentDetails = ({
                                   0,
                                 )
                               : eq.tipo_equipamento === 'QGBT' &&
+                                  key !== 'subestacao' &&
                                   (typeof value === 'number' ||
                                     (typeof value === 'string' &&
                                       /^-?\d+(\.\d+)*(,\d+)?$/.test(value.trim())))

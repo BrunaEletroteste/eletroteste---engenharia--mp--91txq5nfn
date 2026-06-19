@@ -519,7 +519,10 @@ export function EquipmentSection({ equipments, setEquipments, isView, reportId }
                                     typeof num === 'number' && !isNaN(num)
                                       ? formatNumberPtBR(num, 2, 2)
                                       : val
-                                } else if (eq.tipo_equipamento === 'QGBT') {
+                                } else if (
+                                  eq.tipo_equipamento === 'QGBT' &&
+                                  f.name !== 'subestacao'
+                                ) {
                                   if (
                                     [
                                       'corrente_ajuste_longo',
@@ -539,7 +542,6 @@ export function EquipmentSection({ equipments, setEquipments, isView, reportId }
                                         : val
                                   } else if (
                                     [
-                                      'subestacao',
                                       'numero',
                                       'corrente_nominal',
                                       'rele_minima_tensao',

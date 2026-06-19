@@ -826,13 +826,19 @@ export function EquipmentModal({ open, onOpenChange, onSave, initialData }: Prop
             tipo === 'QGBT') && <span className="text-destructive"> *</span>}
         </Label>
 
+        {(() => {
+          if (tipo === 'QGBT' && field.name === 'subestacao') {
+            ;(field as any).type = 'text'
+          }
+          return null
+        })()}
         {isCombobox && !opcoesError ? (
           <ComboboxField
             field={field}
             value={dados[field.name]?.toString() || ''}
             onChange={(v) => {
               let finalVal: any = v
-              if (field.type === 'number' && v !== '') {
+              if (field.type === 'number' && v !== '' && field.name !== 'subestacao') {
                 const clean = v.includes(',')
                   ? v.replace(/\./g, '').replace(',', '.')
                   : v.replace(/\./g, '')
@@ -843,7 +849,8 @@ export function EquipmentModal({ open, onOpenChange, onSave, initialData }: Prop
             }}
             opcoes={opcoes}
             formatAsNumber={
-              tipo === 'QGBT' || (tipo === 'Transformador' && field.name === 'impedancia')
+              (tipo === 'QGBT' && field.name !== 'subestacao') ||
+              (tipo === 'Transformador' && field.name === 'impedancia')
             }
             overrideCategory={
               tipo === 'Relé de Proteção' && field.name === 'tipo_modelo'
@@ -877,6 +884,7 @@ export function EquipmentModal({ open, onOpenChange, onSave, initialData }: Prop
               let currentVal = dados[field.name]?.toString() || ''
               if (
                 (tipo === 'QGBT' || (tipo === 'Transformador' && field.name === 'impedancia')) &&
+                field.name !== 'subestacao' &&
                 /^-?\d+(\.\d+)*(,\d+)?$/.test(currentVal.trim())
               ) {
                 const cleanStr = currentVal.trim().replace(/\./g, '').replace(',', '.')
@@ -895,7 +903,6 @@ export function EquipmentModal({ open, onOpenChange, onSave, initialData }: Prop
                       currentVal = formatNumberPtBR(num, 1, 1)
                     } else if (
                       [
-                        'subestacao',
                         'numero',
                         'corrente_nominal',
                         'rele_minima_tensao',
