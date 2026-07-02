@@ -247,3 +247,19 @@ export const formatTestValue = (t: any, tipoEquipamento: string, subType?: strin
 
   return [`${formatNum(t.valor_teste)}`]
 }
+
+export const formatEstruturaNumeric = (value: any): string => {
+  if (value === undefined || value === null || value === '') return String(value)
+  const num =
+    typeof value === 'string'
+      ? Number(
+          value.includes(',')
+            ? value.replace(/\./g, '').replace(',', '.')
+            : value.replace(/\./g, ''),
+        )
+      : value
+  if (typeof num === 'number' && !isNaN(num)) {
+    return formatNumberPtBR(num, 1, 1)
+  }
+  return String(value)
+}
