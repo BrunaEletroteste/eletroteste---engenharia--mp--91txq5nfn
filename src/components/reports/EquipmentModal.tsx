@@ -847,7 +847,9 @@ export function EquipmentModal({ open, onOpenChange, onSave, initialData }: Prop
             }}
             opcoes={opcoes}
             formatAsNumber={
-              (tipo === 'QGBT' && field.name !== 'subestacao') ||
+              (tipo === 'QGBT' &&
+                field.name !== 'subestacao' &&
+                field.name !== 'temporizacao_curto') ||
               (tipo === 'Transformador' && field.name === 'impedancia')
             }
             overrideCategory={
@@ -865,7 +867,6 @@ export function EquipmentModal({ open, onOpenChange, onSave, initialData }: Prop
                           'fusivel_corrente_nominal',
                           'corrente_nominal',
                           'corrente_ajuste_longo',
-                          'corrente_ajuste_curto',
                           'corrente_ajuste_instantanea',
                         ].includes(field.name)
                       ? 'Corrente Nominal'

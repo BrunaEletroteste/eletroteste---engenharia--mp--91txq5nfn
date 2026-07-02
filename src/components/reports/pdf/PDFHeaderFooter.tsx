@@ -48,10 +48,10 @@ export const ReportFooter = ({ report }: { report: any }) => (
         <div className="flex flex-col items-center shrink-0">
           <QRCode
             text={`https://mp-eletroteste.goskip.app/validar/${report.id}`}
-            size={48}
-            className="w-12 h-12"
+            size={90}
+            className="w-[90px] h-[90px]"
           />
-          <span className="text-[6px] text-slate-600 mt-0.5 font-bold uppercase tracking-wider text-center leading-none">
+          <span className="text-[7px] text-slate-600 mt-0.5 font-bold uppercase tracking-wider text-center leading-none">
             Autenticidade
           </span>
         </div>

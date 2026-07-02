@@ -266,7 +266,7 @@ export const getEquipmentFields = (type: string): FieldDef[] => {
         {
           name: 'temporizacao_curto',
           label: 'Temporização Curto (s)',
-          type: 'number',
+          type: 'combobox',
           section: 'Ajuste Curto',
           column: 'right',
         },
