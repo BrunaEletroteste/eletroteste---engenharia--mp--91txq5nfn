@@ -61,7 +61,10 @@ export const PDFEquipmentDetails = ({
                           ? 'Sim'
                           : 'Não'
                         : eq.tipo_equipamento === 'Estrutura' &&
-                            (label.includes('Temperatura') || label.includes('Umidade'))
+                            (key === 'temperatura_ambiente' ||
+                              key === 'umidade_relativa' ||
+                              label.includes('Temperatura') ||
+                              label.includes('Umidade'))
                           ? formatEstruturaNumeric(value)
                           : eq.tipo_equipamento === 'Transformador' && key === 'impedancia'
                             ? typeof value === 'number' ||
