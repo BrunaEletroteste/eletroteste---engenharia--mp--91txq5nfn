@@ -263,3 +263,64 @@ export const formatEstruturaNumeric = (value: any): string => {
   }
   return String(value)
 }
+
+const parsePtBRValue = (value: any): number | null => {
+  if (typeof value === 'number') return isNaN(value) ? null : value
+  if (typeof value === 'string' && value.trim() !== '') {
+    const cleanStr = value.includes(',')
+      ? value.replace(/\./g, '').replace(',', '.')
+      : value.replace(/\./g, '')
+    const num = Number(cleanStr)
+    return isNaN(num) ? null : num
+  }
+  return null
+}
+
+export const formatEquipmentValue = (value: any, key: string, tipoEquipamento: string): string => {
+  if (typeof value === 'boolean') return value ? 'Sim' : 'Não'
+
+  if (
+    tipoEquipamento === 'Estrutura' &&
+    (key === 'temperatura_ambiente' || key === 'umidade_relativa')
+  ) {
+    return formatEstruturaNumeric(value)
+  }
+
+  if (tipoEquipamento === 'Transformador' && key === 'impedancia') {
+    const num = parsePtBRValue(value)
+    if (num !== null) return formatNumberPtBR(num, 2, 2)
+    return String(value)
+  }
+
+  if (tipoEquipamento === 'QGBT' && key !== 'subestacao') {
+    const num = parsePtBRValue(value)
+    if (num !== null) {
+      if (
+        ['corrente_ajuste_longo', 'corrente_ajuste_curto', 'corrente_ajuste_instantanea'].includes(
+          key,
+        )
+      ) {
+        return formatNumberPtBR(num, 0, 0)
+      }
+      if (['temporizacao_longo', 'temporizacao_curto'].includes(key)) {
+        return formatNumberPtBR(num, 1, 1)
+      }
+      if (
+        [
+          'numero',
+          'corrente_nominal',
+          'rele_minima_tensao',
+          'rele_abertura',
+          'rele_fechamento',
+          'motorizacao',
+        ].includes(key)
+      ) {
+        return formatNumberPtBR(num, 0, 0)
+      }
+      return formatNumberPtBR(num, 2, 2)
+    }
+  }
+
+  if (typeof value === 'number') return formatNumberPtBR(value)
+  return String(value)
+}

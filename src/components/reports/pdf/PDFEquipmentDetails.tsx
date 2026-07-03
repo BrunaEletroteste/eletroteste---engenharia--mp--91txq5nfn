@@ -1,8 +1,7 @@
 import React, { Fragment } from 'react'
 import { PageBlock, ReportHeader } from './PDFHeaderFooter'
-import { getLabel, formatTestValue, formatDate, formatEstruturaNumeric } from './PDFFormatters'
+import { getLabel, formatTestValue, formatDate, formatEquipmentValue } from './PDFFormatters'
 import { getEquipmentFields } from '@/lib/equipment-templates'
-import { formatNumberPtBR } from '@/lib/format'
 import pb from '@/lib/pocketbase/client'
 
 export const PDFEquipmentDetails = ({
@@ -56,131 +55,7 @@ export const PDFEquipmentDetails = ({
                       {label}:
                     </span>
                     <span className="text-slate-900 break-words leading-tight">
-                      {typeof value === 'boolean'
-                        ? value
-                          ? 'Sim'
-                          : 'Não'
-                        : eq.tipo_equipamento === 'Estrutura' &&
-                            (key === 'temperatura_ambiente' ||
-                              key === 'umidade_relativa' ||
-                              label.includes('Temperatura') ||
-                              label.includes('Umidade'))
-                          ? formatEstruturaNumeric(value)
-                          : eq.tipo_equipamento === 'Transformador' && key === 'impedancia'
-                            ? typeof value === 'number' ||
-                              (!isNaN(
-                                Number(
-                                  String(value).includes(',')
-                                    ? String(value).replace(/\./g, '').replace(',', '.')
-                                    : String(value).replace(/\./g, ''),
-                                ),
-                              ) &&
-                                String(value).trim() !== '')
-                              ? formatNumberPtBR(
-                                  typeof value === 'string'
-                                    ? Number(
-                                        String(value).includes(',')
-                                          ? String(value).replace(/\./g, '').replace(',', '.')
-                                          : String(value).replace(/\./g, ''),
-                                      )
-                                    : value,
-                                  2,
-                                  2,
-                                )
-                              : String(value)
-                            : eq.tipo_equipamento === 'QGBT' &&
-                                [
-                                  'corrente_ajuste_longo',
-                                  'corrente_ajuste_curto',
-                                  'corrente_ajuste_instantanea',
-                                ].includes(key)
-                              ? typeof value === 'number' ||
-                                (!isNaN(
-                                  Number(
-                                    String(value).includes(',')
-                                      ? String(value).replace(/\./g, '').replace(',', '.')
-                                      : String(value).replace(/\./g, ''),
-                                  ),
-                                ) &&
-                                  String(value).trim() !== '')
-                                ? formatNumberPtBR(
-                                    typeof value === 'string'
-                                      ? Number(
-                                          String(value).includes(',')
-                                            ? String(value).replace(/\./g, '').replace(',', '.')
-                                            : String(value).replace(/\./g, ''),
-                                        )
-                                      : value,
-                                    0,
-                                    0,
-                                  )
-                                : String(value)
-                              : eq.tipo_equipamento === 'QGBT' &&
-                                  ['temporizacao_longo', 'temporizacao_curto'].includes(key)
-                                ? typeof value === 'number' ||
-                                  (!isNaN(
-                                    Number(
-                                      String(value).includes(',')
-                                        ? String(value).replace(/\./g, '').replace(',', '.')
-                                        : String(value).replace(/\./g, ''),
-                                    ),
-                                  ) &&
-                                    String(value).trim() !== '')
-                                  ? formatNumberPtBR(
-                                      typeof value === 'string'
-                                        ? Number(
-                                            String(value).includes(',')
-                                              ? String(value).replace(/\./g, '').replace(',', '.')
-                                              : String(value).replace(/\./g, ''),
-                                          )
-                                        : value,
-                                      1,
-                                      1,
-                                    )
-                                  : String(value)
-                                : eq.tipo_equipamento === 'QGBT' &&
-                                    key !== 'subestacao' &&
-                                    [
-                                      'numero',
-                                      'corrente_nominal',
-                                      'rele_minima_tensao',
-                                      'rele_abertura',
-                                      'rele_fechamento',
-                                      'motorizacao',
-                                    ].includes(key) &&
-                                    (typeof value === 'number' ||
-                                      (typeof value === 'string' &&
-                                        /^-?\d+(\.\d+)*(,\d+)?$/.test(value.trim())))
-                                  ? formatNumberPtBR(
-                                      typeof value === 'string'
-                                        ? Number(
-                                            value.trim().includes(',')
-                                              ? value.trim().replace(/\./g, '').replace(',', '.')
-                                              : value.trim().replace(/\./g, ''),
-                                          )
-                                        : value,
-                                      0,
-                                      0,
-                                    )
-                                  : eq.tipo_equipamento === 'QGBT' &&
-                                      key !== 'subestacao' &&
-                                      (typeof value === 'number' ||
-                                        (typeof value === 'string' &&
-                                          /^-?\d+(\.\d+)*(,\d+)?$/.test(value.trim())))
-                                    ? formatNumberPtBR(
-                                        typeof value === 'string'
-                                          ? Number(
-                                              value.trim().includes(',')
-                                                ? value.trim().replace(/\./g, '').replace(',', '.')
-                                                : value.trim().replace(/\./g, ''),
-                                            )
-                                          : value,
-                                        2,
-                                        2,
-                                      )
-                                    : typeof value === 'number'
-                                      ? formatNumberPtBR(value)
-                                      : String(value)}
+                      {formatEquipmentValue(value, key, eq.tipo_equipamento)}
                     </span>
                   </div>
                 ))}
