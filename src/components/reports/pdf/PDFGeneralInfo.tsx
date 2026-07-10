@@ -97,18 +97,24 @@ export const PDFGeneralInfo = ({
               {formatDate(report.proxima_manutencao)}
             </td>
             <td className="border border-slate-300 p-2 font-medium bg-slate-100 text-slate-700">
-              Responsável Técnico
+              Executor Responsável
             </td>
             <td className="border border-slate-300 p-2 font-semibold text-slate-900">
               {report.responsavel_tecnico || autor.name || 'N/A'}
             </td>
           </tr>
           <tr>
-            <td className="border border-slate-300 p-2 font-medium bg-slate-100 text-slate-700">
+            <td className="border border-slate-300 p-2 font-medium w-1/4 bg-slate-100 text-slate-700">
               Acompanhante
             </td>
-            <td className="border border-slate-300 p-2 text-slate-900" colSpan={3}>
+            <td className="border border-slate-300 p-2 w-1/4 text-slate-900">
               {report.acompanhante || 'N/A'}
+            </td>
+            <td className="border border-slate-300 p-2 font-medium w-1/4 bg-slate-100 text-slate-700">
+              Aprovador do Relatório
+            </td>
+            <td className="border border-slate-300 p-2 w-1/4 text-slate-900">
+              {report.aprovador_relatorio || 'N/A'}
             </td>
           </tr>
         </tbody>
