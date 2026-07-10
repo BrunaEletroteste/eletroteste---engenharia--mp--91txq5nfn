@@ -100,7 +100,7 @@ export const PDFGeneralInfo = ({
               Executor Responsável
             </td>
             <td className="border border-slate-300 p-2 font-semibold text-slate-900">
-              {report.responsavel_tecnico || autor.name || 'N/A'}
+              {report.responsavel_tecnico || 'N/A'}
             </td>
           </tr>
           <tr>
