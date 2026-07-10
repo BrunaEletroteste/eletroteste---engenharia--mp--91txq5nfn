@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-07-03T15:44:01.159Z",
+  "generatedAt": "2026-07-10T12:28:57.164Z",
   "collections": [
     {
       "name": "users",
@@ -63,9 +63,9 @@
       "apiRules": {
         "list": "@request.auth.tipo_acesso = 'admin' || @request.auth.tipo_acesso = 'revisor_interno'",
         "view": "@request.auth.tipo_acesso = 'admin' || @request.auth.tipo_acesso = 'revisor_interno'",
-        "create": "@request.auth.tipo_acesso = 'admin'",
-        "update": "@request.auth.tipo_acesso = 'admin'",
-        "delete": "@request.auth.tipo_acesso = 'admin'"
+        "create": "@request.auth.tipo_acesso = 'admin' || @request.auth.tipo_acesso = 'revisor_interno'",
+        "update": "@request.auth.tipo_acesso = 'admin' || @request.auth.tipo_acesso = 'revisor_interno'",
+        "delete": "@request.auth.tipo_acesso = 'admin' || @request.auth.tipo_acesso = 'revisor_interno'"
       },
       "fields": [
         {

@@ -151,9 +151,9 @@ export default function Clientes() {
     setDialogOpen(true)
   }
 
-  const isAdmin = user?.tipo_acesso === 'admin'
+  const canManage = user?.tipo_acesso === 'admin' || user?.tipo_acesso === 'revisor_interno'
 
-  if (!isAdmin && user?.tipo_acesso !== 'revisor_interno') {
+  if (!canManage) {
     return (
       <div className="p-8 text-center text-muted-foreground">
         Acesso restrito a administradores e revisores.
@@ -168,7 +168,7 @@ export default function Clientes() {
           <h2 className="text-2xl font-bold tracking-tight">Clientes</h2>
           <p className="text-muted-foreground">Gerencie as empresas cadastradas no sistema.</p>
         </div>
-        {isAdmin && (
+        {canManage && (
           <Button onClick={() => handleOpenDialog()}>
             <Plus className="mr-2 h-4 w-4" /> Novo Cliente
           </Button>
@@ -193,7 +193,7 @@ export default function Clientes() {
               <TableHead>CNPJ</TableHead>
               <TableHead>Telefone</TableHead>
               <TableHead>E-mail de Contato</TableHead>
-              {isAdmin && <TableHead className="w-[100px]"></TableHead>}
+              {canManage && <TableHead className="w-[100px]"></TableHead>}
             </TableRow>
           </TableHeader>
           <TableBody>
@@ -209,7 +209,7 @@ export default function Clientes() {
                   <div className="flex flex-col items-center">
                     <Building2 className="h-10 w-10 mb-3 opacity-20" />
                     <p>Nenhum cliente encontrado</p>
-                    {isAdmin && (
+                    {canManage && (
                       <Button variant="link" onClick={() => handleOpenDialog()}>
                         Adicionar o primeiro
                       </Button>
@@ -224,7 +224,7 @@ export default function Clientes() {
                   <TableCell>{c.cnpj}</TableCell>
                   <TableCell>{c.telefone}</TableCell>
                   <TableCell>{c.email_contato}</TableCell>
-                  {isAdmin && (
+                  {canManage && (
                     <TableCell>
                       <div className="flex items-center justify-end gap-1">
                         <Button variant="ghost" size="icon" onClick={() => handleOpenDialog(c)}>
