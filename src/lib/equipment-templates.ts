@@ -175,7 +175,7 @@ export const getEquipmentFields = (type: string): FieldDef[] => {
           name: 'condutores',
           label: 'Condutores',
           type: 'select',
-          options: ['01', '02', '03', '04'],
+          options: ['01', '02', '03', '04', '05', '06', '07', '08'],
         },
         {
           name: 'secao',
