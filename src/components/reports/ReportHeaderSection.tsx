@@ -274,9 +274,23 @@ export function ReportHeaderSection({ isView }: { isView: boolean }) {
           name="responsavel_tecnico"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>Responsável Técnico</FormLabel>
+              <FormLabel>Executor Responsável</FormLabel>
               <FormControl>
-                <Input {...field} disabled={isView} placeholder="Nome do responsável técnico" />
+                <Input {...field} disabled={isView} placeholder="Nome do executor responsável" />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+
+        <FormField
+          control={control}
+          name="aprovador_relatorio"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Aprovador do Relatório</FormLabel>
+              <FormControl>
+                <Input {...field} disabled={isView} placeholder="Nome do aprovador do relatório" />
               </FormControl>
               <FormMessage />
             </FormItem>

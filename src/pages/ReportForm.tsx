@@ -102,6 +102,7 @@ export default function ReportForm() {
         data_execucao: '',
         data_fim: '',
         responsavel_tecnico: '',
+        aprovador_relatorio: '',
         acompanhante: '',
         proxima_manutencao: '',
         observacoes: '',
@@ -150,6 +151,7 @@ export default function ReportForm() {
               data_execucao: res.data_execucao ? res.data_execucao.substring(0, 10) : '',
               data_fim: res.data_fim ? res.data_fim.substring(0, 10) : '',
               responsavel_tecnico: res.responsavel_tecnico || '',
+              aprovador_relatorio: res.aprovador_relatorio || '',
               acompanhante: res.acompanhante || '',
               proxima_manutencao: res.proxima_manutencao
                 ? res.proxima_manutencao.substring(0, 10)
@@ -360,6 +362,7 @@ export default function ReportForm() {
             data_fim: data.data_fim ? `${data.data_fim} 12:00:00Z` : '',
             status: data.status,
             responsavel_tecnico: data.responsavel_tecnico || '',
+            aprovador_relatorio: data.aprovador_relatorio || '',
             acompanhante: data.acompanhante || '',
             proxima_manutencao: data.proxima_manutencao
               ? `${data.proxima_manutencao} 12:00:00Z`

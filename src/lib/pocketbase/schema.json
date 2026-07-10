@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-07-10T14:53:42.880Z",
+  "generatedAt": "2026-07-10T15:03:21.795Z",
   "collections": [
     {
       "name": "users",
@@ -227,6 +227,12 @@
           "required": false,
           "system": false,
           "selectValues": ["PREVENTIVA", "PREVENTIVA_CORRETIVA"]
+        },
+        {
+          "name": "aprovador_relatorio",
+          "type": "text",
+          "required": false,
+          "system": false
         }
       ],
       "indexes": ["CREATE UNIQUE INDEX idx_relatorios_numero ON relatorios (numero_relatorio)"]

@@ -8,6 +8,7 @@ export const reportFormSchema = z.object({
   data_execucao: z.string().min(1, 'Data de início é obrigatória'),
   data_fim: z.string().optional(),
   responsavel_tecnico: z.string().optional(),
+  aprovador_relatorio: z.string().optional(),
   acompanhante: z.string().optional(),
   proxima_manutencao: z.string().optional(),
   status: z.enum(['rascunho', 'finalizado']),

@@ -599,20 +599,26 @@ export default function ReportPrint() {
                       <tbody>
                         <tr>
                           <td className="border border-slate-300 p-2 font-medium w-1/4 bg-slate-100 text-slate-700">
-                            Empresa
+                            Executor Responsável
                           </td>
-                          <td className="border border-slate-300 p-2 w-3/4 font-semibold text-slate-900">
-                            {cliente.nome_empresa || 'N/A'}
+                          <td className="border border-slate-300 p-2 w-1/4 font-semibold text-slate-900">
+                            {report.responsavel_tecnico || autor.name || 'N/A'}
+                          </td>
+                          <td className="border border-slate-300 p-2 font-medium w-1/4 bg-slate-100 text-slate-700">
+                            Aprovador do Relatório
+                          </td>
+                          <td className="border border-slate-300 p-2 w-1/4 font-semibold text-slate-900">
+                            {report.aprovador_relatorio || 'N/A'}
                           </td>
                         </tr>
                         <tr>
                           <td className="border border-slate-300 p-2 font-medium bg-slate-100 text-slate-700">
-                            CNPJ
+                            Acompanhante
                           </td>
-                          <td className="border border-slate-300 p-2 text-slate-900">
-                            {cliente.cnpj || 'N/A'}
+                          <td className="border border-slate-300 p-2 text-slate-900" colSpan={3}>
+                            {report.acompanhante || 'N/A'}
                           </td>
-                        </tr>
+                        </tr>{' '}
                         <tr>
                           <td className="border border-slate-300 p-2 font-medium bg-slate-100 text-slate-700">
                             Endereço
@@ -1159,12 +1165,26 @@ export default function ReportPrint() {
                     <div className="bg-slate-800 text-white p-1.5 font-bold mb-1.5 uppercase text-[13px] tracking-wider avoid-break">
                       ASSINATURA
                     </div>
-                    <div className="mt-20 pt-4 pb-4 flex items-center justify-center avoid-break px-8 print:px-0">
+                    <div className="mt-20 pt-4 pb-4 flex items-center justify-around avoid-break px-8 print:px-0 gap-8">
                       <div className="w-1/2 text-center text-[12px] flex flex-col items-center">
                         <div className="w-full border-t border-black pt-3 font-semibold text-slate-900">
-                          {report.responsavel_tecnico || autor.name || 'Responsável Técnico'}
+                          {report.responsavel_tecnico || autor.name || 'Executor Responsável'}
                         </div>
                         <div className="text-slate-600 mt-1 font-medium text-[10px]">
+                          Executor Responsável
+                        </div>
+                        <div className="text-slate-500 mt-0.5 font-medium text-[9px]">
+                          ELETROTESTE MANUTENÇÕES ELÉTRICAS LTDA
+                        </div>
+                      </div>
+                      <div className="w-1/2 text-center text-[12px] flex flex-col items-center">
+                        <div className="w-full border-t border-black pt-3 font-semibold text-slate-900">
+                          {report.aprovador_relatorio || 'Aprovador do Relatório'}
+                        </div>
+                        <div className="text-slate-600 mt-1 font-medium text-[10px]">
+                          Aprovador do Relatório
+                        </div>
+                        <div className="text-slate-500 mt-0.5 font-medium text-[9px]">
                           ELETROTESTE MANUTENÇÕES ELÉTRICAS LTDA
                         </div>
                       </div>

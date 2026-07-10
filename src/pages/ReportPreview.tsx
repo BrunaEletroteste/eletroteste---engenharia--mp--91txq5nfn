@@ -143,9 +143,15 @@ export default function ReportPreview() {
                 </p>
               )}
               <p>
-                <span className="font-semibold">Responsável Técnico:</span>{' '}
+                <span className="font-semibold">Executor Responsável:</span>{' '}
                 {relatorio.responsavel_tecnico || '-'}
               </p>
+              {relatorio.aprovador_relatorio && (
+                <p>
+                  <span className="font-semibold">Aprovador do Relatório:</span>{' '}
+                  {relatorio.aprovador_relatorio}
+                </p>
+              )}
               {relatorio.acompanhante && (
                 <p>
                   <span className="font-semibold">Acompanhante:</span> {relatorio.acompanhante}

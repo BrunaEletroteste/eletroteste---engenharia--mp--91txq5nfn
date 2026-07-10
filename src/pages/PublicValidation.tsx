@@ -133,7 +133,6 @@ export default function PublicValidation() {
                 <p className="text-base font-semibold text-slate-900">{data.numero_relatorio}</p>
               </div>
             </div>
-
             <div className="flex items-start gap-3">
               <Building2 className="h-5 w-5 text-blue-900 mt-0.5" />
               <div>
@@ -144,7 +143,6 @@ export default function PublicValidation() {
                 <p className="text-xs text-slate-500 mt-0.5">CNPJ: {data.cliente?.cnpj}</p>
               </div>
             </div>
-
             {data.obra && (
               <div className="flex items-start gap-3">
                 <MapPin className="h-5 w-5 text-blue-900 mt-0.5" />
@@ -154,7 +152,6 @@ export default function PublicValidation() {
                 </div>
               </div>
             )}
-
             <div className="flex items-start gap-3">
               <Calendar className="h-5 w-5 text-blue-900 mt-0.5" />
               <div>
@@ -164,16 +161,24 @@ export default function PublicValidation() {
                 </p>
               </div>
             </div>
-
             <div className="flex items-start gap-3">
               <User className="h-5 w-5 text-blue-900 mt-0.5" />
               <div>
-                <p className="text-sm font-medium text-slate-500">Responsável Técnico</p>
+                <p className="text-sm font-medium text-slate-500">Executor Responsável</p>
                 <p className="text-base font-medium text-slate-900">
                   {data.responsavel_tecnico || 'N/A'}
                 </p>
               </div>
             </div>
+            {data.aprovador_relatorio && (
+              <div className="flex items-start gap-3">
+                <User className="h-5 w-5 text-blue-900 mt-0.5" />
+                <div>
+                  <p className="text-sm font-medium text-slate-500">Aprovador do Relatório</p>
+                  <p className="text-base font-medium text-slate-900">{data.aprovador_relatorio}</p>
+                </div>
+              </div>
+            )}{' '}
           </div>
         </CardContent>
 
