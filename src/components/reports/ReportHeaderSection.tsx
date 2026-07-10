@@ -29,7 +29,7 @@ export function ReportHeaderSection({ isView }: { isView: boolean }) {
   useEffect(() => {
     const fetchClientes = async () => {
       try {
-        if (user?.tipo_acesso === 'admin') {
+        if (user?.tipo_acesso === 'admin' || user?.tipo_acesso === 'revisor_interno') {
           const res = await pb.collection('clientes').getFullList()
           setClientes(res)
         } else if (user?.cnpj_cliente) {
