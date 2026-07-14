@@ -24,37 +24,35 @@ export const PDFGeneralInfo = ({
               Empresa
             </td>
             <td className="border border-slate-300 p-2 w-3/4 font-semibold text-slate-900">
-              {cliente.nome_empresa || 'N/A'}
+              {cliente.nome_empresa || '-'}
             </td>
           </tr>
           <tr>
             <td className="border border-slate-300 p-2 font-medium bg-slate-100 text-slate-700">
               CNPJ
             </td>
-            <td className="border border-slate-300 p-2 text-slate-900">{cliente.cnpj || 'N/A'}</td>
+            <td className="border border-slate-300 p-2 text-slate-900">{cliente.cnpj || '-'}</td>
           </tr>
           <tr>
             <td className="border border-slate-300 p-2 font-medium bg-slate-100 text-slate-700">
               Endereço
             </td>
             <td className="border border-slate-300 p-2 text-slate-900">
-              {cliente.endereco || 'N/A'}
+              {cliente.endereco || '-'}
             </td>
           </tr>
-          {report.obra && (
-            <tr>
-              <td className="border border-slate-300 p-2 font-medium bg-slate-100 text-slate-700">
-                Obra
-              </td>
-              <td className="border border-slate-300 p-2 text-slate-900">{report.obra}</td>
-            </tr>
-          )}
+          <tr>
+            <td className="border border-slate-300 p-2 font-medium bg-slate-100 text-slate-700">
+              Obra
+            </td>
+            <td className="border border-slate-300 p-2 text-slate-900">{report.obra || '-'}</td>
+          </tr>
           <tr>
             <td className="border border-slate-300 p-2 font-medium bg-slate-100 text-slate-700">
               Nº Relatório
             </td>
             <td className="border border-slate-300 p-2 font-normal text-black">
-              {report.numero_relatorio}
+              {report.numero_relatorio || '-'}
             </td>
           </tr>
           <tr>
@@ -62,7 +60,7 @@ export const PDFGeneralInfo = ({
               Nº Proposta
             </td>
             <td className="border border-slate-300 p-2 text-slate-900">
-              {report.numero_proposta || 'N/A'}
+              {report.numero_proposta || '-'}
             </td>
           </tr>
         </tbody>
@@ -97,11 +95,11 @@ export const PDFGeneralInfo = ({
               {report.proxima_manutencao ? formatDate(report.proxima_manutencao) : '-'}
             </td>
             <td className="border border-slate-300 p-2 font-medium w-1/4 bg-slate-100 text-slate-700">
-              Responsável Técnico
+              Executor Responsável
             </td>
             <td className="border border-slate-300 p-2 w-1/4 font-semibold text-slate-900">
               {report.responsavel_tecnico || '-'}
-            </td>{' '}
+            </td>
           </tr>
           <tr>
             <td className="border border-slate-300 p-2 font-medium w-1/4 bg-slate-100 text-slate-700">
