@@ -80,13 +80,13 @@ export const PDFGeneralInfo = ({
               Data Início
             </td>
             <td className="border border-slate-300 p-2 w-1/4 text-slate-900">
-              {formatDate(report.data_execucao)}
+              {report.data_execucao ? formatDate(report.data_execucao) : '-'}
             </td>
             <td className="border border-slate-300 p-2 font-medium w-1/4 bg-slate-100 text-slate-700">
               Data Fim
             </td>
             <td className="border border-slate-300 p-2 w-1/4 text-slate-900">
-              {formatDate(report.data_fim)}
+              {report.data_fim ? formatDate(report.data_fim) : '-'}
             </td>
           </tr>
           <tr>
@@ -94,27 +94,27 @@ export const PDFGeneralInfo = ({
               Próxima Manutenção
             </td>
             <td className="border border-slate-300 p-2 text-slate-900">
-              {formatDate(report.proxima_manutencao)}
+              {report.proxima_manutencao ? formatDate(report.proxima_manutencao) : '-'}
             </td>
-            <td className="border border-slate-300 p-2 font-medium bg-slate-100 text-slate-700">
-              Executor Responsável
+            <td className="border border-slate-300 p-2 font-medium w-1/4 bg-slate-100 text-slate-700">
+              Responsável Técnico
             </td>
-            <td className="border border-slate-300 p-2 font-semibold text-slate-900">
-              {report.responsavel_tecnico || 'N/A'}
-            </td>
+            <td className="border border-slate-300 p-2 w-1/4 font-semibold text-slate-900">
+              {report.responsavel_tecnico || '-'}
+            </td>{' '}
           </tr>
           <tr>
             <td className="border border-slate-300 p-2 font-medium w-1/4 bg-slate-100 text-slate-700">
               Acompanhante
             </td>
             <td className="border border-slate-300 p-2 w-1/4 text-slate-900">
-              {report.acompanhante || 'N/A'}
+              {report.acompanhante || '-'}
             </td>
             <td className="border border-slate-300 p-2 font-medium w-1/4 bg-slate-100 text-slate-700">
               Aprovador do Relatório
             </td>
             <td className="border border-slate-300 p-2 w-1/4 text-slate-900">
-              {report.aprovador_relatorio || 'N/A'}
+              {report.aprovador_relatorio || '-'}
             </td>
           </tr>
         </tbody>
