@@ -195,7 +195,7 @@ export default function ReportPrint() {
   const autor = report.expand?.criado_por || {}
 
   const formatDate = (dateStr: string) => {
-    if (!dateStr) return 'N/A'
+    if (!dateStr) return '-'
     return new Date(dateStr).toLocaleDateString('pt-BR')
   }
 
@@ -599,50 +599,42 @@ export default function ReportPrint() {
                       <tbody>
                         <tr>
                           <td className="border border-slate-300 p-2 font-medium w-1/4 bg-slate-100 text-slate-700">
-                            Executor Responsável
+                            Empresa
                           </td>
-                          <td className="border border-slate-300 p-2 w-1/4 font-semibold text-slate-900">
-                            {report.responsavel_tecnico || autor.name || 'N/A'}
-                          </td>
-                          <td className="border border-slate-300 p-2 font-medium w-1/4 bg-slate-100 text-slate-700">
-                            Aprovador do Relatório
-                          </td>
-                          <td className="border border-slate-300 p-2 w-1/4 font-semibold text-slate-900">
-                            {report.aprovador_relatorio || 'N/A'}
+                          <td className="border border-slate-300 p-2 w-3/4 font-semibold text-slate-900">
+                            {cliente.nome_empresa || '-'}
                           </td>
                         </tr>
                         <tr>
                           <td className="border border-slate-300 p-2 font-medium bg-slate-100 text-slate-700">
-                            Acompanhante
+                            CNPJ
                           </td>
-                          <td className="border border-slate-300 p-2 text-slate-900" colSpan={3}>
-                            {report.acompanhante || 'N/A'}
+                          <td className="border border-slate-300 p-2 text-slate-900">
+                            {cliente.cnpj || '-'}
                           </td>
-                        </tr>{' '}
+                        </tr>
                         <tr>
                           <td className="border border-slate-300 p-2 font-medium bg-slate-100 text-slate-700">
                             Endereço
                           </td>
                           <td className="border border-slate-300 p-2 text-slate-900">
-                            {cliente.endereco || 'N/A'}
+                            {cliente.endereco || '-'}
                           </td>
                         </tr>
-                        {report.obra && (
-                          <tr>
-                            <td className="border border-slate-300 p-2 font-medium bg-slate-100 text-slate-700">
-                              Obra
-                            </td>
-                            <td className="border border-slate-300 p-2 text-slate-900">
-                              {report.obra}
-                            </td>
-                          </tr>
-                        )}
+                        <tr>
+                          <td className="border border-slate-300 p-2 font-medium bg-slate-100 text-slate-700">
+                            Obra
+                          </td>
+                          <td className="border border-slate-300 p-2 text-slate-900">
+                            {report.obra || '-'}
+                          </td>
+                        </tr>
                         <tr>
                           <td className="border border-slate-300 p-2 font-medium bg-slate-100 text-slate-700">
                             Nº Relatório
                           </td>
                           <td className="border border-slate-300 p-2 font-normal text-black">
-                            {report.numero_relatorio}
+                            {report.numero_relatorio || '-'}
                           </td>
                         </tr>
                         <tr>
@@ -650,7 +642,7 @@ export default function ReportPrint() {
                             Nº Proposta
                           </td>
                           <td className="border border-slate-300 p-2 text-slate-900">
-                            {report.numero_proposta || 'N/A'}
+                            {report.numero_proposta || '-'}
                           </td>
                         </tr>
                       </tbody>
@@ -691,18 +683,24 @@ export default function ReportPrint() {
                             {formatDate(report.proxima_manutencao)}
                           </td>
                           <td className="border border-slate-300 p-2 font-medium bg-slate-100 text-slate-700">
-                            Responsável Técnico
+                            Executor Responsável
                           </td>
                           <td className="border border-slate-300 p-2 font-semibold text-slate-900">
-                            {report.responsavel_tecnico || autor.name || 'N/A'}
+                            {report.responsavel_tecnico || '-'}
                           </td>
                         </tr>
                         <tr>
                           <td className="border border-slate-300 p-2 font-medium bg-slate-100 text-slate-700">
                             Acompanhante
                           </td>
-                          <td className="border border-slate-300 p-2 text-slate-900" colSpan={3}>
-                            {report.acompanhante || 'N/A'}
+                          <td className="border border-slate-300 p-2 text-slate-900">
+                            {report.acompanhante || '-'}
+                          </td>
+                          <td className="border border-slate-300 p-2 font-medium bg-slate-100 text-slate-700">
+                            Aprovador do Relatório
+                          </td>
+                          <td className="border border-slate-300 p-2 text-slate-900">
+                            {report.aprovador_relatorio || '-'}
                           </td>
                         </tr>
                       </tbody>
@@ -1168,7 +1166,7 @@ export default function ReportPrint() {
                     <div className="mt-20 pt-4 pb-4 flex items-center justify-around avoid-break px-8 print:px-0 gap-8">
                       <div className="w-1/2 text-center text-[12px] flex flex-col items-center">
                         <div className="w-full border-t border-black pt-3 font-semibold text-slate-900">
-                          {report.responsavel_tecnico || autor.name || 'Executor Responsável'}
+                          {report.responsavel_tecnico || '-'}
                         </div>
                         <div className="text-slate-600 mt-1 font-medium text-[10px]">
                           Executor Responsável
@@ -1179,7 +1177,7 @@ export default function ReportPrint() {
                       </div>
                       <div className="w-1/2 text-center text-[12px] flex flex-col items-center">
                         <div className="w-full border-t border-black pt-3 font-semibold text-slate-900">
-                          {report.aprovador_relatorio || 'Aprovador do Relatório'}
+                          {report.aprovador_relatorio || '-'}
                         </div>
                         <div className="text-slate-600 mt-1 font-medium text-[10px]">
                           Aprovador do Relatório

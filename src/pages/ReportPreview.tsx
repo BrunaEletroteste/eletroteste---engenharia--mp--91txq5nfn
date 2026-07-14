@@ -122,10 +122,10 @@ export default function ReportPreview() {
           <div className="grid grid-cols-2 gap-4 text-sm px-2">
             <div>
               <p>
-                <span className="font-semibold">Empresa:</span> {cliente?.nome_empresa}
+                <span className="font-semibold">Empresa:</span> {cliente?.nome_empresa || '-'}
               </p>
               <p>
-                <span className="font-semibold">CNPJ:</span> {cliente?.cnpj}
+                <span className="font-semibold">CNPJ:</span> {cliente?.cnpj || '-'}
               </p>
               <p>
                 <span className="font-semibold">Endereço:</span> {cliente?.endereco || '-'}
@@ -146,17 +146,13 @@ export default function ReportPreview() {
                 <span className="font-semibold">Executor Responsável:</span>{' '}
                 {relatorio.responsavel_tecnico || '-'}
               </p>
-              {relatorio.aprovador_relatorio && (
-                <p>
-                  <span className="font-semibold">Aprovador do Relatório:</span>{' '}
-                  {relatorio.aprovador_relatorio}
-                </p>
-              )}
-              {relatorio.acompanhante && (
-                <p>
-                  <span className="font-semibold">Acompanhante:</span> {relatorio.acompanhante}
-                </p>
-              )}
+              <p>
+                <span className="font-semibold">Aprovador do Relatório:</span>{' '}
+                {relatorio.aprovador_relatorio || '-'}
+              </p>
+              <p>
+                <span className="font-semibold">Acompanhante:</span> {relatorio.acompanhante || '-'}
+              </p>
             </div>
           </div>
         </section>

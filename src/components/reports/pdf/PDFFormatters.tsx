@@ -108,7 +108,7 @@ export const getLabel = (key: string, tipoEquipamento?: string) => {
 }
 
 export const formatDate = (dateStr: string) =>
-  dateStr ? new Date(dateStr).toLocaleDateString('pt-BR') : 'N/A'
+  dateStr ? new Date(dateStr).toLocaleDateString('pt-BR') : '-'
 
 export const renderLaudoTitle = (tipo?: string) =>
   tipo === 'PREVENTIVA_CORRETIVA' ? (
