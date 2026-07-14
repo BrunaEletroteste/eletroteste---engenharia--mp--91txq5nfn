@@ -373,7 +373,8 @@ export default function ReportForm() {
           if (reportIsNew) {
             payload.id = id
             payload.criado_por = user?.id || ''
-            await pb.collection('relatorios').create(payload)
+            const created = await pb.collection('relatorios').create(payload)
+            setReportRecord(created)
             setReportIsNew(false)
           } else {
             await pb.collection('relatorios').update(id!, payload)
