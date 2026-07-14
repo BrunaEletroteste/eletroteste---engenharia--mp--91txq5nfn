@@ -67,7 +67,7 @@ export function ReportPDFTemplate({ report, equipments }: { report: any; equipme
                     <ReportHeader report={report} />
                     <div className="mb-4 text-[12px] w-full flex-1">
                       <div className="bg-slate-800 text-white p-1.5 font-bold mb-1.5 uppercase text-[13px] tracking-wider">
-                        ANEXOS
+                        ANEXOS TÉCNICOS
                       </div>
                       <table className="w-full border-collapse border border-slate-300">
                         <thead>
@@ -109,7 +109,7 @@ export function ReportPDFTemplate({ report, equipments }: { report: any; equipme
                       <ReportHeader report={report} />
                       {showHeader && (
                         <div className="bg-slate-800 text-white p-1.5 font-bold mb-4 uppercase text-[13px] tracking-wider">
-                          ANEXOS
+                          ANEXOS TÉCNICOS
                         </div>
                       )}
                       <div className="w-full text-center mb-4 text-[14px] font-bold text-slate-800 bg-slate-100 py-2 border border-slate-200">
