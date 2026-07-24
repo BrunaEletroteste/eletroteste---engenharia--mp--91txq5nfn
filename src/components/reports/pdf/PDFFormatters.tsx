@@ -112,10 +112,10 @@ export const formatDate = (dateStr: string) =>
 
 export const renderLaudoTitle = (tipo?: string) =>
   tipo === 'PREVENTIVA_CORRETIVA' ? (
-    <div className="flex flex-col items-center gap-1.5">
-      <div>LAUDO TÉCNICO DE MANUTENÇÃO PREVENTIVA</div>
-      <div>E CORRETIVA EM CABINE(S) PRIMÁRIA(S)</div>
-    </div>
+    <span className="block text-center">
+      <span className="block">LAUDO TÉCNICO DE MANUTENÇÃO PREVENTIVA</span>
+      <span className="block">E CORRETIVA EM CABINE(S) PRIMÁRIA(S)</span>
+    </span>
   ) : (
     'LAUDO TÉCNICO DE MANUTENÇÃO PREVENTIVA EM CABINE(S) PRIMÁRIA(S)'
   )
