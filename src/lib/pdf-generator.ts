@@ -1,4 +1,11 @@
-export async function generatePDF(element: HTMLElement, filename: string): Promise<void> {
+import { mergeAttachmentsToPdf } from './pdf-attachments'
+
+export async function generatePDF(
+  element: HTMLElement,
+  filename: string,
+  anexos?: string[],
+  record?: any,
+): Promise<void> {
   if (!(window as any).html2pdf) {
     await new Promise<void>((resolve, reject) => {
       const script = document.createElement('script')
@@ -24,5 +31,22 @@ export async function generatePDF(element: HTMLElement, filename: string): Promi
     pagebreak: { mode: ['css', 'legacy'] },
   }
 
-  await (window as any).html2pdf().set(opt).from(element).save()
+  if (anexos && anexos.length > 0 && record) {
+    const mainPdfBlob: Blob = await (window as any)
+      .html2pdf()
+      .set(opt)
+      .from(element)
+      .outputPdf('blob')
+    const finalBlob = await mergeAttachmentsToPdf(mainPdfBlob, anexos, record)
+    const url = URL.createObjectURL(finalBlob)
+    const a = document.createElement('a')
+    a.href = url
+    a.download = filename
+    document.body.appendChild(a)
+    a.click()
+    document.body.removeChild(a)
+    URL.revokeObjectURL(url)
+  } else {
+    await (window as any).html2pdf().set(opt).from(element).save()
+  }
 }

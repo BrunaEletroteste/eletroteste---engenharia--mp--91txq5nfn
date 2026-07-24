@@ -1,4 +1,4 @@
-import { useEffect, useState, Fragment } from 'react'
+import { useEffect, useState, useRef, useCallback, Fragment } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 import { Printer, ArrowLeft, Loader2, Cpu } from 'lucide-react'
 import pb from '@/lib/pocketbase/client'
@@ -7,6 +7,7 @@ import { getEquipmentFields } from '@/lib/equipment-templates'
 import { formatNumberPtBR } from '@/lib/format'
 import logoImg from '@/assets/logotransparente-c06b6.png'
 import { QRCode } from '@/components/ui/qrcode'
+import { ReportAnexoPages } from '@/components/reports/ReportAnexoPages'
 
 const labelMap: Record<string, string> = {
   observacoes: 'Observações',
@@ -132,12 +133,20 @@ export default function ReportPrint() {
   const navigate = useNavigate()
   const [data, setData] = useState<any>(null)
   const [loading, setLoading] = useState(true)
+  const printTriggered = useRef(false)
+
+  const triggerPrint = useCallback(() => {
+    if (printTriggered.current) return
+    printTriggered.current = true
+    setTimeout(() => window.print(), 300)
+  }, [])
 
   useEffect(() => {
     async function loadData() {
       if (!id) return
+      let report: any = null
       try {
-        const report = await pb.collection('relatorios').getOne(id, {
+        report = await pb.collection('relatorios').getOne(id, {
           expand: 'cliente_id,criado_por',
         })
         const equipments = await pb.collection('equipamentos_relatorio').getFullList({
@@ -162,9 +171,10 @@ export default function ReportPrint() {
         console.error(e)
       } finally {
         setLoading(false)
-        setTimeout(() => {
-          window.print()
-        }, 800)
+        const anexos = report?.anexos || []
+        if (!anexos || anexos.length === 0) {
+          setTimeout(() => triggerPrint(), 800)
+        }
       }
     }
     loadData()
@@ -1253,6 +1263,9 @@ export default function ReportPrint() {
             </tfoot>
           </table>
         </div>
+        {report.anexos && report.anexos.length > 0 && (
+          <ReportAnexoPages anexos={report.anexos} record={report} onReady={triggerPrint} />
+        )}
       </div>
 
       {/* Fixed Footer - Print Only */}

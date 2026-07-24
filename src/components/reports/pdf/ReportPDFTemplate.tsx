@@ -1,5 +1,3 @@
-import React from 'react'
-import pb from '@/lib/pocketbase/client'
 import { PDFCoverPage } from './PDFCoverPage'
 import { PDFGeneralInfo } from './PDFGeneralInfo'
 import { PDFEquipmentIndex } from './PDFEquipmentIndex'
@@ -53,82 +51,6 @@ export function ReportPDFTemplate({ report, equipments }: { report: any; equipme
           </div>
         </div>
       </PageBlock>
-
-      {report.anexos && report.anexos.length > 0
-        ? (() => {
-            const isImage = (a: string) => a.match(/\.(jpeg|jpg|gif|png|webp|svg)$/i)
-            const imageAnexos = report.anexos.filter((a: string) => isImage(a))
-            const nonImageAnexos = report.anexos.filter((a: string) => !isImage(a))
-
-            return (
-              <>
-                {nonImageAnexos.length > 0 && (
-                  <PageBlock report={report}>
-                    <ReportHeader report={report} />
-                    <div className="mb-4 text-[12px] w-full flex-1">
-                      <div className="bg-slate-800 text-white p-1.5 font-bold mb-1.5 uppercase text-[13px] tracking-wider">
-                        ANEXOS TÉCNICOS
-                      </div>
-                      <table className="w-full border-collapse border border-slate-300">
-                        <thead>
-                          <tr className="bg-slate-100">
-                            <th className="border border-slate-300 p-2 text-left text-slate-700 font-medium w-12">
-                              Nº
-                            </th>
-                            <th className="border border-slate-300 p-2 text-left text-slate-700 font-medium">
-                              Documento
-                            </th>
-                          </tr>
-                        </thead>
-                        <tbody>
-                          {nonImageAnexos.map((anexo: string, i: number) => (
-                            <tr key={anexo}>
-                              <td className="border border-slate-300 p-2 text-slate-900">
-                                {i + 1}
-                              </td>
-                              <td className="border border-slate-300 p-2 text-slate-900">
-                                {anexo}
-                              </td>
-                            </tr>
-                          ))}
-                        </tbody>
-                      </table>
-                      {imageAnexos.length > 0 && (
-                        <p className="text-slate-600 mt-4 text-[11px]">
-                          As imagens anexas encontram-se nas páginas subsequentes.
-                        </p>
-                      )}
-                    </div>
-                  </PageBlock>
-                )}
-
-                {imageAnexos.map((anexo: string, i: number) => {
-                  const showHeader = nonImageAnexos.length === 0 && i === 0
-                  return (
-                    <PageBlock key={anexo} report={report}>
-                      <ReportHeader report={report} />
-                      {showHeader && (
-                        <div className="bg-slate-800 text-white p-1.5 font-bold mb-4 uppercase text-[13px] tracking-wider">
-                          ANEXOS TÉCNICOS
-                        </div>
-                      )}
-                      <div className="w-full text-center mb-4 text-[14px] font-bold text-slate-800 bg-slate-100 py-2 border border-slate-200">
-                        ANEXO {i + 1}
-                      </div>
-                      <div className="flex-1 flex items-center justify-center">
-                        <img
-                          src={pb.files.getURL(report, anexo)}
-                          crossOrigin="anonymous"
-                          className="max-w-full max-h-[220mm] object-contain"
-                        />
-                      </div>
-                    </PageBlock>
-                  )
-                })}
-              </>
-            )
-          })()
-        : null}
     </div>
   )
 }

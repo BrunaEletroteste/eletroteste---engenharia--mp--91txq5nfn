@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 import { Printer, ArrowLeft, Loader2 } from 'lucide-react'
+import { ReportAnexoPages } from '@/components/reports/ReportAnexoPages'
 import { Button } from '@/components/ui/button'
 import pb from '@/lib/pocketbase/client'
 import { format } from 'date-fns'
@@ -307,6 +308,12 @@ export default function ReportPreview() {
           )}
         </section>
       </div>
+
+      {relatorio.anexos && relatorio.anexos.length > 0 && (
+        <div className="max-w-[210mm] mx-auto mt-4">
+          <ReportAnexoPages anexos={relatorio.anexos} record={relatorio} />
+        </div>
+      )}
     </div>
   )
 }
