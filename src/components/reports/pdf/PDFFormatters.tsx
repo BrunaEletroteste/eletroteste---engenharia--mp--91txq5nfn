@@ -113,9 +113,9 @@ export const formatDate = (dateStr: string) =>
 export const renderLaudoTitle = (tipo?: string) =>
   tipo === 'PREVENTIVA_CORRETIVA' ? (
     <React.Fragment>
-      LAUDO TÉCNICO DE MANUTENÇÃO PREVENTIVA
+      {'LAUDO TÉCNICO DE MANUTENÇÃO PREVENTIVA '}
       <br />
-      E CORRETIVA EM CABINE(S) PRIMÁRIA(S)
+      {'E CORRETIVA EM CABINE(S) PRIMÁRIA(S)'}
     </React.Fragment>
   ) : (
     'LAUDO TÉCNICO DE MANUTENÇÃO PREVENTIVA EM CABINE(S) PRIMÁRIA(S)'
