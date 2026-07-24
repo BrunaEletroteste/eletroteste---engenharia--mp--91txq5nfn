@@ -419,7 +419,13 @@ export function EquipmentModal({ open, onOpenChange, onSave, initialData }: Prop
       const parseVal = (v: any) => {
         if (v === undefined || v === null || v === '') return undefined
         if (typeof v === 'number') return v
-        const str = String(v)
+        let str = String(v)
+        const slashIdx = str.indexOf('/')
+        if (slashIdx !== -1) {
+          str = str.substring(0, slashIdx)
+        }
+        str = str.trim()
+        if (!str) return undefined
         const clean = str.includes(',')
           ? str.replace(/\./g, '').replace(',', '.')
           : str.replace(/\./g, '')
