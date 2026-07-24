@@ -106,6 +106,7 @@ export default function ReportForm() {
         acompanhante: '',
         proxima_manutencao: '',
         observacoes: '',
+        tipo_laudo: 'PREVENTIVA' as const,
       }
       reset(initialValues)
       setEquipments([])
@@ -368,6 +369,7 @@ export default function ReportForm() {
               ? `${data.proxima_manutencao} 12:00:00Z`
               : '',
             observacoes: data.observacoes || '',
+            tipo_laudo: data.tipo_laudo || 'PREVENTIVA',
           }
 
           if (reportIsNew) {
