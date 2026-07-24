@@ -25,7 +25,7 @@ export const PDFCoverPage = ({ report, cliente }: { report: any; cliente: any })
 
           <div className="flex flex-col items-center justify-center space-y-4 px-4 w-full">
             <Cpu className="w-10 h-10 text-blue-900 stroke-[1.5]" />
-            <h1 className="text-[18px] font-bold text-slate-900 uppercase leading-snug tracking-tight text-center">
+            <h1 className="text-[18px] font-bold text-slate-900 uppercase leading-snug tracking-tight text-center space-y-1">
               {renderLaudoTitle(report.tipo_laudo)}
             </h1>
           </div>
