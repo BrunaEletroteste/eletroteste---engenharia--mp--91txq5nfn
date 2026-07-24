@@ -97,7 +97,7 @@ export const PDFGeneralInfo = ({
             <td className="border border-slate-300 p-2 font-medium w-1/4 bg-slate-100 text-slate-700">
               Executor Responsável
             </td>
-            <td className="border border-slate-300 p-2 w-1/4 font-semibold text-slate-900">
+            <td className="border border-slate-300 p-2 w-1/4 font-normal text-slate-900">
               {report.responsavel_tecnico || '-'}
             </td>
           </tr>
