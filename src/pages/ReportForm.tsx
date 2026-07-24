@@ -385,7 +385,11 @@ export default function ReportForm() {
           anyChanges = true
         }
 
-        const nextEqs = [...equipments]
+        const nextEqs = equipments.map((eq) => ({
+          ...eq,
+          testes: eq.testes?.map((t) => ({ ...t })),
+          parecer: eq.parecer ? { ...eq.parecer } : undefined,
+        })) as any[]
         for (let i = 0; i < nextEqs.length; i++) {
           const eq = nextEqs[i] as any
           if (eq._delete && eq._dirty) {
@@ -568,14 +572,22 @@ export default function ReportForm() {
           reportIsNew,
         })
         if (isOnline) {
-          await performSync().catch(() => {})
-          await syncPendingFiles().catch(() => {})
+          try {
+            await performSync()
+            await syncPendingFiles()
+          } catch {
+            loadData(true).catch(() => {})
+          }
         } else {
           setSyncStatus('offline')
         }
       } else if (isOnline && (syncStatus === 'offline' || syncStatus === 'error')) {
-        await performSync().catch(() => {})
-        await syncPendingFiles().catch(() => {})
+        try {
+          await performSync()
+          await syncPendingFiles()
+        } catch {
+          loadData(true).catch(() => {})
+        }
       }
     }, 3000)
 
@@ -592,6 +604,7 @@ export default function ReportForm() {
     isReadOnly,
     performSync,
     syncPendingFiles,
+    loadData,
   ])
 
   const validateEquipments = (status: 'rascunho' | 'finalizado') => {
@@ -655,6 +668,7 @@ export default function ReportForm() {
         navigate('/')
       } catch (err: any) {
         setIsSaving(false)
+        loadData(true).catch(() => {})
         toast({
           title: 'Erro ao salvar',
           description:

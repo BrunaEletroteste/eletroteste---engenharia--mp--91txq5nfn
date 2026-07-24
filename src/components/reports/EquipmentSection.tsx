@@ -82,25 +82,32 @@ export function EquipmentSection({ equipments, setEquipments, isView, reportId }
     }
   }
 
+  const renumberOrdem = (list: EquipmentItem[]): EquipmentItem[] => {
+    let seq = 1
+    return list.map((eq) => {
+      if ((eq as any)._delete) return eq
+      const newOrdem = seq++
+      const wasDirty = (eq as any)._dirty
+      const ordemChanged = (eq.ordem || 0) !== newOrdem
+      return {
+        ...eq,
+        ordem: newOrdem,
+        _dirty: wasDirty || ordemChanged,
+      } as EquipmentItem
+    })
+  }
+
   const handleMoveUp = (e: React.MouseEvent, index: number) => {
     e.stopPropagation()
     setEquipments((prev) => {
       const next = [...prev]
       let prevIdx = index - 1
       while (prevIdx >= 0 && (next[prevIdx] as any)._delete) prevIdx--
-      if (prevIdx >= 0) {
-        const temp = next[index]
-        next[index] = next[prevIdx]
-        next[prevIdx] = temp
-
-        const tempOrdem = next[index].ordem || index + 1
-        next[index].ordem = next[prevIdx].ordem || prevIdx + 1
-        next[prevIdx].ordem = tempOrdem
-
-        ;(next[index] as any)._dirty = true
-        ;(next[prevIdx] as any)._dirty = true
-      }
-      return next
+      if (prevIdx < 0) return prev
+      const temp = next[index]
+      next[index] = next[prevIdx]
+      next[prevIdx] = temp
+      return renumberOrdem(next)
     })
   }
 
@@ -110,19 +117,11 @@ export function EquipmentSection({ equipments, setEquipments, isView, reportId }
       const next = [...prev]
       let nextIdx = index + 1
       while (nextIdx < next.length && (next[nextIdx] as any)._delete) nextIdx++
-      if (nextIdx < next.length) {
-        const temp = next[index]
-        next[index] = next[nextIdx]
-        next[nextIdx] = temp
-
-        const tempOrdem = next[index].ordem || index + 1
-        next[index].ordem = next[nextIdx].ordem || nextIdx + 1
-        next[nextIdx].ordem = tempOrdem
-
-        ;(next[index] as any)._dirty = true
-        ;(next[nextIdx] as any)._dirty = true
-      }
-      return next
+      if (nextIdx >= next.length) return prev
+      const temp = next[index]
+      next[index] = next[nextIdx]
+      next[nextIdx] = temp
+      return renumberOrdem(next)
     })
   }
 
