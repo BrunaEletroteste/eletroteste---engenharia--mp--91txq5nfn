@@ -227,7 +227,7 @@ export const getEquipmentFields = (type: string): FieldDef[] => {
           name: 'corrente_descarga',
           label: 'Corrente de Descarga (kA)',
           type: 'select',
-          options: ['10'],
+          options: ['5', '10'],
         },
         { name: 'fabricante', label: 'Fabricante', type: 'combobox' },
       ]
