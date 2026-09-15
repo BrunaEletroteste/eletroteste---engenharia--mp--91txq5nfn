@@ -180,9 +180,15 @@ export default function Index() {
   }))
 
   const formatDate = (dateStr: string) => {
-    if (!dateStr) return ''
+    if (!dateStr) return '-'
+    // Trata tanto ISO completo quanto 'YYYY-MM-DD' preservando o dia exato
+    const cleanDate = dateStr.substring(0, 10)
+    const [year, month, day] = cleanDate.split('-')
+    if (year && month && day) {
+      return `${day}/${month}/${year}`
+    }
     const date = new Date(dateStr)
-    return date.toLocaleDateString('pt-BR')
+    return isNaN(date.getTime()) ? '-' : date.toLocaleDateString('pt-BR')
   }
 
   const renderStatusBadge = (status: string) => {
@@ -305,7 +311,6 @@ export default function Index() {
             </Button>
           )}
         </div>
-
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
           {/* Busca por Número do Relatório / Proposta */}
           <div className="space-y-1.5">
@@ -350,9 +355,20 @@ export default function Index() {
           {/* Filtro por Período de Execução: De / Até */}
           <div className="space-y-1.5 sm:col-span-2 lg:col-span-2 grid grid-cols-1 sm:grid-cols-2 gap-3">
             <div className="space-y-1.5">
-              <label className="text-xs font-medium text-muted-foreground">
-                Data Execução (De)
-              </label>
+              <div className="flex items-center justify-between">
+                <label className="text-xs font-medium text-muted-foreground">
+                  Data Execução (De)
+                </label>
+                {dataExecDe && (
+                  <button
+                    type="button"
+                    onClick={() => setDataExecDe('')}
+                    className="text-[10px] text-muted-foreground hover:text-foreground"
+                  >
+                    Limpar
+                  </button>
+                )}
+              </div>
               <Input
                 type="date"
                 value={dataExecDe}
@@ -361,9 +377,20 @@ export default function Index() {
               />
             </div>
             <div className="space-y-1.5">
-              <label className="text-xs font-medium text-muted-foreground">
-                Data Execução (Até)
-              </label>
+              <div className="flex items-center justify-between">
+                <label className="text-xs font-medium text-muted-foreground">
+                  Data Execução (Até)
+                </label>
+                {dataExecAte && (
+                  <button
+                    type="button"
+                    onClick={() => setDataExecAte('')}
+                    className="text-[10px] text-muted-foreground hover:text-foreground"
+                  >
+                    Limpar
+                  </button>
+                )}
+              </div>
               <Input
                 type="date"
                 value={dataExecAte}
@@ -373,12 +400,22 @@ export default function Index() {
             </div>
           </div>
         </div>
-
         {/* Linha adicional para Cliente (caso Admin) */}
-        {user?.tipo_acesso === 'admin' && (
+        {user?.tipo_acesso === 'admin' ? (
           <div className="pt-2 border-t grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 items-center">
             <div className="sm:col-span-2 space-y-1.5">
-              <label className="text-xs font-medium text-muted-foreground">Cliente</label>
+              <div className="flex items-center justify-between">
+                <label className="text-xs font-medium text-muted-foreground">Cliente</label>
+                {filterCliente && (
+                  <button
+                    type="button"
+                    onClick={() => setFilterCliente('')}
+                    className="text-[10px] text-muted-foreground hover:text-foreground"
+                  >
+                    Limpar cliente
+                  </button>
+                )}
+              </div>
               <Combobox
                 placeholder="Filtrar por Cliente..."
                 options={comboOptions}
@@ -386,24 +423,36 @@ export default function Index() {
                 onChange={(val) => setFilterCliente(val)}
               />
             </div>
-            <div className="text-xs text-muted-foreground self-end pb-2">
-              Mostrando{' '}
-              <span className="font-semibold text-foreground">{filteredReports.length}</span> de{' '}
-              <span className="font-semibold text-foreground">{reports.length}</span> relatórios
+            <div className="text-xs text-muted-foreground self-end pb-2 sm:col-span-2 flex items-center justify-between sm:justify-end gap-2">
+              <span>
+                Exibindo{' '}
+                <span className="font-semibold text-foreground">{filteredReports.length}</span> de{' '}
+                <span className="font-semibold text-foreground">{reports.length}</span> relatórios
+              </span>
+              {hasActiveFilters && (
+                <Badge variant="secondary" className="text-[10px] px-1.5 py-0 h-5">
+                  Filtrado
+                </Badge>
+              )}
             </div>
           </div>
-        )}
-
-        {user?.tipo_acesso !== 'admin' && (
+        ) : (
           <div className="pt-2 border-t flex justify-between items-center text-xs text-muted-foreground">
-            <span>Seus relatórios</span>
-            <span>
-              Mostrando{' '}
-              <span className="font-semibold text-foreground">{filteredReports.length}</span> de{' '}
-              <span className="font-semibold text-foreground">{reports.length}</span> relatórios
-            </span>
+            <span>Relatórios visíveis</span>
+            <div className="flex items-center gap-2">
+              <span>
+                Exibindo{' '}
+                <span className="font-semibold text-foreground">{filteredReports.length}</span> de{' '}
+                <span className="font-semibold text-foreground">{reports.length}</span> relatórios
+              </span>
+              {hasActiveFilters && (
+                <Badge variant="secondary" className="text-[10px] px-1.5 py-0 h-5">
+                  Filtrado
+                </Badge>
+              )}
+            </div>
           </div>
-        )}
+        )}{' '}
       </div>
 
       {hasError ? (
