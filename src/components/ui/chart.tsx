@@ -54,6 +54,8 @@ export const ChartTooltipContent = React.forwardRef<
     indicator?: 'line' | 'dot' | 'dashed'
     nameKey?: string
     labelKey?: string
+    className?: string
+    color?: string
   }
 >(
   (

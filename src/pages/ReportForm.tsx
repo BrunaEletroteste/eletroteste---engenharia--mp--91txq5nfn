@@ -66,7 +66,7 @@ export default function ReportForm() {
   const lastSaveTimeRef = useRef(0)
 
   const methods = useForm<FormValues>({
-    resolver: zodResolver(reportFormSchema),
+    resolver: zodResolver(reportFormSchema) as any,
     defaultValues: { status: 'rascunho' },
   })
 

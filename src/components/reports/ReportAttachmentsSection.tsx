@@ -7,6 +7,7 @@ import { getErrorMessage, extractFieldErrors } from '@/lib/pocketbase/errors'
 
 interface Props {
   record: any
+  reportId?: string
   existingAnexos: string[]
   onAnexosChange: (newAnexos: string[]) => void
   onUploadStart: () => void

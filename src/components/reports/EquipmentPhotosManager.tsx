@@ -59,6 +59,7 @@ interface Props {
   index: number
   setEquipments: React.Dispatch<React.SetStateAction<EquipmentItem[]>>
   isView: boolean
+  reportId?: string
 }
 
 export function EquipmentPhotosManager({ equipment, index, setEquipments, isView }: Props) {

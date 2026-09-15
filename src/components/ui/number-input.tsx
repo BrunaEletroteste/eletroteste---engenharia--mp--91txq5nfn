@@ -10,10 +10,14 @@ export interface NumberInputProps extends Omit<
   onChange: (value: number | '') => void
   maxDecimals?: number
   minDecimals?: number
+  decimalScale?: number
 }
 
 const NumberInput = React.forwardRef<HTMLInputElement, NumberInputProps>(
-  ({ className, value, onChange, maxDecimals = 4, minDecimals = 0, name, ...props }, ref) => {
+  (
+    { className, value, onChange, maxDecimals = 4, minDecimals = 0, decimalScale, name, ...props },
+    ref,
+  ) => {
     const [localValue, setLocalValue] = React.useState('')
 
     const isQgbtNoDecimalField = name
@@ -28,7 +32,11 @@ const NumberInput = React.forwardRef<HTMLInputElement, NumberInputProps>(
         ].includes(name)
       : false
 
-    const effectiveMax = isQgbtNoDecimalField ? 0 : maxDecimals
+    const effectiveMax = isQgbtNoDecimalField
+      ? 0
+      : decimalScale !== undefined
+        ? decimalScale
+        : maxDecimals
     const effectiveMin = isQgbtNoDecimalField ? 0 : minDecimals
 
     React.useEffect(() => {

@@ -53,17 +53,12 @@ import {
 
 const testSchema = z
   .object({
-    tipo_teste: z.enum(
-      [
-        'Resistências dos Isolamentos',
-        'Relação de Tensões',
-        'Resistências dos Enrolamentos',
-        'Resistências dos Contatos',
-      ],
-      {
-        required_error: 'Este campo é obrigatório',
-      },
-    ),
+    tipo_teste: z.enum([
+      'Resistências dos Isolamentos',
+      'Relação de Tensões',
+      'Resistências dos Enrolamentos',
+      'Resistências dos Contatos',
+    ]),
     tipo_equipamento_ref: z.string().optional(),
     equipamento_utilizado: z.array(z.string()).min(1, 'Selecione ao menos um equipamento'),
     valor_teste: z.union([z.coerce.number(), z.string()]).optional(),
@@ -673,8 +668,8 @@ export function TestModal({
   const tempMedidaSource =
     isoTest?.dados_detalhados?.temperatura_medida ?? isoTest?.dados_detalhados?.temperatura
 
-  const form = useForm<TestFormValues>({
-    resolver: zodResolver(testSchema),
+  const form = useForm<any>({
+    resolver: zodResolver(testSchema) as any,
     defaultValues: {
       equipamento_utilizado: [],
       valor_teste: 0,
