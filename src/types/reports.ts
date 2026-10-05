@@ -18,6 +18,7 @@ export const reportFormSchema = z.object({
 
 export type FormValues = z.infer<typeof reportFormSchema>
 
+// Ordem padronizada dos testes elétricos
 export const TEST_TYPES_ORDER = [
   'Resistências dos Isolamentos',
   'Resistências dos Enrolamentos',
@@ -38,15 +39,15 @@ export const sortTestTypes = (types: string[]): string[] => {
   })
 }
 
-export const sortTestsList = <T extends { tipo_teste?: string; data_teste?: string }>(
-  tests: T[],
-): T[] => {
+export const sortTestsList = <T extends Record<string, any>>(tests: T[]): T[] => {
   return [...tests].sort((a, b) => {
-    const orderA = getTestTypeOrderIndex(a.tipo_teste || '')
-    const orderB = getTestTypeOrderIndex(b.tipo_teste || '')
+    const tipoA = typeof a?.tipo_teste === 'string' ? a.tipo_teste : ''
+    const tipoB = typeof b?.tipo_teste === 'string' ? b.tipo_teste : ''
+    const orderA = getTestTypeOrderIndex(tipoA)
+    const orderB = getTestTypeOrderIndex(tipoB)
     if (orderA !== orderB) return orderA - orderB
-    const dateA = a.data_teste ? new Date(a.data_teste).getTime() : 0
-    const dateB = b.data_teste ? new Date(b.data_teste).getTime() : 0
+    const dateA = a?.data_teste ? new Date(a.data_teste).getTime() : 0
+    const dateB = b?.data_teste ? new Date(b.data_teste).getTime() : 0
     return dateA - dateB
   })
 }
