@@ -7,6 +7,7 @@ export type FieldDef = {
   readOnly?: boolean
   section?: string
   column?: 'left' | 'right'
+  hideInPrint?: boolean
 }
 
 export const EQUIPMENT_TYPES = [
@@ -114,6 +115,13 @@ export const getEquipmentFields = (type: string): FieldDef[] => {
     case 'Transformador':
       return [
         ...common,
+        {
+          name: 'media_ou_baixa_tensao',
+          label: 'Média Tensão ou Baixa Tensão',
+          type: 'select',
+          options: ['Média Tensão', 'Baixa Tensão'],
+          hideInPrint: true,
+        },
         { name: 'tipo', label: 'Tipo', type: 'text' },
         { name: 'potencia', label: 'Potência (kVA)', type: 'text' },
         { name: 'classe_isolamento', label: 'Classe de Isolamento (kV)', type: 'text' },

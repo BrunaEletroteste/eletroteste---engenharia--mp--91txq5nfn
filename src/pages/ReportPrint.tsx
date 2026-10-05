@@ -102,6 +102,7 @@ const labelMap: Record<string, string> = {
   corrente_ajuste_curto: 'Corrente de Ajuste Curto (A)',
   temporizacao_curto: 'Temporização Curto (s)',
   corrente_ajuste_instantanea: 'Corrente de Ajuste Instantânea (A)',
+  media_ou_baixa_tensao: 'Média Tensão ou Baixa Tensão',
 }
 
 const renderLaudoTitle = (tipo?: string) => {
@@ -899,6 +900,7 @@ export default function ReportPrint() {
 
                                   const orderedData = fields
                                     .filter((f) => {
+                                      if (f.hideInPrint) return false
                                       if (f.dependsOn) {
                                         const depVal = eq.dados_tecnicos[f.dependsOn.field]
                                         if (depVal !== f.dependsOn.value) return false
@@ -914,6 +916,9 @@ export default function ReportPrint() {
                                         value: eq.dados_tecnicos[f.name],
                                       }
                                     })
+
+                                  // Mark all fields in the template as known so unmappedData doesn't pick up hidden fields
+                                  fields.forEach((f) => mappedKeys.add(f.name))
 
                                   const unmappedData = Object.entries(eq.dados_tecnicos)
                                     .filter(

@@ -95,6 +95,7 @@ export const labelMap: Record<string, string> = {
   corrente_ajuste_curto: 'Corrente de Ajuste Curto (A)',
   temporizacao_curto: 'Temporização Curto (s)',
   corrente_ajuste_instantanea: 'Corrente de Ajuste Instantânea (A)',
+  media_ou_baixa_tensao: 'Média Tensão ou Baixa Tensão',
 }
 
 export const getLabel = (key: string, tipoEquipamento?: string) => {

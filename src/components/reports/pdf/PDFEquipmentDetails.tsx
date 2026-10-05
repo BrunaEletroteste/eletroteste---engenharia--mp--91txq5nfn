@@ -18,6 +18,7 @@ export const PDFEquipmentDetails = ({
 
   const orderedData = fields
     .filter((f) => {
+      if (f.hideInPrint) return false
       if (f.dependsOn && eq.dados_tecnicos[f.dependsOn.field] !== f.dependsOn.value) return false
       const val = eq.dados_tecnicos[f.name]
       return val !== undefined && val !== null && val !== ''
@@ -26,6 +27,9 @@ export const PDFEquipmentDetails = ({
       mappedKeys.add(f.name)
       return { key: f.name, label: f.label, value: eq.dados_tecnicos[f.name] }
     })
+
+  // Mark all fields in the template as known so unmappedData doesn't pick up hidden fields
+  fields.forEach((f) => mappedKeys.add(f.name))
 
   const unmappedData = Object.entries(eq.dados_tecnicos || {})
     .filter(([k, val]) => !mappedKeys.has(k) && val !== undefined && val !== null && val !== '')

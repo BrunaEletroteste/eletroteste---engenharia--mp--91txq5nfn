@@ -206,14 +206,16 @@ export default function ReportPreview() {
                     <div className="mb-4">
                       <h4 className="text-sm font-semibold text-slate-700 mb-2">Dados Técnicos</h4>
                       <div className="grid grid-cols-2 md:grid-cols-3 gap-2 text-xs">
-                        {Object.entries(eq.dados_tecnicos).map(([k, v]) => (
-                          <div key={k} className="bg-slate-50 p-1.5 rounded print:bg-slate-50">
-                            <span className="font-semibold block capitalize">
-                              {k.replace(/_/g, ' ')}
-                            </span>
-                            <span>{String(v)}</span>
-                          </div>
-                        ))}
+                        {Object.entries(eq.dados_tecnicos)
+                          .filter(([k]) => k !== 'media_ou_baixa_tensao')
+                          .map(([k, v]) => (
+                            <div key={k} className="bg-slate-50 p-1.5 rounded print:bg-slate-50">
+                              <span className="font-semibold block capitalize">
+                                {k.replace(/_/g, ' ')}
+                              </span>
+                              <span>{String(v)}</span>
+                            </div>
+                          ))}
                       </div>
                     </div>
                   )}
