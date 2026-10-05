@@ -3,19 +3,23 @@ import { PDFGeneralInfo } from './PDFGeneralInfo'
 import { PDFEquipmentIndex } from './PDFEquipmentIndex'
 import { PDFEquipmentDetails } from './PDFEquipmentDetails'
 import { PageBlock, ReportHeader } from './PDFHeaderFooter'
+import { sortEquipmentsBySubstationOrder } from '@/lib/substations'
 
 export function ReportPDFTemplate({ report, equipments }: { report: any; equipments: any[] }) {
   const cliente = report.expand?.cliente_id || {}
   const autor = report.expand?.criado_por || {}
+  const orderedEquipments = sortEquipmentsBySubstationOrder(equipments)
 
   return (
     <div className="pdf-template-container w-[210mm] bg-white text-black font-sans relative pb-8">
       <PDFCoverPage report={report} cliente={cliente} />
       <PDFGeneralInfo report={report} cliente={cliente} autor={autor} />
 
-      {equipments.length > 0 && <PDFEquipmentIndex report={report} equipments={equipments} />}
+      {orderedEquipments.length > 0 && (
+        <PDFEquipmentIndex report={report} equipments={orderedEquipments} />
+      )}
 
-      {equipments.map((eq, i) => (
+      {orderedEquipments.map((eq, i) => (
         <PDFEquipmentDetails key={eq.id} report={report} eq={eq} globalIndex={eq.ordem || i + 1} />
       ))}
 

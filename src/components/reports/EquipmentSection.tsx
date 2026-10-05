@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useRef } from 'react'
 import {
   Plus,
   Edit,
@@ -10,11 +10,13 @@ import {
   X,
   ArrowUp,
   ArrowDown,
+  GripVertical,
 } from 'lucide-react'
 import { useToast } from '@/hooks/use-toast'
 import { cn } from '@/lib/utils'
 import { EquipmentItem, ParecerItem } from '@/types/reports'
 import { getEquipmentFields, FieldDef } from '@/lib/equipment-templates'
+import { sortSubstations } from '@/lib/substations'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { Input } from '@/components/ui/input'
@@ -67,6 +69,9 @@ export function EquipmentSection({ equipments, setEquipments, isView, reportId }
     index: null,
   })
   const [activeTab, setActiveTab] = useState<string>('Geral')
+  const [draggedSub, setDraggedSub] = useState<string | null>(null)
+  const [dragOverSub, setDragOverSub] = useState<string | null>(null)
+  const tabRefs = useRef<Map<string, HTMLElement>>(new Map())
 
   const handleSaveEquipment = (eq: EquipmentItem) => {
     if (editingIndex !== null) {
@@ -169,13 +174,116 @@ export function EquipmentSection({ equipments, setEquipments, isView, reportId }
     substationsMap.get(sub)!.push(item)
   })
 
-  const substations = Array.from(substationsMap.keys()).sort((a, b) => {
-    if (a === 'Geral') return 1
-    if (b === 'Geral') return -1
-    return a.localeCompare(b)
-  })
+  const rawSubstations = Array.from(substationsMap.keys())
+  const substations = sortSubstations(rawSubstations, equipments)
 
   const currentTab = substations.includes(activeTab) ? activeTab : substations[0] || 'Geral'
+
+  const handleReorderSubstations = (sourceSub: string, targetSub: string) => {
+    if (!sourceSub || !targetSub || sourceSub === targetSub) return
+    const fromIdx = substations.indexOf(sourceSub)
+    const toIdx = substations.indexOf(targetSub)
+    if (fromIdx === -1 || toIdx === -1) return
+
+    const newOrderList = [...substations]
+    const [moved] = newOrderList.splice(fromIdx, 1)
+    newOrderList.splice(toIdx, 0, moved)
+
+    const subOrderMap = new Map<string, number>()
+    newOrderList.forEach((name, idx) => subOrderMap.set(name, idx + 1))
+
+    setEquipments((prev) => {
+      let anyChanged = false
+      const updated = prev.map((eq) => {
+        const subName = eq.dados_tecnicos?.subestacao?.trim() || 'Geral'
+        const currentOrder = eq.dados_tecnicos?.subestacao_ordem
+        const targetOrder = subOrderMap.get(subName) ?? 999
+
+        if (currentOrder !== targetOrder) {
+          anyChanged = true
+          return {
+            ...eq,
+            dados_tecnicos: {
+              ...eq.dados_tecnicos,
+              subestacao_ordem: targetOrder,
+            },
+            _dirty: true,
+          }
+        }
+        return eq
+      })
+      return anyChanged ? updated : prev
+    })
+  }
+
+  // Drag and drop HTML5 handlers
+  const handleDragStart = (e: React.DragEvent, sub: string) => {
+    if (isView) return
+    e.dataTransfer.effectAllowed = 'move'
+    e.dataTransfer.setData('text/plain', sub)
+    setDraggedSub(sub)
+  }
+
+  const handleDragOver = (e: React.DragEvent, sub: string) => {
+    if (isView || !draggedSub || draggedSub === sub) return
+    e.preventDefault()
+    e.dataTransfer.dropEffect = 'move'
+    if (dragOverSub !== sub) {
+      setDragOverSub(sub)
+    }
+  }
+
+  const handleDragLeave = (e: React.DragEvent, sub: string) => {
+    if (dragOverSub === sub) {
+      setDragOverSub(null)
+    }
+  }
+
+  const handleDrop = (e: React.DragEvent, targetSub: string) => {
+    e.preventDefault()
+    if (isView) return
+    const sourceSub = e.dataTransfer.getData('text/plain') || draggedSub
+    if (sourceSub && sourceSub !== targetSub) {
+      handleReorderSubstations(sourceSub, targetSub)
+    }
+    setDraggedSub(null)
+    setDragOverSub(null)
+  }
+
+  const handleDragEnd = () => {
+    setDraggedSub(null)
+    setDragOverSub(null)
+  }
+
+  // Touch handlers for mobile drag-and-drop
+  const handleTouchStart = (sub: string) => {
+    if (isView) return
+    setDraggedSub(sub)
+  }
+
+  const handleTouchMove = (e: React.TouchEvent) => {
+    if (isView || !draggedSub) return
+    const touch = e.touches[0]
+    if (!touch) return
+    const element = document.elementFromPoint(touch.clientX, touch.clientY)
+    if (!element) return
+
+    // Find tab container from element
+    for (const [sub, el] of tabRefs.current.entries()) {
+      if (el && el.contains(element)) {
+        if (dragOverSub !== sub) setDragOverSub(sub)
+        return
+      }
+    }
+  }
+
+  const handleTouchEnd = () => {
+    if (draggedSub && dragOverSub && draggedSub !== dragOverSub) {
+      handleReorderSubstations(draggedSub, dragOverSub)
+    }
+    setDraggedSub(null)
+    setDragOverSub(null)
+  }
 
   const toggleAll = () => {
     const currentTabEquipments = substationsMap.get(currentTab) || []
@@ -289,22 +397,62 @@ export function EquipmentSection({ equipments, setEquipments, isView, reportId }
       ) : (
         <div className="pt-2">
           <Tabs value={currentTab} onValueChange={setActiveTab} className="w-full">
-            <TabsList className="w-full justify-start rounded-none px-4 py-0 h-auto space-x-6 bg-transparent border-b overflow-x-auto mb-4">
-              {substations.map((sub) => (
-                <TabsTrigger
-                  key={sub}
-                  value={sub}
-                  className="px-1 py-3 border-b-4 border-transparent data-[state=active]:border-primary data-[state=active]:text-foreground text-muted-foreground hover:text-foreground transition-colors rounded-none whitespace-nowrap"
-                >
-                  {sub}
-                  <Badge
-                    variant="secondary"
-                    className="ml-2 font-normal rounded-full h-5 px-1.5 flex items-center justify-center"
+            <div className="flex items-center justify-between gap-2 mb-1 px-1">
+              <span className="text-xs text-muted-foreground">
+                {!isView && substations.length > 1
+                  ? 'Dica: você pode arrastar as abas de subestação para reordená-las. A ordem definida será seguida no PDF.'
+                  : ''}
+              </span>
+            </div>
+            <TabsList className="w-full justify-start rounded-none px-4 py-0 h-auto space-x-4 bg-transparent border-b overflow-x-auto mb-4 select-none">
+              {substations.map((sub) => {
+                const isDragging = draggedSub === sub
+                const isOver = dragOverSub === sub
+
+                return (
+                  <div
+                    key={sub}
+                    ref={(el) => {
+                      if (el) tabRefs.current.set(sub, el)
+                      else tabRefs.current.delete(sub)
+                    }}
+                    draggable={!isView}
+                    onDragStart={(e) => handleDragStart(e, sub)}
+                    onDragOver={(e) => handleDragOver(e, sub)}
+                    onDragLeave={(e) => handleDragLeave(e, sub)}
+                    onDrop={(e) => handleDrop(e, sub)}
+                    onDragEnd={handleDragEnd}
+                    onTouchStart={() => handleTouchStart(sub)}
+                    onTouchMove={handleTouchMove}
+                    onTouchEnd={handleTouchEnd}
+                    className={cn(
+                      'inline-flex items-center group transition-all duration-150',
+                      !isView && 'cursor-grab active:cursor-grabbing',
+                      isDragging && 'opacity-40 scale-95',
+                      isOver && 'border-l-2 border-primary pl-2 bg-primary/5 rounded',
+                    )}
                   >
-                    {substationsMap.get(sub)?.length}
-                  </Badge>
-                </TabsTrigger>
-              ))}
+                    <TabsTrigger
+                      value={sub}
+                      className="px-1 py-3 border-b-4 border-transparent data-[state=active]:border-primary data-[state=active]:text-foreground text-muted-foreground hover:text-foreground transition-colors rounded-none whitespace-nowrap flex items-center gap-1.5"
+                    >
+                      {!isView && substations.length > 1 && (
+                        <GripVertical
+                          className="h-3.5 w-3.5 text-muted-foreground/50 group-hover:text-foreground transition-colors shrink-0"
+                          aria-hidden="true"
+                        />
+                      )}
+                      <span>{sub}</span>
+                      <Badge
+                        variant="secondary"
+                        className="ml-1 font-normal rounded-full h-5 px-1.5 flex items-center justify-center text-xs"
+                      >
+                        {substationsMap.get(sub)?.length}
+                      </Badge>
+                    </TabsTrigger>
+                  </div>
+                )
+              })}
             </TabsList>
             {substations.map((sub) => (
               <TabsContent key={sub} value={sub} className="focus-visible:outline-none">

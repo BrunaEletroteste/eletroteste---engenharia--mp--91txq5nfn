@@ -6,6 +6,7 @@ import { Button } from '@/components/ui/button'
 import { getEquipmentFields } from '@/lib/equipment-templates'
 import { formatNumberPtBR } from '@/lib/format'
 import { sortTestsList } from '@/types/reports'
+import { sortSubstations, sortEquipmentsBySubstationOrder } from '@/lib/substations'
 import logoImg from '@/assets/logotransparente-c06b6.png'
 import { QRCode } from '@/components/ui/qrcode'
 import { ReportAnexoPages } from '@/components/reports/ReportAnexoPages'
@@ -167,8 +168,9 @@ export default function ReportPrint() {
           testes: sortTestsList(testes.filter((t) => t.equipamento_id === eq.id)),
           parecer: pareceres.find((p) => p.equipamento_id === eq.id),
         }))
+        const orderedEquipments = sortEquipmentsBySubstationOrder(eqData)
 
-        setData({ report, equipments: eqData })
+        setData({ report, equipments: orderedEquipments })
       } catch (e) {
         console.error(e)
       } finally {
@@ -753,10 +755,13 @@ export default function ReportPrint() {
                         direcionado automaticamente aos detalhes técnicos.
                       </p>
 
-                      {Array.from(
-                        new Set(
-                          equipments.map((eq: any) => eq.dados_tecnicos?.subestacao || 'Geral'),
+                      {sortSubstations(
+                        Array.from(
+                          new Set(
+                            equipments.map((eq: any) => eq.dados_tecnicos?.subestacao || 'Geral'),
+                          ),
                         ),
+                        equipments,
                       ).map((sub) => {
                         const subEqs = equipments.filter(
                           (eq: any) => (eq.dados_tecnicos?.subestacao || 'Geral') === sub,

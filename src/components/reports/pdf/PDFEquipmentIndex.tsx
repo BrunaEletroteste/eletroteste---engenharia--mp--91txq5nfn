@@ -1,9 +1,11 @@
 import React from 'react'
 import { PageBlock, ReportHeader } from './PDFHeaderFooter'
+import { sortSubstations } from '@/lib/substations'
 
 export const PDFEquipmentIndex = ({ report, equipments }: { report: any; equipments: any[] }) => {
-  const subestacoes = Array.from(
-    new Set(equipments.map((eq) => eq.dados_tecnicos?.subestacao || 'Geral')),
+  const subestacoes = sortSubstations(
+    Array.from(new Set(equipments.map((eq) => eq.dados_tecnicos?.subestacao || 'Geral'))),
+    equipments,
   )
 
   return (

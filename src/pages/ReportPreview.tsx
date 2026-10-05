@@ -3,6 +3,7 @@ import { useParams, useNavigate } from 'react-router-dom'
 import { Printer, ArrowLeft, Loader2 } from 'lucide-react'
 import { ReportAnexoPages } from '@/components/reports/ReportAnexoPages'
 import { sortTestsList } from '@/types/reports'
+import { sortEquipmentsBySubstationOrder } from '@/lib/substations'
 import { Button } from '@/components/ui/button'
 import pb from '@/lib/pocketbase/client'
 import { format } from 'date-fns'
@@ -39,13 +40,16 @@ export default function ReportPreview() {
           .collection('parecer_tecnico')
           .getFullList({ filter: `equipamento_id.relatorio_id="${id}"` })
 
+        const loadedEquipments = equipamentos.map((eq) => ({
+          ...eq,
+          testes: sortTestsList(testes.filter((t) => t.equipamento_id === eq.id)),
+          parecer: pareceres.find((p) => p.equipamento_id === eq.id),
+        }))
+        const orderedEquipments = sortEquipmentsBySubstationOrder(loadedEquipments)
+
         setData({
           relatorio,
-          equipamentos: equipamentos.map((eq) => ({
-            ...eq,
-            testes: sortTestsList(testes.filter((t) => t.equipamento_id === eq.id)),
-            parecer: pareceres.find((p) => p.equipamento_id === eq.id),
-          })),
+          equipamentos: orderedEquipments,
         })
       } catch (err) {
         console.error(err)
