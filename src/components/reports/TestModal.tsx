@@ -1185,14 +1185,14 @@ export function TestModal({
                         Resistências dos Isolamentos
                       </SelectItem>
                       {(equipmentType === 'Transformador' ||
-                        field.value === 'Relação de Tensões') && (
-                        <SelectItem value="Relação de Tensões">Relação de Tensões</SelectItem>
-                      )}
-                      {(equipmentType === 'Transformador' ||
                         field.value === 'Resistências dos Enrolamentos') && (
                         <SelectItem value="Resistências dos Enrolamentos">
                           Resistências dos Enrolamentos
                         </SelectItem>
+                      )}
+                      {(equipmentType === 'Transformador' ||
+                        field.value === 'Relação de Tensões') && (
+                        <SelectItem value="Relação de Tensões">Relação de Tensões</SelectItem>
                       )}
                       {(equipmentType !== 'Transformador' ||
                         field.value === 'Resistências dos Contatos') && (

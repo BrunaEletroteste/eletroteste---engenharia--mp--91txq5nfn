@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback } from 'react'
 import { format, parseISO } from 'date-fns'
 import { Plus, Edit2, Trash2, AlertCircle } from 'lucide-react'
-import { EquipmentItem, TestItem } from '@/types/reports'
+import { EquipmentItem, TestItem, sortTestTypes } from '@/types/reports'
 import { formatNumberPtBR } from '@/lib/format'
 import { Button } from '@/components/ui/button'
 import { useToast } from '@/hooks/use-toast'
@@ -241,11 +241,13 @@ export function EquipmentTestsManager({
     return true
   })
 
-  const testTypes = Array.from(
-    new Set([
-      ...currentTests.map((t) => t.tipo_teste),
-      ...filteredHistorical.map((t) => t.tipo_teste),
-    ]),
+  const testTypes = sortTestTypes(
+    Array.from(
+      new Set([
+        ...currentTests.map((t) => t.tipo_teste),
+        ...filteredHistorical.map((t) => t.tipo_teste),
+      ]),
+    ),
   )
 
   useEffect(() => {

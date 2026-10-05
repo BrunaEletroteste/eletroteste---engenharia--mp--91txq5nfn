@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 import { Printer, ArrowLeft, Loader2 } from 'lucide-react'
 import { ReportAnexoPages } from '@/components/reports/ReportAnexoPages'
+import { sortTestsList } from '@/types/reports'
 import { Button } from '@/components/ui/button'
 import pb from '@/lib/pocketbase/client'
 import { format } from 'date-fns'
@@ -42,7 +43,7 @@ export default function ReportPreview() {
           relatorio,
           equipamentos: equipamentos.map((eq) => ({
             ...eq,
-            testes: testes.filter((t) => t.equipamento_id === eq.id),
+            testes: sortTestsList(testes.filter((t) => t.equipamento_id === eq.id)),
             parecer: pareceres.find((p) => p.equipamento_id === eq.id),
           })),
         })

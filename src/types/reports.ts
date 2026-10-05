@@ -18,6 +18,39 @@ export const reportFormSchema = z.object({
 
 export type FormValues = z.infer<typeof reportFormSchema>
 
+export const TEST_TYPES_ORDER = [
+  'Resistências dos Isolamentos',
+  'Resistências dos Enrolamentos',
+  'Relação de Tensões',
+] as const
+
+export const getTestTypeOrderIndex = (tipoTeste: string): number => {
+  const index = (TEST_TYPES_ORDER as readonly string[]).indexOf(tipoTeste)
+  return index === -1 ? 999 : index
+}
+
+export const sortTestTypes = (types: string[]): string[] => {
+  return [...types].sort((a, b) => {
+    const orderA = getTestTypeOrderIndex(a)
+    const orderB = getTestTypeOrderIndex(b)
+    if (orderA !== orderB) return orderA - orderB
+    return a.localeCompare(b, 'pt-BR')
+  })
+}
+
+export const sortTestsList = <T extends { tipo_teste?: string; data_teste?: string }>(
+  tests: T[],
+): T[] => {
+  return [...tests].sort((a, b) => {
+    const orderA = getTestTypeOrderIndex(a.tipo_teste || '')
+    const orderB = getTestTypeOrderIndex(b.tipo_teste || '')
+    if (orderA !== orderB) return orderA - orderB
+    const dateA = a.data_teste ? new Date(a.data_teste).getTime() : 0
+    const dateB = b.data_teste ? new Date(b.data_teste).getTime() : 0
+    return dateA - dateB
+  })
+}
+
 export type TestItem = {
   id?: string
   tipo_teste: string

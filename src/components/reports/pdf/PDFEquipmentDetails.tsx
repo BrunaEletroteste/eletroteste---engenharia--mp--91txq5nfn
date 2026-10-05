@@ -2,6 +2,7 @@ import React, { Fragment } from 'react'
 import { PageBlock, ReportHeader } from './PDFHeaderFooter'
 import { getLabel, formatTestValue, formatDate, formatEquipmentValue } from './PDFFormatters'
 import { getEquipmentFields } from '@/lib/equipment-templates'
+import { sortTestsList } from '@/types/reports'
 import pb from '@/lib/pocketbase/client'
 
 export const PDFEquipmentDetails = ({
@@ -88,7 +89,7 @@ export const PDFEquipmentDetails = ({
                     </tr>
                   </thead>
                   <tbody>
-                    {eq.testes.map((t: any, idx: number) => (
+                    {sortTestsList(eq.testes).map((t: any, idx: number) => (
                       <Fragment key={t.id}>
                         <tr className={idx > 0 ? 'border-t border-slate-200' : ''}>
                           <td className="p-1 align-top border-r border-slate-200 font-medium text-slate-900">

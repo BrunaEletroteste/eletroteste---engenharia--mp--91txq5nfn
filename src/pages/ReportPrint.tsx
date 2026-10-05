@@ -5,6 +5,7 @@ import pb from '@/lib/pocketbase/client'
 import { Button } from '@/components/ui/button'
 import { getEquipmentFields } from '@/lib/equipment-templates'
 import { formatNumberPtBR } from '@/lib/format'
+import { sortTestsList } from '@/types/reports'
 import logoImg from '@/assets/logotransparente-c06b6.png'
 import { QRCode } from '@/components/ui/qrcode'
 import { ReportAnexoPages } from '@/components/reports/ReportAnexoPages'
@@ -163,7 +164,7 @@ export default function ReportPrint() {
 
         const eqData = equipments.map((eq) => ({
           ...eq,
-          testes: testes.filter((t) => t.equipamento_id === eq.id),
+          testes: sortTestsList(testes.filter((t) => t.equipamento_id === eq.id)),
           parecer: pareceres.find((p) => p.equipamento_id === eq.id),
         }))
 
