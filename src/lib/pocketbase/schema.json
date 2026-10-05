@@ -29,32 +29,21 @@
           "type": "autodate",
           "required": false,
           "system": false,
-          "autodateTriggers": [
-            "onCreate"
-          ]
+          "autodateTriggers": ["onCreate"]
         },
         {
           "name": "updated",
           "type": "autodate",
           "required": false,
           "system": false,
-          "autodateTriggers": [
-            "onCreate",
-            "onUpdate"
-          ]
+          "autodateTriggers": ["onCreate", "onUpdate"]
         },
         {
           "name": "tipo_acesso",
           "type": "select",
           "required": false,
           "system": false,
-          "selectValues": [
-            "admin",
-            "tecnico_campo",
-            "revisor_interno",
-            "visitante",
-            "inativo"
-          ]
+          "selectValues": ["admin", "tecnico_campo", "revisor_interno", "visitante", "inativo"]
         },
         {
           "name": "ativo",
@@ -114,24 +103,17 @@
           "type": "autodate",
           "required": false,
           "system": false,
-          "autodateTriggers": [
-            "onCreate"
-          ]
+          "autodateTriggers": ["onCreate"]
         },
         {
           "name": "updated",
           "type": "autodate",
           "required": false,
           "system": false,
-          "autodateTriggers": [
-            "onCreate",
-            "onUpdate"
-          ]
+          "autodateTriggers": ["onCreate", "onUpdate"]
         }
       ],
-      "indexes": [
-        "CREATE UNIQUE INDEX idx_clientes_cnpj ON clientes (cnpj)"
-      ]
+      "indexes": ["CREATE UNIQUE INDEX idx_clientes_cnpj ON clientes (cnpj)"]
     },
     {
       "name": "relatorios",
@@ -180,10 +162,7 @@
           "type": "select",
           "required": true,
           "system": false,
-          "selectValues": [
-            "rascunho",
-            "finalizado"
-          ]
+          "selectValues": ["rascunho", "finalizado"]
         },
         {
           "name": "criado_por",
@@ -203,19 +182,14 @@
           "type": "autodate",
           "required": false,
           "system": false,
-          "autodateTriggers": [
-            "onCreate"
-          ]
+          "autodateTriggers": ["onCreate"]
         },
         {
           "name": "updated",
           "type": "autodate",
           "required": false,
           "system": false,
-          "autodateTriggers": [
-            "onCreate",
-            "onUpdate"
-          ]
+          "autodateTriggers": ["onCreate", "onUpdate"]
         },
         {
           "name": "anexos",
@@ -252,10 +226,7 @@
           "type": "select",
           "required": false,
           "system": false,
-          "selectValues": [
-            "PREVENTIVA",
-            "PREVENTIVA_CORRETIVA"
-          ]
+          "selectValues": ["PREVENTIVA", "PREVENTIVA_CORRETIVA"]
         },
         {
           "name": "aprovador_relatorio",
@@ -264,9 +235,7 @@
           "system": false
         }
       ],
-      "indexes": [
-        "CREATE UNIQUE INDEX idx_relatorios_numero ON relatorios (numero_relatorio)"
-      ]
+      "indexes": ["CREATE UNIQUE INDEX idx_relatorios_numero ON relatorios (numero_relatorio)"]
     },
     {
       "name": "equipamentos_relatorio",
@@ -315,19 +284,14 @@
           "type": "autodate",
           "required": false,
           "system": false,
-          "autodateTriggers": [
-            "onCreate"
-          ]
+          "autodateTriggers": ["onCreate"]
         },
         {
           "name": "updated",
           "type": "autodate",
           "required": false,
           "system": false,
-          "autodateTriggers": [
-            "onCreate",
-            "onUpdate"
-          ]
+          "autodateTriggers": ["onCreate", "onUpdate"]
         },
         {
           "name": "ordem",
@@ -342,9 +306,7 @@
           "system": false
         }
       ],
-      "indexes": [
-        "CREATE INDEX `idx_equip_rel_ordem` ON `equipamentos_relatorio` (ordem)"
-      ]
+      "indexes": ["CREATE INDEX `idx_equip_rel_ordem` ON `equipamentos_relatorio` (ordem)"]
     },
     {
       "name": "testes_equipamento",
@@ -399,19 +361,14 @@
           "type": "autodate",
           "required": false,
           "system": false,
-          "autodateTriggers": [
-            "onCreate"
-          ]
+          "autodateTriggers": ["onCreate"]
         },
         {
           "name": "updated",
           "type": "autodate",
           "required": false,
           "system": false,
-          "autodateTriggers": [
-            "onCreate",
-            "onUpdate"
-          ]
+          "autodateTriggers": ["onCreate", "onUpdate"]
         },
         {
           "name": "dados_detalhados",
@@ -457,22 +414,14 @@
           "type": "select",
           "required": true,
           "system": false,
-          "selectValues": [
-            "Conforme",
-            "Possui Ressalvas",
-            "Não Conforme"
-          ]
+          "selectValues": ["Conforme", "Possui Ressalvas", "Não Conforme"]
         },
         {
           "name": "parecer_anterior",
           "type": "select",
           "required": false,
           "system": false,
-          "selectValues": [
-            "Conforme",
-            "Possui Ressalvas",
-            "Não Conforme"
-          ]
+          "selectValues": ["Conforme", "Possui Ressalvas", "Não Conforme"]
         },
         {
           "name": "justificativa_mudanca",
@@ -485,19 +434,14 @@
           "type": "autodate",
           "required": false,
           "system": false,
-          "autodateTriggers": [
-            "onCreate"
-          ]
+          "autodateTriggers": ["onCreate"]
         },
         {
           "name": "updated",
           "type": "autodate",
           "required": false,
           "system": false,
-          "autodateTriggers": [
-            "onCreate",
-            "onUpdate"
-          ]
+          "autodateTriggers": ["onCreate", "onUpdate"]
         },
         {
           "name": "observacoes",
@@ -542,19 +486,14 @@
           "type": "autodate",
           "required": false,
           "system": false,
-          "autodateTriggers": [
-            "onCreate"
-          ]
+          "autodateTriggers": ["onCreate"]
         },
         {
           "name": "updated",
           "type": "autodate",
           "required": false,
           "system": false,
-          "autodateTriggers": [
-            "onCreate",
-            "onUpdate"
-          ]
+          "autodateTriggers": ["onCreate", "onUpdate"]
         }
       ],
       "indexes": [
@@ -584,12 +523,7 @@
           "type": "select",
           "required": true,
           "system": false,
-          "selectValues": [
-            "login",
-            "criacao",
-            "edicao",
-            "exclusao"
-          ]
+          "selectValues": ["login", "criacao", "edicao", "exclusao"]
         },
         {
           "name": "details",
@@ -602,24 +536,17 @@
           "type": "autodate",
           "required": false,
           "system": false,
-          "autodateTriggers": [
-            "onCreate"
-          ]
+          "autodateTriggers": ["onCreate"]
         },
         {
           "name": "updated",
           "type": "autodate",
           "required": false,
           "system": false,
-          "autodateTriggers": [
-            "onCreate",
-            "onUpdate"
-          ]
+          "autodateTriggers": ["onCreate", "onUpdate"]
         }
       ],
-      "indexes": [
-        "CREATE INDEX idx_audit_logs_created ON audit_logs (created DESC)"
-      ]
+      "indexes": ["CREATE INDEX idx_audit_logs_created ON audit_logs (created DESC)"]
     }
   ]
 }
