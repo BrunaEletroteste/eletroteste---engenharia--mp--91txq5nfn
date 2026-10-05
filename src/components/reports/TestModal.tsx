@@ -1181,6 +1181,12 @@ export function TestModal({
                       </SelectTrigger>
                     </FormControl>
                     <SelectContent>
+                      {(equipmentType !== 'Transformador' ||
+                        field.value === 'Resistências dos Contatos') && (
+                        <SelectItem value="Resistências dos Contatos">
+                          Resistências dos Contatos
+                        </SelectItem>
+                      )}
                       <SelectItem value="Resistências dos Isolamentos">
                         Resistências dos Isolamentos
                       </SelectItem>
@@ -1193,12 +1199,6 @@ export function TestModal({
                       {(equipmentType === 'Transformador' ||
                         field.value === 'Relação de Tensões') && (
                         <SelectItem value="Relação de Tensões">Relação de Tensões</SelectItem>
-                      )}
-                      {(equipmentType !== 'Transformador' ||
-                        field.value === 'Resistências dos Contatos') && (
-                        <SelectItem value="Resistências dos Contatos">
-                          Resistências dos Contatos
-                        </SelectItem>
                       )}
                     </SelectContent>
                   </Select>

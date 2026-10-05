@@ -20,6 +20,7 @@ export type FormValues = z.infer<typeof reportFormSchema>
 
 // Ordem padronizada dos testes elétricos
 export const TEST_TYPES_ORDER = [
+  'Resistências dos Contatos',
   'Resistências dos Isolamentos',
   'Resistências dos Enrolamentos',
   'Relação de Tensões',
