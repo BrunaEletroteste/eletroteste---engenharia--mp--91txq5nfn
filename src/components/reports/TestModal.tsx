@@ -993,13 +993,16 @@ export function TestModal({
                 payload.dados_detalhados.meio_isolante = meioIsolante
 
                 const isOleo = meioIsolante === 'Óleo Mineral'
+                const isEpoxi = meioIsolante === 'Epóxi'
                 const isBaixaTensao = mediaOuBaixaTensao === 'Baixa Tensão'
                 const limites =
                   isOleo && isBaixaTensao
                     ? { alta_baixa: 1.8, alta_massa: 1.8, baixa_massa: 1.8 }
-                    : isOleo
-                      ? { alta_baixa: 22.5, alta_massa: 22.5, baixa_massa: 1.8 }
-                      : { alta_baixa: 51.7, alta_massa: 51.7, baixa_massa: 22.5 }
+                    : isEpoxi && isBaixaTensao
+                      ? { alta_baixa: 22.5, alta_massa: 22.5, baixa_massa: 22.5 }
+                      : isOleo
+                        ? { alta_baixa: 22.5, alta_massa: 22.5, baixa_massa: 1.8 }
+                        : { alta_baixa: 51.7, alta_massa: 51.7, baixa_massa: 22.5 }
 
                 const fc = Number(payload.dados_detalhados.fator_correcao) || 1
 
@@ -1771,15 +1774,26 @@ export function TestModal({
                         id: 'alta_baixa',
                         label: 'Alta / Baixa',
                         limOleo: mediaOuBaixaTensao === 'Baixa Tensão' ? 1.8 : 22.5,
-                        limOutro: 51.7,
+                        limOutro:
+                          meioIsolante === 'Epóxi' && mediaOuBaixaTensao === 'Baixa Tensão'
+                            ? 22.5
+                            : 51.7,
                       },
                       {
                         id: 'alta_massa',
                         label: 'Alta / Massa',
                         limOleo: mediaOuBaixaTensao === 'Baixa Tensão' ? 1.8 : 22.5,
-                        limOutro: 51.7,
+                        limOutro:
+                          meioIsolante === 'Epóxi' && mediaOuBaixaTensao === 'Baixa Tensão'
+                            ? 22.5
+                            : 51.7,
                       },
-                      { id: 'baixa_massa', label: 'Baixa / Massa', limOleo: 1.8, limOutro: 22.5 },
+                      {
+                        id: 'baixa_massa',
+                        label: 'Baixa / Massa',
+                        limOleo: 1.8,
+                        limOutro: 22.5,
+                      },
                     ].map((r) => {
                       const v1 = form.watch(`dados_detalhados.medicoes.${r.id}.v1` as any)
                       const v2 = form.watch(`dados_detalhados.medicoes.${r.id}.v2` as any)
