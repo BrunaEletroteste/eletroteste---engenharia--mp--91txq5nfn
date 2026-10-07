@@ -771,22 +771,22 @@ export default function ReportPrint() {
                             <h3 className="font-semibold text-slate-800 text-[13px] uppercase mb-1.5 border-b-2 border-blue-900 inline-block pb-0.5">
                               Subestação: {String(sub)}
                             </h3>
-                            <table className="w-full border-collapse border border-slate-300 text-[11px]">
+                            <table className="w-full table-fixed border-collapse border border-slate-300 text-[11px]">
                               <thead className="bg-slate-100">
                                 <tr>
-                                  <th className="border border-slate-300 p-0 text-center font-semibold text-slate-700 w-12">
+                                  <th className="border border-slate-300 p-0 text-center font-semibold text-slate-700 w-[7%]">
                                     <div className="p-1">#</div>
                                   </th>
-                                  <th className="border border-slate-300 p-0 text-left font-semibold text-slate-700">
+                                  <th className="border border-slate-300 p-0 text-left font-semibold text-slate-700 w-[30%]">
                                     <div className="p-1">Equipamento</div>
                                   </th>
-                                  <th className="border border-slate-300 p-0 text-left font-semibold text-slate-700">
+                                  <th className="border border-slate-300 p-0 text-left font-semibold text-slate-700 w-[23%]">
                                     <div className="p-1">Circuito</div>
                                   </th>
-                                  <th className="border border-slate-300 p-0 text-left font-semibold text-slate-700">
+                                  <th className="border border-slate-300 p-0 text-left font-semibold text-slate-700 w-[20%]">
                                     <div className="p-1">Identificação / Série</div>
                                   </th>
-                                  <th className="border border-slate-300 p-0 text-center font-semibold text-slate-700">
+                                  <th className="border border-slate-300 p-0 text-center font-semibold text-slate-700 w-[20%]">
                                     <div className="p-1">Status</div>
                                   </th>
                                 </tr>
@@ -824,7 +824,7 @@ export default function ReportPrint() {
                                           {eq.ordem || globalIndex}
                                         </a>
                                       </td>
-                                      <td className="border border-slate-300 p-0 font-semibold text-slate-800">
+                                      <td className="border border-slate-300 p-0 font-semibold text-slate-800 break-words">
                                         <a
                                           href={`#equipamento-${eq.id}`}
                                           className="block p-1.5 text-inherit no-underline"
@@ -832,7 +832,7 @@ export default function ReportPrint() {
                                           {eq.tipo_equipamento}
                                         </a>
                                       </td>
-                                      <td className="border border-slate-300 p-0">
+                                      <td className="border border-slate-300 p-0 break-words">
                                         <a
                                           href={`#equipamento-${eq.id}`}
                                           className="block p-1.5 text-inherit no-underline"
@@ -840,7 +840,7 @@ export default function ReportPrint() {
                                           {circuitoStr}
                                         </a>
                                       </td>
-                                      <td className="border border-slate-300 p-0">
+                                      <td className="border border-slate-300 p-0 break-words">
                                         <a
                                           href={`#equipamento-${eq.id}`}
                                           className="block p-1.5 text-inherit no-underline"
@@ -849,7 +849,7 @@ export default function ReportPrint() {
                                         </a>
                                       </td>
                                       <td
-                                        className={`border border-slate-300 p-0 text-center font-semibold uppercase text-[10px] tracking-wider ${statusColor}`}
+                                        className={`border border-slate-300 p-0 text-center font-semibold uppercase text-[10px] tracking-wider break-words ${statusColor}`}
                                       >
                                         <a
                                           href={`#equipamento-${eq.id}`}

@@ -25,22 +25,22 @@ export const PDFEquipmentIndex = ({ report, equipments }: { report: any; equipme
               <h3 className="font-semibold text-slate-800 text-[13px] uppercase mb-1.5 border-b-2 border-blue-900 inline-block pb-0.5">
                 Subestação: {String(sub)}
               </h3>
-              <table className="w-full border-collapse border border-slate-300 text-[11px]">
+              <table className="w-full table-fixed border-collapse border border-slate-300 text-[11px]">
                 <thead className="bg-slate-100">
                   <tr>
-                    <th className="border border-slate-300 p-1 text-center font-semibold text-slate-700 w-12">
+                    <th className="border border-slate-300 p-1 text-center font-semibold text-slate-700 w-[7%]">
                       #
                     </th>
-                    <th className="border border-slate-300 p-1 text-left font-semibold text-slate-700">
+                    <th className="border border-slate-300 p-1 text-left font-semibold text-slate-700 w-[30%]">
                       Equipamento
                     </th>
-                    <th className="border border-slate-300 p-1 text-left font-semibold text-slate-700">
+                    <th className="border border-slate-300 p-1 text-left font-semibold text-slate-700 w-[23%]">
                       Circuito
                     </th>
-                    <th className="border border-slate-300 p-1 text-left font-semibold text-slate-700">
+                    <th className="border border-slate-300 p-1 text-left font-semibold text-slate-700 w-[20%]">
                       Identificação / Série
                     </th>
-                    <th className="border border-slate-300 p-1 text-center font-semibold text-slate-700">
+                    <th className="border border-slate-300 p-1 text-center font-semibold text-slate-700 w-[20%]">
                       Status
                     </th>
                   </tr>
@@ -70,15 +70,15 @@ export const PDFEquipmentIndex = ({ report, equipments }: { report: any; equipme
                         <td className="border border-slate-300 p-1 text-center font-medium">
                           {eq.ordem || globalIndex}
                         </td>
-                        <td className="border border-slate-300 p-1 font-semibold text-slate-800">
+                        <td className="border border-slate-300 p-1 font-semibold text-slate-800 break-words">
                           {eq.tipo_equipamento}
                         </td>
-                        <td className="border border-slate-300 p-1">
+                        <td className="border border-slate-300 p-1 break-words">
                           {eq.dados_tecnicos?.circuito || '-'}
                         </td>
-                        <td className="border border-slate-300 p-1">{numStr}</td>
+                        <td className="border border-slate-300 p-1 break-words">{numStr}</td>
                         <td
-                          className={`border border-slate-300 p-1 text-center font-semibold uppercase text-[10px] tracking-wider ${statusColor}`}
+                          className={`border border-slate-300 p-1 text-center font-semibold uppercase text-[10px] tracking-wider break-words ${statusColor}`}
                         >
                           {status}
                         </td>
