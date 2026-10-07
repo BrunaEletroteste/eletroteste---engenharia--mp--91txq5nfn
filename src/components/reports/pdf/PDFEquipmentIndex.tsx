@@ -26,21 +26,28 @@ export const PDFEquipmentIndex = ({ report, equipments }: { report: any; equipme
                 Subestação: {String(sub)}
               </h3>
               <table className="w-full table-fixed border-collapse border border-slate-300 text-[11px]">
+                <colgroup>
+                  <col className="w-[6%]" />
+                  <col className="w-[28%]" />
+                  <col className="w-[22%]" />
+                  <col className="w-[26%]" />
+                  <col className="w-[18%]" />
+                </colgroup>
                 <thead className="bg-slate-100">
                   <tr>
-                    <th className="border border-slate-300 p-1 text-center font-semibold text-slate-700 w-[7%]">
+                    <th className="border border-slate-300 p-1 text-center font-semibold text-slate-700 w-[6%]">
                       #
                     </th>
-                    <th className="border border-slate-300 p-1 text-left font-semibold text-slate-700 w-[30%]">
+                    <th className="border border-slate-300 p-1 text-left font-semibold text-slate-700 w-[28%]">
                       Equipamento
                     </th>
-                    <th className="border border-slate-300 p-1 text-left font-semibold text-slate-700 w-[23%]">
+                    <th className="border border-slate-300 p-1 text-left font-semibold text-slate-700 w-[22%]">
                       Circuito
                     </th>
-                    <th className="border border-slate-300 p-1 text-left font-semibold text-slate-700 w-[20%]">
+                    <th className="border border-slate-300 p-1 text-left font-semibold text-slate-700 w-[26%]">
                       Identificação / Série
                     </th>
-                    <th className="border border-slate-300 p-1 text-center font-semibold text-slate-700 w-[20%]">
+                    <th className="border border-slate-300 p-1 text-center font-semibold text-slate-700 w-[18%]">
                       Status
                     </th>
                   </tr>
@@ -67,7 +74,7 @@ export const PDFEquipmentIndex = ({ report, equipments }: { report: any; equipme
 
                     return (
                       <tr key={eq.id}>
-                        <td className="border border-slate-300 p-1 text-center font-medium">
+                        <td className="border border-slate-300 p-1 text-center font-medium truncate">
                           {eq.ordem || globalIndex}
                         </td>
                         <td className="border border-slate-300 p-1 font-semibold text-slate-800 break-words">
