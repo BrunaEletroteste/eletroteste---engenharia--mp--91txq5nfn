@@ -447,7 +447,14 @@ export function EquipmentModal({ open, onOpenChange, onSave, initialData }: Prop
       if (prim !== undefined && sec !== undefined) {
         if (sec !== 0) {
           setDados((prev) => {
-            const relacao = Number((prim! / sec!).toFixed(4))
+            const hasR3 =
+              tipo === 'Transformador de Potencial' &&
+              typeof dados.tensao_primaria === 'string' &&
+              /\/r3/i.test(dados.tensao_primaria.trim())
+
+            const calculatedValue = hasR3 ? prim! / Math.sqrt(3) / sec! : prim! / sec!
+
+            const relacao = Number(calculatedValue.toFixed(4))
             return prev.relacao === relacao ? prev : { ...prev, relacao }
           })
         } else {
