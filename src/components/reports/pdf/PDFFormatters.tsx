@@ -113,7 +113,12 @@ export const formatDate = (dateStr: string) =>
 
 export const renderLaudoTitle = (tipo?: string) => {
   if (tipo === 'COMISSIONAMENTO_RAMAL_AEREO_25KV') {
-    return 'LAUDO TÉCNICO DE COMISSIONAMENTO DE RAMAL AÉREO DE MÉDIA TENSÃO 25kV'
+    return (
+      <span className="block text-center">
+        <span className="block">LAUDO TÉCNICO DE COMISSIONAMENTO</span>
+        <span className="block">DE RAMAL AÉREO DE MÉDIA TENSÃO 25kV</span>
+      </span>
+    )
   }
   if (tipo === 'PREVENTIVA_CORRETIVA') {
     return (

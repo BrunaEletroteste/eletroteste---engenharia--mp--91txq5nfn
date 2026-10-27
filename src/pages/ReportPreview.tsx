@@ -111,11 +111,17 @@ export default function ReportPreview() {
           </div>
           <div className="text-right">
             <h1 className="text-xl font-bold text-slate-800">
-              {relatorio.tipo_laudo === 'COMISSIONAMENTO_RAMAL_AEREO_25KV'
-                ? 'LAUDO TÉCNICO DE COMISSIONAMENTO DE RAMAL AÉREO DE MÉDIA TENSÃO 25kV'
-                : relatorio.tipo_laudo === 'PREVENTIVA_CORRETIVA'
-                  ? 'LAUDO DE MANUTENÇÃO PREVENTIVA E CORRETIVA'
-                  : 'LAUDO DE MANUTENÇÃO PREVENTIVA'}
+              {relatorio.tipo_laudo === 'COMISSIONAMENTO_RAMAL_AEREO_25KV' ? (
+                <>
+                  LAUDO TÉCNICO DE COMISSIONAMENTO
+                  <br />
+                  DE RAMAL AÉREO DE MÉDIA TENSÃO 25kV
+                </>
+              ) : relatorio.tipo_laudo === 'PREVENTIVA_CORRETIVA' ? (
+                'LAUDO DE MANUTENÇÃO PREVENTIVA E CORRETIVA'
+              ) : (
+                'LAUDO DE MANUTENÇÃO PREVENTIVA'
+              )}
             </h1>
             <p className="text-sm text-slate-600 font-semibold">
               Relatório Nº: {relatorio.numero_relatorio}
