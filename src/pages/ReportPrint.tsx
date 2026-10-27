@@ -108,6 +108,9 @@ const labelMap: Record<string, string> = {
 }
 
 const renderLaudoTitle = (tipo?: string) => {
+  if (tipo === 'COMISSIONAMENTO_RAMAL_AEREO_25KV') {
+    return 'LAUDO TÉCNICO DE COMISSIONAMENTO DE RAMAL AÉREO DE MÉDIA TENSÃO 25kV'
+  }
   if (tipo === 'PREVENTIVA_CORRETIVA') {
     return 'LAUDO TÉCNICO DE MANUTENÇÃO PREVENTIVA E CORRETIVA EM CABINE(S) PRIMÁRIA(S)'
   }

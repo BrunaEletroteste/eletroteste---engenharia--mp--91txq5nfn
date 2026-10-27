@@ -111,15 +111,20 @@ export const getLabel = (key: string, tipoEquipamento?: string) => {
 export const formatDate = (dateStr: string) =>
   dateStr ? new Date(dateStr).toLocaleDateString('pt-BR') : '-'
 
-export const renderLaudoTitle = (tipo?: string) =>
-  tipo === 'PREVENTIVA_CORRETIVA' ? (
-    <span className="block text-center">
-      <span className="block">LAUDO TÉCNICO DE MANUTENÇÃO PREVENTIVA</span>
-      <span className="block">E CORRETIVA EM CABINE(S) PRIMÁRIA(S)</span>
-    </span>
-  ) : (
-    'LAUDO TÉCNICO DE MANUTENÇÃO PREVENTIVA EM CABINE(S) PRIMÁRIA(S)'
-  )
+export const renderLaudoTitle = (tipo?: string) => {
+  if (tipo === 'COMISSIONAMENTO_RAMAL_AEREO_25KV') {
+    return 'LAUDO TÉCNICO DE COMISSIONAMENTO DE RAMAL AÉREO DE MÉDIA TENSÃO 25kV'
+  }
+  if (tipo === 'PREVENTIVA_CORRETIVA') {
+    return (
+      <span className="block text-center">
+        <span className="block">LAUDO TÉCNICO DE MANUTENÇÃO PREVENTIVA</span>
+        <span className="block">E CORRETIVA EM CABINE(S) PRIMÁRIA(S)</span>
+      </span>
+    )
+  }
+  return 'LAUDO TÉCNICO DE MANUTENÇÃO PREVENTIVA EM CABINE(S) PRIMÁRIA(S)'
+}
 
 export const formatTestValue = (t: any, tipoEquipamento: string, subType?: string): string[] => {
   const formatNum = (val: any, isRelacao = false) => {

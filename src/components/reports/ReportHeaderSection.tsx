@@ -174,6 +174,9 @@ export function ReportHeaderSection({ isView }: { isView: boolean }) {
                   <SelectItem value="PREVENTIVA_CORRETIVA">
                     LAUDO TÉCNICO DE MANUTENÇÃO PREVENTIVA E CORRETIVA EM CABINE(S) PRIMÁRIA(S)
                   </SelectItem>
+                  <SelectItem value="COMISSIONAMENTO_RAMAL_AEREO_25KV">
+                    LAUDO TÉCNICO DE COMISSIONAMENTO DE RAMAL AÉREO DE MÉDIA TENSÃO 25kV
+                  </SelectItem>
                 </SelectContent>
               </Select>
               <FormMessage />
