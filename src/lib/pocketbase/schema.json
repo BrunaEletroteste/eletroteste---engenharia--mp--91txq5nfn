@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-10-27T10:50:44.978Z",
+  "generatedAt": "2026-11-03T12:02:00.954Z",
   "collections": [
     {
       "name": "users",
@@ -119,8 +119,8 @@
       "name": "relatorios",
       "type": "base",
       "apiRules": {
-        "list": "@request.auth.tipo_acesso = 'admin' || @request.auth.tipo_acesso = 'revisor_interno' || criado_por = @request.auth.id",
-        "view": "@request.auth.tipo_acesso = 'admin' || @request.auth.tipo_acesso = 'revisor_interno' || criado_por = @request.auth.id",
+        "list": "@request.auth.tipo_acesso = 'admin' || @request.auth.tipo_acesso = 'revisor_interno' || @request.auth.tipo_acesso = 'tecnico_campo' || criado_por = @request.auth.id",
+        "view": "@request.auth.tipo_acesso = 'admin' || @request.auth.tipo_acesso = 'revisor_interno' || @request.auth.tipo_acesso = 'tecnico_campo' || criado_por = @request.auth.id",
         "create": "@request.auth.tipo_acesso = 'admin' || @request.auth.id != ''",
         "update": "@request.auth.id != ''",
         "delete": "@request.auth.tipo_acesso = 'admin' || criado_por = @request.auth.id"
@@ -241,8 +241,8 @@
       "name": "equipamentos_relatorio",
       "type": "base",
       "apiRules": {
-        "list": "@request.auth.tipo_acesso = 'admin' || @request.auth.tipo_acesso = 'revisor_interno' || relatorio_id.criado_por = @request.auth.id",
-        "view": "@request.auth.tipo_acesso = 'admin' || @request.auth.tipo_acesso = 'revisor_interno' || relatorio_id.criado_por = @request.auth.id",
+        "list": "@request.auth.tipo_acesso = 'admin' || @request.auth.tipo_acesso = 'revisor_interno' || @request.auth.tipo_acesso = 'tecnico_campo' || relatorio_id.criado_por = @request.auth.id",
+        "view": "@request.auth.tipo_acesso = 'admin' || @request.auth.tipo_acesso = 'revisor_interno' || @request.auth.tipo_acesso = 'tecnico_campo' || relatorio_id.criado_por = @request.auth.id",
         "create": "@request.auth.id != ''",
         "update": "@request.auth.id != ''",
         "delete": "@request.auth.id != ''"
@@ -312,8 +312,8 @@
       "name": "testes_equipamento",
       "type": "base",
       "apiRules": {
-        "list": "@request.auth.tipo_acesso = 'admin' || @request.auth.tipo_acesso = 'revisor_interno' || equipamento_id.relatorio_id.criado_por = @request.auth.id",
-        "view": "@request.auth.tipo_acesso = 'admin' || @request.auth.tipo_acesso = 'revisor_interno' || equipamento_id.relatorio_id.criado_por = @request.auth.id",
+        "list": "@request.auth.tipo_acesso = 'admin' || @request.auth.tipo_acesso = 'revisor_interno' || @request.auth.tipo_acesso = 'tecnico_campo' || equipamento_id.relatorio_id.criado_por = @request.auth.id",
+        "view": "@request.auth.tipo_acesso = 'admin' || @request.auth.tipo_acesso = 'revisor_interno' || @request.auth.tipo_acesso = 'tecnico_campo' || equipamento_id.relatorio_id.criado_por = @request.auth.id",
         "create": "@request.auth.id != ''",
         "update": "@request.auth.id != ''",
         "delete": "@request.auth.id != ''"
@@ -395,8 +395,8 @@
       "name": "parecer_tecnico",
       "type": "base",
       "apiRules": {
-        "list": "@request.auth.tipo_acesso = 'admin' || @request.auth.tipo_acesso = 'revisor_interno' || equipamento_id.relatorio_id.criado_por = @request.auth.id",
-        "view": "@request.auth.tipo_acesso = 'admin' || @request.auth.tipo_acesso = 'revisor_interno' || equipamento_id.relatorio_id.criado_por = @request.auth.id",
+        "list": "@request.auth.tipo_acesso = 'admin' || @request.auth.tipo_acesso = 'revisor_interno' || @request.auth.tipo_acesso = 'tecnico_campo' || equipamento_id.relatorio_id.criado_por = @request.auth.id",
+        "view": "@request.auth.tipo_acesso = 'admin' || @request.auth.tipo_acesso = 'revisor_interno' || @request.auth.tipo_acesso = 'tecnico_campo' || equipamento_id.relatorio_id.criado_por = @request.auth.id",
         "create": "@request.auth.id != ''",
         "update": "@request.auth.id != ''",
         "delete": "@request.auth.id != ''"

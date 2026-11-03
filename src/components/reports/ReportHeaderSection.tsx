@@ -29,15 +29,8 @@ export function ReportHeaderSection({ isView }: { isView: boolean }) {
   useEffect(() => {
     const fetchClientes = async () => {
       try {
-        if (user?.tipo_acesso === 'admin' || user?.tipo_acesso === 'revisor_interno') {
-          const res = await pb.collection('clientes').getFullList()
-          setClientes(res)
-        } else if (user?.cnpj_cliente) {
-          const res = await pb
-            .collection('clientes')
-            .getFullList({ filter: `cnpj='${user.cnpj_cliente}'` })
-          setClientes(res)
-        }
+        const res = await pb.collection('clientes').getFullList()
+        setClientes(res)
       } catch (err) {
         console.error('Failed to load clients', err)
       }

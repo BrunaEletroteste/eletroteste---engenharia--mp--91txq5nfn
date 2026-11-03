@@ -139,7 +139,9 @@ export default function ReportForm() {
 
         if (isEditRoute || isViewRoute) {
           try {
-            const res = await pb.collection('relatorios').getOne(id)
+            const res = await pb.collection('relatorios').getOne(id, {
+              expand: 'cliente_id,criado_por',
+            })
 
             setReportRecord(res)
             setExistingAnexos(res.anexos || [])
