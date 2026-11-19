@@ -156,6 +156,13 @@ export const getEquipmentFields = (type: string): FieldDef[] => {
           type: 'select',
           options: ['Sim', 'Não'],
         },
+        {
+          name: 'analise_de_oleo',
+          label: 'Análise de Óleo',
+          type: 'select',
+          options: ['Sim', 'Não'],
+          hideInPrint: true,
+        },
         { name: 'desl_angular', label: 'Desl. Angular', type: 'text' },
         { name: 'ligado_em', label: 'Ligado em (V)', type: 'text' },
         { name: 'diagrama', label: 'Diagrama', type: 'combobox' },

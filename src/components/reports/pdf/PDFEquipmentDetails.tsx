@@ -183,7 +183,7 @@ export const PDFEquipmentDetails = ({
           )}
 
           {eq.tipo_equipamento === 'Transformador' &&
-            eq.dados_tecnicos?.meio_isolante === 'Óleo Mineral' && (
+            eq.dados_tecnicos?.analise_de_oleo === 'Sim' && (
               <div className="mt-2">
                 <div className="font-semibold text-slate-800 mb-1.5 border-b border-slate-200 pb-0.5 text-[13px] uppercase tracking-wider">
                   ANÁLISE DE ÓLEO

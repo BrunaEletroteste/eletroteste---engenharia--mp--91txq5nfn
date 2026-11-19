@@ -303,7 +303,7 @@ export default function ReportPreview() {
                   )}
 
                   {eq.tipo_equipamento === 'Transformador' &&
-                    eq.dados_tecnicos?.meio_isolante === 'Óleo Mineral' && (
+                    eq.dados_tecnicos?.analise_de_oleo === 'Sim' && (
                       <div className="mt-4">
                         <h4 className="text-sm font-semibold text-slate-700 mb-2 uppercase tracking-wider">
                           ANÁLISE DE ÓLEO
