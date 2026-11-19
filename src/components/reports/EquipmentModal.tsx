@@ -403,13 +403,21 @@ export function EquipmentModal({ open, onOpenChange, onSave, initialData }: Prop
   useEffect(() => {
     if (open && tipo === 'Transformador' && dados.meio_isolante === 'Epóxi') {
       setDados((prev) => {
-        if (prev.volume_oleo !== undefined || prev.buchas !== undefined) {
-          const next = { ...prev }
+        const next = { ...prev }
+        let changed = false
+        if (next.volume_oleo !== undefined) {
           delete next.volume_oleo
-          delete next.buchas
-          return next
+          changed = true
         }
-        return prev
+        if (next.buchas !== undefined) {
+          delete next.buchas
+          changed = true
+        }
+        if (next.analise_de_oleo !== undefined) {
+          delete next.analise_de_oleo
+          changed = true
+        }
+        return changed ? next : prev
       })
     }
   }, [tipo, dados.meio_isolante, open])
@@ -700,6 +708,17 @@ export function EquipmentModal({ open, onOpenChange, onSave, initialData }: Prop
       }
     }
 
+    if (tipo === 'Transformador' && dados.meio_isolante !== 'Epóxi') {
+      if (!dados.analise_de_oleo) {
+        toast({
+          title: 'Atenção',
+          description: 'O campo Análise de Óleo é obrigatório.',
+          variant: 'destructive',
+        })
+        return
+      }
+    }
+
     onSave({ tipo_equipamento: tipo, dados_tecnicos: dados })
     onOpenChange(false)
   }
@@ -721,7 +740,11 @@ export function EquipmentModal({ open, onOpenChange, onSave, initialData }: Prop
     }
 
     if (tipo === 'Transformador' && dados.meio_isolante === 'Epóxi') {
-      if (field.name === 'volume_oleo' || field.name === 'buchas') {
+      if (
+        field.name === 'volume_oleo' ||
+        field.name === 'buchas' ||
+        field.name === 'analise_de_oleo'
+      ) {
         return null
       }
     }
@@ -832,6 +855,7 @@ export function EquipmentModal({ open, onOpenChange, onSave, initialData }: Prop
                 'isolacao',
                 'fabricante',
               ].includes(field.name)) ||
+            (tipo === 'Transformador' && field.name === 'analise_de_oleo') ||
             tipo === 'Condutor Elétrico' ||
             tipo === 'Relé de Proteção' ||
             tipo === 'QGBT') && <span className="text-destructive"> *</span>}
