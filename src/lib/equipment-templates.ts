@@ -220,7 +220,7 @@ export const getEquipmentFields = (type: string): FieldDef[] => {
           name: 'isolacao',
           label: 'Isolação',
           type: 'select',
-          options: ['N/ID', 'EPR', 'HEPR', 'XLPE', 'PVC'],
+          options: ['N/ID', 'EPR', 'HEPR', 'XLPE', 'PVC', 'NU'],
         },
         { name: 'classe_isolamento', label: 'Classe de Isolamento (kV)', type: 'text' },
         { name: 'fabricante', label: 'Fabricante', type: 'combobox' },
