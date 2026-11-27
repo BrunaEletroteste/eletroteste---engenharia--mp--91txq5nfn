@@ -5,7 +5,7 @@ import { addYears, format } from 'date-fns'
 import { Printer } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import pb from '@/lib/pocketbase/client'
-import { FormValues } from '@/types/reports'
+import { FormValues, TIPOS_LAUDO } from '@/types/reports'
 import { useAuth } from '@/hooks/use-auth'
 import { FormField, FormItem, FormLabel, FormControl, FormMessage } from '@/components/ui/form'
 import { Input } from '@/components/ui/input'
@@ -161,15 +161,11 @@ export function ReportHeaderSection({ isView }: { isView: boolean }) {
                   </SelectTrigger>
                 </FormControl>
                 <SelectContent>
-                  <SelectItem value="PREVENTIVA">
-                    LAUDO TÉCNICO DE MANUTENÇÃO PREVENTIVA EM CABINE(S) PRIMÁRIA(S)
-                  </SelectItem>
-                  <SelectItem value="PREVENTIVA_CORRETIVA">
-                    LAUDO TÉCNICO DE MANUTENÇÃO PREVENTIVA E CORRETIVA EM CABINE(S) PRIMÁRIA(S)
-                  </SelectItem>
-                  <SelectItem value="COMISSIONAMENTO_RAMAL_AEREO_25KV">
-                    LAUDO TÉCNICO DE COMISSIONAMENTO DE RAMAL AÉREO DE MÉDIA TENSÃO 25kV
-                  </SelectItem>
+                  {TIPOS_LAUDO.map((tipo) => (
+                    <SelectItem key={tipo.value} value={tipo.value}>
+                      {tipo.label}
+                    </SelectItem>
+                  ))}
                 </SelectContent>
               </Select>
               <FormMessage />

@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-11-19T17:33:33.569Z",
+  "generatedAt": "2026-11-27T11:25:43.926Z",
   "collections": [
     {
       "name": "users",
@@ -226,7 +226,14 @@
           "type": "select",
           "required": false,
           "system": false,
-          "selectValues": ["PREVENTIVA", "PREVENTIVA_CORRETIVA", "COMISSIONAMENTO_RAMAL_AEREO_25KV"]
+          "selectValues": [
+            "PREVENTIVA",
+            "PREVENTIVA_CORRETIVA",
+            "COMISSIONAMENTO_RAMAL_AEREO_25KV",
+            "PREVENTIVA_TRANSFORMADORES",
+            "PREVENTIVA_DISJUNTORES",
+            "PREVENTIVA_QTA"
+          ]
         },
         {
           "name": "aprovador_relatorio",

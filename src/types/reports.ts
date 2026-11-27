@@ -1,5 +1,38 @@
 import { z } from 'zod'
 
+// Tipos de Laudo disponíveis (valor do select + rótulo exibido no formulário e no PDF)
+export const TIPOS_LAUDO = [
+  {
+    value: 'PREVENTIVA',
+    label: 'LAUDO TÉCNICO DE MANUTENÇÃO PREVENTIVA EM CABINE(S) PRIMÁRIA(S)',
+  },
+  {
+    value: 'PREVENTIVA_CORRETIVA',
+    label: 'LAUDO TÉCNICO DE MANUTENÇÃO PREVENTIVA E CORRETIVA EM CABINE(S) PRIMÁRIA(S)',
+  },
+  {
+    value: 'COMISSIONAMENTO_RAMAL_AEREO_25KV',
+    label: 'LAUDO TÉCNICO DE COMISSIONAMENTO DE RAMAL AÉREO DE MÉDIA TENSÃO 25kV',
+  },
+  {
+    value: 'PREVENTIVA_TRANSFORMADORES',
+    label: 'LAUDO TÉCNICO DE MANUTENÇÃO PREVENTIVA EM TRANSFORMADOR(ES)',
+  },
+  {
+    value: 'PREVENTIVA_DISJUNTORES',
+    label: 'LAUDO TÉCNICO DE MANUTENÇÃO PREVENTIVA EM DISJUNTOR(ES)',
+  },
+  {
+    value: 'PREVENTIVA_QTA',
+    label: 'LAUDO TÉCNICO DE MANUTENÇÃO PREVENTIVA EM QTA(S)',
+  },
+] as const
+
+export type TipoLaudo = (typeof TIPOS_LAUDO)[number]['value']
+
+export const getTipoLaudoLabel = (tipo?: string): string =>
+  TIPOS_LAUDO.find((t) => t.value === tipo)?.label ?? tipo ?? ''
+
 export const reportFormSchema = z.object({
   numero_relatorio: z.string().min(1, 'Número do relatório é obrigatório'),
   numero_proposta: z.string().optional(),
@@ -14,7 +47,7 @@ export const reportFormSchema = z.object({
   status: z.enum(['rascunho', 'finalizado']),
   observacoes: z.string().optional(),
   tipo_laudo: z
-    .enum(['PREVENTIVA', 'PREVENTIVA_CORRETIVA', 'COMISSIONAMENTO_RAMAL_AEREO_25KV'])
+    .enum(TIPOS_LAUDO.map((t) => t.value) as [TipoLaudo, ...TipoLaudo[]])
     .optional()
     .default('PREVENTIVA'),
 })

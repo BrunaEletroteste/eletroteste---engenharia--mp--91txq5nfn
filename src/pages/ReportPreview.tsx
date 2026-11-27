@@ -119,6 +119,12 @@ export default function ReportPreview() {
                 </>
               ) : relatorio.tipo_laudo === 'PREVENTIVA_CORRETIVA' ? (
                 'LAUDO DE MANUTENÇÃO PREVENTIVA E CORRETIVA'
+              ) : relatorio.tipo_laudo === 'PREVENTIVA_TRANSFORMADORES' ? (
+                'LAUDO TÉCNICO DE MANUTENÇÃO PREVENTIVA EM TRANSFORMADOR(ES)'
+              ) : relatorio.tipo_laudo === 'PREVENTIVA_DISJUNTORES' ? (
+                'LAUDO TÉCNICO DE MANUTENÇÃO PREVENTIVA EM DISJUNTOR(ES)'
+              ) : relatorio.tipo_laudo === 'PREVENTIVA_QTA' ? (
+                'LAUDO TÉCNICO DE MANUTENÇÃO PREVENTIVA EM QTA(S)'
               ) : (
                 'LAUDO DE MANUTENÇÃO PREVENTIVA'
               )}

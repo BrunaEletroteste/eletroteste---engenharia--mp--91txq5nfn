@@ -128,6 +128,15 @@ export const renderLaudoTitle = (tipo?: string) => {
       </span>
     )
   }
+  if (tipo === 'PREVENTIVA_TRANSFORMADORES') {
+    return 'LAUDO TÉCNICO DE MANUTENÇÃO PREVENTIVA EM TRANSFORMADOR(ES)'
+  }
+  if (tipo === 'PREVENTIVA_DISJUNTORES') {
+    return 'LAUDO TÉCNICO DE MANUTENÇÃO PREVENTIVA EM DISJUNTOR(ES)'
+  }
+  if (tipo === 'PREVENTIVA_QTA') {
+    return 'LAUDO TÉCNICO DE MANUTENÇÃO PREVENTIVA EM QTA(S)'
+  }
   return 'LAUDO TÉCNICO DE MANUTENÇÃO PREVENTIVA EM CABINE(S) PRIMÁRIA(S)'
 }
 

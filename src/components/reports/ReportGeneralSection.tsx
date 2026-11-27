@@ -12,6 +12,7 @@ import { NumberInput } from '@/components/ui/number-input'
 import { Textarea } from '@/components/ui/textarea'
 import { X } from 'lucide-react'
 import pb from '@/lib/pocketbase/client'
+import { TIPOS_LAUDO } from '@/types/reports'
 
 interface Props {
   isView: boolean
@@ -68,15 +69,11 @@ export function ReportGeneralSection({
                 </SelectTrigger>
               </FormControl>
               <SelectContent>
-                <SelectItem value="PREVENTIVA">
-                  LAUDO TÉCNICO DE MANUTENÇÃO PREVENTIVA EM CABINE(S) PRIMÁRIA(S)
-                </SelectItem>
-                <SelectItem value="PREVENTIVA_CORRETIVA">
-                  LAUDO TÉCNICO DE MANUTENÇÃO PREVENTIVA E CORRETIVA EM CABINE(S) PRIMÁRIA(S)
-                </SelectItem>
-                <SelectItem value="COMISSIONAMENTO_RAMAL_AEREO_25KV">
-                  LAUDO TÉCNICO DE COMISSIONAMENTO DE RAMAL AÉREO DE MÉDIA TENSÃO 25kV
-                </SelectItem>
+                {TIPOS_LAUDO.map((tipo) => (
+                  <SelectItem key={tipo.value} value={tipo.value}>
+                    {tipo.label}
+                  </SelectItem>
+                ))}
               </SelectContent>
             </Select>
             <FormMessage />
